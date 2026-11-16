@@ -7,7 +7,7 @@
     <title>复活计划乐队</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="assets/css/style.css?v=20261115185326">
-    <link rel="stylesheet" href="assets/css/v2-ui.css?v=12">
+    <link rel="stylesheet" href="assets/css/v2-ui.css?v=13">
     <style>
         #loadingOverlay {
             display: block;
@@ -182,6 +182,10 @@
                 </div>
             </div>
             <div class="v2-row">
+                <label data-zh="节拍" data-en="Beat">节拍</label>
+                <div class="v2-ctl"><button class="v2-btn" id="v2Metro" type="button" data-zh="节拍器" data-en="Click">节拍器</button></div>
+            </div>
+            <div class="v2-row">
                 <label data-zh="速度" data-en="Tempo">速度</label>
                 <div class="v2-ctl"><input id="v2Tempo" type="range" min="30" max="220" value="100"><span class="v2-val" id="v2TempoVal">100</span></div>
             </div>
@@ -194,13 +198,6 @@
                 <div class="v2-ctl"><select id="v2Timbre" class="v2-select" aria-label="音色"></select></div>
             </div>
             <div class="v2-sep"></div>
-            <div class="v2-row">
-                <label data-zh="工具" data-en="Tools">工具</label>
-                <div class="v2-ctl v2-ctl-2">
-                    <button class="v2-btn" id="v2Metro" type="button" data-zh="节拍器" data-en="Click">节拍器</button>
-                    <button class="v2-btn" id="v2LangBtn" type="button">简</button>
-                </div>
-            </div>
             <div class="v2-row">
                 <label data-zh="歌词" data-en="Lyrics">歌词</label>
                 <div class="v2-ctl"><select id="v2LyricFont" class="v2-select" aria-label="歌词字体">
@@ -217,10 +214,11 @@
             </div>
             <div class="v2-row">
                 <label data-zh="显示" data-en="View">显示</label>
-                <div class="v2-ctl v2-ctl-3">
+                <div class="v2-ctl v2-ctl-4">
                     <button class="v2-btn on" id="v2WrapBtn" type="button" data-zh="自动换行" data-en="Wrap">自动换行</button>
                     <button class="v2-btn on" id="v2FollowBtn" type="button" data-zh="跟随播放" data-en="Follow">跟随播放</button>
                     <button class="v2-btn" id="v2ThemeBtn" type="button" data-zh="夜间" data-en="Night">夜间</button>
+                    <button class="v2-btn" id="v2LangBtn" type="button">简</button>
                 </div>
             </div>
             <div class="v2-sep"></div>
