@@ -111,8 +111,6 @@
     --em:calc(1rem * var(--scale,1));
     font-size:var(--em)}
   .line{position:relative;padding-bottom:.5em}
-  .line-head{margin:0 0 .2em 2.7em;color:var(--muted);font-size:.68em;letter-spacing:.12em}
-  .line-head b{color:var(--ink-2);font-weight:600}
   .line-body{display:flex;align-items:stretch;padding:.1em 0}
 
   .gutter{
@@ -1282,7 +1280,7 @@ function render(){
     const line = document.createElement("div");
     line.className = "line";
     line.dataset.line = li;
-    line.innerHTML = `<div class="line-head"><b>第 ${li+1} 行</b> · 小节 ${bars[0]+1}–${bars[bars.length-1]+1}</div>`;
+
     const body = document.createElement("div");
     body.className = "line-body";
     const gutter = document.createElement("div");
