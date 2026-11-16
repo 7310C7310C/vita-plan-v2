@@ -22,11 +22,9 @@ body.v2-active .v2-head-actions{display:flex}
 .v2-quick-pause.playing:hover{background:rgba(160,40,40,.95)}
 body.v2-image-mode #v2QuickPauseBtn{display:none!important}
 
-.v2-menu{position:absolute;top:calc(100% + 8px);right:0;left:auto;z-index:120;width:330px;max-height:calc(100vh - 96px);overflow:auto;background:rgba(30,26,20,.97);color:#f4eee2;border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:12px 14px 14px;box-shadow:0 12px 32px rgba(0,0,0,.35);display:none}
+.v2-menu{position:absolute;top:calc(100% + 8px);right:0;left:auto;z-index:120;width:330px;max-height:calc(100vh - 96px);overflow:auto;background:rgba(30,26,20,.97);color:#f4eee2;border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:34px 14px 14px;box-shadow:0 12px 32px rgba(0,0,0,.35);display:none}
 .v2-menu.open{display:block}
-.v2-menu-head{display:flex;align-items:center;justify-content:space-between;margin:0 0 8px}
-.v2-menu-head strong{font-size:.9rem;letter-spacing:.03em}
-.v2-menu-x{width:26px;height:26px;border-radius:8px;border:none;background:transparent;color:#cfc3b2;font-size:1.15rem;line-height:1;cursor:pointer}
+.v2-menu-x{position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:8px;border:none;background:transparent;color:#cfc3b2;font-size:1.15rem;line-height:1;cursor:pointer}
 .v2-menu-x:hover{background:rgba(255,255,255,.1);color:#fff}
 .v2-menu .v2-row{display:grid;grid-template-columns:42px minmax(0,1fr);column-gap:10px;align-items:center;margin:7px 0;font-size:.82rem}
 .v2-menu .v2-row.no-label{display:flex;gap:6px}

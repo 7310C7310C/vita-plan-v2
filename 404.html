@@ -7,7 +7,7 @@
     <title>复活计划乐队</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="assets/css/style.css?v=20261115185326">
-    <link rel="stylesheet" href="assets/css/v2-ui.css?v=11">
+    <link rel="stylesheet" href="assets/css/v2-ui.css?v=12">
     <style>
         #loadingOverlay {
             display: block;
@@ -165,7 +165,7 @@
                 <button class="v2-head-btn" id="v2MenuBtn" type="button">菜单</button>
                 <button class="v2-head-btn v2-quick-pause" id="v2QuickPauseBtn" type="button" aria-label="播放" title="播放"><svg class="ico-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.14v13.72a1 1 0 0 0 1.52.85l10.5-6.86a1 1 0 0 0 0-1.7L9.52 4.29A1 1 0 0 0 8 5.14z"/></svg><svg class="ico-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4.5" width="4" height="15" rx="1.2"/><rect x="14" y="4.5" width="4" height="15" rx="1.2"/></svg></button>
         <div class="v2-menu" id="v2Menu">
-            <div class="v2-menu-head"><strong id="v2MenuTitle">播放器</strong><button class="v2-menu-x" id="v2MenuClose" type="button" aria-label="关闭">×</button></div>
+            <button class="v2-menu-x" id="v2MenuClose" type="button" aria-label="关闭">×</button>
             <div class="v2-row no-label">
                 <button class="v2-btn v2-play" id="v2PlayBtn" type="button" data-zh="播放" data-en="Play">播放</button>
                 <button class="v2-btn" id="v2StopBtn" type="button" data-zh="停止" data-en="Stop">停止</button>
@@ -196,10 +196,9 @@
             <div class="v2-sep"></div>
             <div class="v2-row">
                 <label data-zh="工具" data-en="Tools">工具</label>
-                <div class="v2-ctl v2-ctl-3">
+                <div class="v2-ctl v2-ctl-2">
                     <button class="v2-btn" id="v2Metro" type="button" data-zh="节拍器" data-en="Click">节拍器</button>
                     <button class="v2-btn" id="v2LangBtn" type="button">简</button>
-                    <button class="v2-btn" id="v2AnnotBtn" type="button" data-zh="标注" data-en="Mark">标注</button>
                 </div>
             </div>
             <div class="v2-row">
