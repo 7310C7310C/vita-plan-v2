@@ -726,8 +726,7 @@ const SCORE_PITCHES = (()=>{
 const DEFAULTS = {
   theme:"light", follow:true, tempo:SCORE.tempo, volume:100,
   timbre:"church_organ", parts:{S:true,A:true,T:true,B:true},
-  lyricFont:"hei", bold:true, scale:100, metronome:true, lang:"s", autowrap:true, capo:0,
-  tempoRev: SCORE.tempoRev || 0
+  lyricFont:"hei", bold:true, scale:100, metronome:true, lang:"s", autowrap:true, capo:0
 };
 const STORE_KEY = "ys.settings." + SONG_ID + ".v2";
 function loadSettings(){
@@ -735,9 +734,7 @@ function loadSettings(){
     const raw = localStorage.getItem(STORE_KEY);
     if (!raw) return Object.assign({}, DEFAULTS);
     const s = JSON.parse(raw);
-    const merged = Object.assign({}, DEFAULTS, s, {parts:Object.assign({}, DEFAULTS.parts, s.parts||{})});
-    if (SCORE.tempoRev !== undefined && s.tempoRev !== SCORE.tempoRev) merged.tempo = DEFAULTS.tempo;
-    return merged;
+    return Object.assign({}, DEFAULTS, s, {parts:Object.assign({}, DEFAULTS.parts, s.parts||{})});
   }catch(e){ return Object.assign({}, DEFAULTS); }
 }
 let settings = loadSettings();
@@ -2255,7 +2252,7 @@ function saveSettings(){
     localStorage.setItem(STORE_KEY, JSON.stringify({
       theme, follow, tempo:engine.tempo, volume:Math.round(engine.volume*100),
       timbre:engine.timbre, parts:engine.parts, lyricFont, bold, autowrap, scale,
-      metronome:engine.metronome, lang, capo, tempoRev: DEFAULTS.tempoRev
+      metronome:engine.metronome, lang, capo
     }));
   }catch(e){}
 }
@@ -2486,10 +2483,10 @@ document.addEventListener('keydown', function(e){ if (e.key==='Escape') closeCho
           break;
         case 'pause': playSeq++; engine.pause(); setPlayUI(false); break;
         case 'stop': playSeq++; engine.stop(); setPlayUI(false); break;
-        case 'tempo': engine.setTempo(+m.value); break;
-        case 'metronome': engine.metronome = !!m.value; break;
-        case 'volume': engine.setVolume((+m.value)/100); break;
-        case 'parts': if (m.parts) Object.assign(engine.parts, m.parts); applyPartUI(); break;
+        case 'tempo': engine.setTempo(+m.value); saveSettings(); break;
+        case 'metronome': engine.metronome = !!m.value; saveSettings(); break;
+        case 'volume': engine.setVolume((+m.value)/100); saveSettings(); break;
+        case 'parts': if (m.parts) Object.assign(engine.parts, m.parts); applyPartUI(); saveSettings(); break;
         case 'lang': {
           const v = m.value === 't' ? 't' : 's';
           if (v !== lang){ lang = v; applyLang(); saveSettings(); }
