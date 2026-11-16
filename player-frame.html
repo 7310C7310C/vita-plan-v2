@@ -2362,6 +2362,7 @@ function annotRender(){
       hit.addEventListener('click', function(e){
         e.stopPropagation(); e.preventDefault();
         annotActive = gi; annotRender();
+        if (!g.text) annotShowPop(g);
       });
       svg.appendChild(hit);
     }
