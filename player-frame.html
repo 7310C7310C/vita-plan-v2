@@ -1043,6 +1043,7 @@ class Engine{
       this.playing = false;
       clearInterval(this.timer); this.timer = null;
       this.stopAll();
+      this.repeatDone = false;   /* 自然播完＝下一次从第一遍开始 */
       this.anchorBeat = this.dcDone ? 0 : this.rangeEnd;
       if (this.dcDone){ this.dcDone = false; this.rangeEnd = this.totalBeats; }
       if (this.onEnd) this.onEnd();
