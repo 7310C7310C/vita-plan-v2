@@ -1163,11 +1163,15 @@ function transposeRoot(root, semitones, preferFlat){
   const n = ((pc - semitones) % 12 + 12) % 12;
   return (preferFlat ? FLAT_NAMES : SHARP_NAMES)[n];
 }
+const KEY_NAME_BY_PC = ["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"];
+const FLAT_KEY_NAMES = {"Db":1,"Eb":1,"F":1,"Gb":1,"Ab":1,"Bb":1};
 function capoPreferFlat(){
   const m = String(SCORE.key || 'C').match(/^([A-G][#b]?)/);
   if (!m) return false;
-  const shapeKey = transposeRoot(m[1], capo, /b/.test(m[1]));
-  return /b/.test(shapeKey);
+  const pc = ROOT_PC[m[1]];
+  if (pc === undefined) return false;
+  const targetPc = ((pc - capo) % 12 + 12) % 12;
+  return !!FLAT_KEY_NAMES[KEY_NAME_BY_PC[targetPc]];
 }
 function transposeChord(chord, semitones, preferFlat){
   if (!semitones) return chord;
