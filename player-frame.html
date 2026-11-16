@@ -23,7 +23,8 @@
     --tool-bg:rgba(20,18,15,.94);
   }
   *{box-sizing:border-box;-webkit-user-select:none;-moz-user-select:none;user-select:none;-webkit-touch-callout:none}
-  body{opacity:0}
+  html{overscroll-behavior:contain}
+  body{opacity:0;overscroll-behavior:contain}
   body.ready{opacity:1;transition:opacity .16s ease}
   html,body{-webkit-tap-highlight-color:transparent}
   button,select,input,a,label{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
@@ -317,11 +318,12 @@
     pointer-events:auto;cursor:pointer;z-index:3
   }
   .annot-del{
-    position:absolute;transform:translate(-50%,-50%);width:20px;height:20px;padding:0;
+    position:absolute;margin-left:-11px;margin-top:-11px;width:22px;height:22px;padding:0;box-sizing:border-box;
     border-radius:50%;border:2px solid #fff;background:#d93025;color:#fff;font-size:13px;line-height:1;
     display:flex;align-items:center;justify-content:center;cursor:pointer;pointer-events:auto;z-index:4;
     box-shadow:0 1px 4px rgba(0,0,0,.28)
   }
+  .annot-del:active{transform:none}
   .annot-marquee{position:absolute;border:1.5px dashed #d93025;background:rgba(217,48,37,.08);border-radius:4px;pointer-events:none}
   body.annot-mode #score .note[data-id]{cursor:crosshair}
   body.annot-mode #score{touch-action:none;user-select:none;-webkit-user-select:none}

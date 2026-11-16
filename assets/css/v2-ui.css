@@ -10,6 +10,9 @@ body.v2-image-mode #v2MenuBtn{display:none}
 .viewer-topbar .viewer-breadcrumb{position:static;top:auto;left:auto;height:40px;max-width:none;flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
 .v2-head-actions{display:none;align-items:center;gap:8px;position:relative;flex:0 0 auto;pointer-events:auto}
 body.v2-active .v2-head-actions{display:flex}
+body.v2-active{overscroll-behavior:none}
+body.v2-active .viewer-content{overscroll-behavior:contain}
+body.v2-active .v2-frame{overscroll-behavior:contain}
 .v2-head-btn{height:40px;padding:0 14px;border-radius:20px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.5);color:#fff;font-size:.85rem;cursor:pointer;opacity:.85;white-space:nowrap}
 .v2-head-btn:hover{opacity:1;background:rgba(0,0,0,.7)}
 .v2-quick-pause{display:flex;width:40px;padding:0;gap:0;align-items:center;justify-content:center;background:rgba(0,0,0,.5);border-color:rgba(255,255,255,.5)}
