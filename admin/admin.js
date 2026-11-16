@@ -4,8 +4,8 @@
 
 // ==================== 常量配置 ====================
 const GITHUB_API = 'https://api.github.com';
-const REPO_OWNER = '7310c7310c';
-const REPO_NAME = 'vita-plan';
+const REPO_OWNER = '7310C7310C';
+const REPO_NAME = 'vita-plan-v2';
 const BRANCH = 'main';
 
 const ALLOWED_IMG_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/bmp'];
@@ -293,17 +293,17 @@ const tokenManager = {
         } catch (e) { return null; }
     },
     saveToken(token) {
-        localStorage.setItem('fhj_admin_token_time', String(Date.now()));
-        this.encrypt(token).then(enc => localStorage.setItem('fhj_admin_token_enc', enc));
+        localStorage.setItem('v2_admin_token_time', String(Date.now()));
+        this.encrypt(token).then(enc => localStorage.setItem('v2_admin_token_enc', enc));
     },
     async getToken() {
-        const enc = localStorage.getItem('fhj_admin_token_enc');
+        const enc = localStorage.getItem('v2_admin_token_enc');
         if (!enc) return null;
         return await this.decrypt(enc);
     },
     clearToken() {
-        localStorage.removeItem('fhj_admin_token_enc');
-        localStorage.removeItem('fhj_admin_token_time');
+        localStorage.removeItem('v2_admin_token_enc');
+        localStorage.removeItem('v2_admin_token_time');
     }
 };
 
