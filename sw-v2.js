@@ -54,7 +54,7 @@ self.addEventListener('fetch', event => {
     return;
   }
   if (req.mode === 'navigate') {
-    event.respondWith(networkFirst(req));
+    event.respondWith(navigationFirst(req));
     return;
   }
   if (path.endsWith('.js') || path.endsWith('.css') || path.endsWith('.html') || path.endsWith('favicon.ico')) {
@@ -71,6 +71,23 @@ async function cacheFirst(req, cacheName){
   const res = await fetch(req);
   if (res && res.ok) cache.put(req, res.clone());
   return res;
+}
+
+async function navigationFirst(req){
+  try{
+    const res = await fetch(req);
+    if (res && res.ok){
+      const cache = await caches.open(SHELL_CACHE);
+      cache.put(req, res.clone());
+    }
+    return res;
+  }catch(e){
+    const cache = await caches.open(SHELL_CACHE);
+    const indexUrl = new URL('index.html', self.registration.scope).href;
+    return (await cache.match(req, {ignoreSearch:true})) ||
+           (await cache.match(indexUrl)) ||
+           Response.error();
+  }
 }
 
 async function networkFirst(req){
