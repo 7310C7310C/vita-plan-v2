@@ -1640,7 +1640,8 @@ function playNoteEl(el){
   const bi = +el.dataset.bar, v = el.dataset.voice, idx = +el.dataset.idx;
   const beat = BAR_START[bi] + SCORE.bars[bi].V[v][idx][0];
   if (sel && (bi < sel.a || bi > sel.b)){ sel = null; applySelectionUI(); }
-  const keep = !!(engine.repeatDone && engine.repeat &&
+  /* 只有「播放中且已进入第二遍」才保留已反覆状态；停止/暂停后再点区间内＝第一遍 */
+  const keep = !!(engine.playing && engine.repeatDone && engine.repeat &&
     beat >= engine.repeat.start-1e-6 && beat < engine.repeat.end-1e-6);
   playFrom(beat, keep);
 }
