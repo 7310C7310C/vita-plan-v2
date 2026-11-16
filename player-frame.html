@@ -179,9 +179,11 @@
 
   .btag{margin-left:.4em;color:var(--accent);font-size:.9em;letter-spacing:.04em}
   .bnum{font-size:calc(.6 * var(--em));color:var(--muted);height:calc(1.1 * var(--em));line-height:calc(1.1 * var(--em));font-variant-numeric:tabular-nums}
+  .bar-meter{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-size:.92em;line-height:.8;margin-right:.45em;vertical-align:middle;color:var(--ink-2);font-family:"Times New Roman",Georgia,serif}
+  .bar-meter b,.bar-meter i{font-style:normal;font-weight:600}
   .chordrow,.vrow,.lrow{display:grid;align-items:center}
   .chordrow{height:calc(1.45 * var(--em));font-family:"Noto Sans TC",system-ui,sans-serif;font-size:calc(.64 * var(--em));font-weight:700;color:var(--accent);line-height:1.05}
-  .chordrow span{text-align:center;white-space:nowrap;overflow:visible}
+  .chordrow span{text-align:left;padding-left:.08em;white-space:nowrap;overflow:visible}
   .vrow{height:calc(2.15 * var(--em))}
   .lrow{height:calc(1.45 * var(--em));font-family:var(--lyric-font);font-size:calc(.88 * var(--em));
     font-weight:var(--lyric-weight,400);color:var(--ink-2)}
@@ -1216,7 +1218,15 @@ function renderBar(bi){
 
   const basis = Math.max(n*1.75 + 0.5, 3.2);
   let h = `<div class="bar${bi===SCORE.bars.length-1?" final repeat-end":""}${bi===(SCORE.repeat?SCORE.repeat.from:-1)?" repeat-start":""}" data-bar="${bi}" style="flex:0.25 1 ${basis.toFixed(2)}em;max-width:${(basis*2.1).toFixed(2)}em">`;
-  h += `<div class="bnum">${bi+1}${bar.tag?`<span class="btag">${escHtml(bar.tag)}</span>`:""}</div>`;
+  let meterHTML = "";
+  if (bar.meter){
+    const prevMeter = bi>0 ? (SCORE.bars[bi-1].meter || SCORE.meter) : null;
+    if (bi===0 || bar.meter !== prevMeter){
+      const mm = String(bar.meter).split("/");
+      meterHTML = `<span class="bar-meter"><b>${escHtml(mm[0]||"")}</b><i>${escHtml(mm[1]||"")}</i></span>`;
+    }
+  }
+  h += `<div class="bnum">${meterHTML}${bi+1}${bar.tag?`<span class="btag">${escHtml(bar.tag)}</span>`:""}</div>`;
   h += `<div class="chordrow" style="grid-template-columns:repeat(${n},minmax(0,1fr))">`;
   chordCells.forEach(c=>{
     const disp = transposeChordText(c, capo);
