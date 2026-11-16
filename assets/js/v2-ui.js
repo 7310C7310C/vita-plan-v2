@@ -130,6 +130,7 @@
   }
   function setImageMode(on){
     if (!state.active) return;
+    if (on) setAnnot(false);
     state.image = !!on;
     document.body.classList.toggle('v2-image-mode', !!on);
     document.body.classList.toggle('v2-json-mode', !on);
