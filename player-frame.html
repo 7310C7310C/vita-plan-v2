@@ -2102,6 +2102,7 @@ window.__hymn = {
             const p = engine.play(engine.anchorBeat >= engine.totalBeats-1e-6 ? 0 : engine.anchorBeat);
             if (p && p.then) p.then(vp2Send).catch(vp2Send);
             setTimeout(vp2Send, 520);
+            return;
           }
           break;
         case 'pause': engine.pause(); setPlayUI(false); break;

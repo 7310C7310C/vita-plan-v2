@@ -219,7 +219,7 @@
   function applyUILang(lang){
     const en = lang === 'en';
     state.uiLang = en ? 'en' : 'zh';
-    document.querySelectorAll('#v2Menu [data-zh]').forEach(el=>{
+    document.querySelectorAll('#v2Menu [data-zh], #v2QuickPauseBtn [data-zh]').forEach(el=>{
       const t = en ? (el.getAttribute('data-en') || el.getAttribute('data-zh')) : el.getAttribute('data-zh');
       if (el.tagName === 'INPUT') return;
       if (el.children.length === 0) el.textContent = t;
@@ -299,7 +299,10 @@
       document.addEventListener('click', function(){ menu.classList.remove('open'); });
     }
     const play = document.getElementById('v2PlayBtn');
-    if (play) play.addEventListener('click', function(){ post(state.playing ? 'pause' : 'play'); });
+    if (play) play.addEventListener('click', function(){
+      if (state.playing){ post('pause'); setPlayUI(false); }
+      else { post('play'); setPlayUI(true); }
+    });
     const quickPause = document.getElementById('v2QuickPauseBtn');
     if (quickPause) quickPause.addEventListener('click', function(){ post('pause'); setPlayUI(false); });
     const stop = document.getElementById('v2StopBtn');
