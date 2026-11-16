@@ -260,6 +260,18 @@
       if (m.tempo) syncTempo(m.tempo);
       if (m.parts) syncParts(m.parts);
       if (m.lang) syncLang(m.lang);
+      if (typeof m.metronome === 'boolean'){
+        state.metro = m.metronome;
+        const el = document.getElementById('v2Metro');
+        if (el) el.classList.toggle('on', state.metro);
+      }
+      if (m.volume != null){
+        state.volume = m.volume;
+        const el = document.getElementById('v2Vol');
+        const l = document.getElementById('v2VolVal');
+        if (el) el.value = state.volume;
+        if (l) l.textContent = state.volume;
+      }
     }
   });
 

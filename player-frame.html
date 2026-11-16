@@ -2079,6 +2079,16 @@ window.__hymn = {
 <script>
 /* v2 parent <-> frame API */
 (function(){
+  function vp2State(){
+    return {type:'vp2:state', playing:engine.playing, tempo:engine.tempo, parts:engine.parts,
+      lang:lang, metronome:engine.metronome, volume:Math.round(engine.volume*100)};
+  }
+  function vp2Send(){ try{ parent.postMessage(vp2State(), location.origin); }catch(e){} }
+  try{
+    const prevEnd = engine.onEnd;
+    engine.onEnd = function(){ try{ if (prevEnd) prevEnd(); }catch(e){} vp2Send(); };
+  }catch(e){}
+  document.addEventListener('visibilitychange', function(){ setTimeout(vp2Send, 120); });
   window.addEventListener('message', function(e){
     if (e.origin !== location.origin) return;
     const m = e.data || {};
@@ -2103,7 +2113,7 @@ window.__hymn = {
         }
         case 'annot': annotSetMode(!!m.value); break;
       }
-      parent.postMessage({type:'vp2:state', playing:engine.playing, tempo:engine.tempo, parts:engine.parts, lang:lang}, location.origin);
+      vp2Send();
     }catch(err){}
   });
   window.addEventListener('load', function(){
