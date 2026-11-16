@@ -23,6 +23,7 @@
     tempo: 100,
     parts: {S:true, A:true, T:true, B:true},
     lang: 's',
+    uiLang: 'zh',
     metro: false,
     volume: 100
   };
@@ -128,7 +129,7 @@
   function setPlayUI(playing){
     state.playing = !!playing;
     const b = document.getElementById('v2PlayBtn');
-    if (b) b.textContent = playing ? '暂停' : '播放';
+    if (b) b.textContent = state.uiLang === 'en' ? (playing ? 'Pause' : 'Play') : (playing ? '暂停' : '播放');
   }
   function syncParts(parts){
     if (!parts) return;
@@ -152,6 +153,7 @@
   }
   function applyUILang(lang){
     const en = lang === 'en';
+    state.uiLang = en ? 'en' : 'zh';
     document.querySelectorAll('#v2Menu [data-zh]').forEach(el=>{
       const t = en ? (el.getAttribute('data-en') || el.getAttribute('data-zh')) : el.getAttribute('data-zh');
       if (el.tagName === 'INPUT') return;
@@ -161,6 +163,7 @@
     if (imageBtn && state.active) imageBtn.textContent = state.image ? (en?'Score':'简谱') : (en?'Image':'图片谱');
     if (menuBtn) menuBtn.textContent = en ? 'Menu' : '菜单';
     const t = document.getElementById('v2MenuTitle'); if (t) t.textContent = en ? 'Player' : '播放器';
+    setPlayUI(state.playing);
   }
 
   function ready(m){
