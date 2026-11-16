@@ -701,7 +701,7 @@ let settings = loadSettings();
 let theme = settings.theme === "dark" ? "dark" : "light";
 let follow = !!settings.follow;
 let lyricFont = LYRIC_FONTS[settings.lyricFont] ? settings.lyricFont : "hei";
-let bold = !!settings.bold;
+let bold = true;   /* 字体自定义已移除：歌词固定加粗 */
 let autowrap = settings.autowrap !== false;
 let scale = Math.max(80, Math.min(150, +settings.scale || 100));
 let lang = settings.lang === "s" ? "s" : "t";
