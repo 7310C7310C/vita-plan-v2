@@ -216,6 +216,7 @@
   .acc{font-size:.66em;vertical-align:.14em;margin-right:.02em;color:var(--accent)}
   .dot{position:absolute;left:50%;margin-left:-.085em;width:.17em;height:.17em;border-radius:50%;background:currentColor}
   .u1{position:absolute;left:-.04em;right:-.04em;bottom:-.16em;border-bottom:2.3px solid currentColor}
+  .u1.low{bottom:-.46em}
   .u1.beam{left:0;right:0;bottom:-.16em}
   .u1.beam.last{right:.14em}
   .group-beam{position:absolute;height:0;border-bottom:2.3px solid currentColor;pointer-events:none;z-index:2}
@@ -674,7 +675,7 @@ function noteHTML(jp,{underline=0,dot=0,beam=false,beamLast=false}={}){
       : `<i class="dot below" style="top:calc(100% + ${0.19 + k*0.26}em)"></i>`;
   }
   const acc = jp.acc ? `<span class="acc">${jp.acc}</span>` : "";
-  const u = underline ? `<i class="u1${beam?' beam':''}${beamLast?' last':''}"></i>` : "";
+  const u = underline ? `<i class="u1${beam?' beam':''}${beamLast?' last':''}${jp.oct<0?' low':''}"></i>` : "";
   const rd = dot ? '<i class="rdot"></i>' : "";
   const cls = jp.oct>1?"up2":jp.oct===1?"up1":jp.oct===-1?"dn1":jp.oct<-1?"dn2":"";
   const inner = `<span class="num">${acc}${jp.deg}${rd}${dots}${beam?'':u}</span>`;
@@ -1245,7 +1246,13 @@ function fixBeams(){
     const first = nums[0].getBoundingClientRect();
     const last = nums[nums.length-1].getBoundingClientRect();
     const u = notes[0].querySelector('.u1');
-    const y = u ? u.getBoundingClientRect().bottom - cr.top : (first.bottom - cr.top + 2);
+    const lowDots = Array.prototype.slice.call(cell.querySelectorAll('.dot.below'));
+    let y;
+    if (lowDots.length){
+      y = Math.max.apply(null, lowDots.map(d=>d.getBoundingClientRect().bottom)) - cr.top + 2;
+    } else {
+      y = u ? u.getBoundingClientRect().bottom - cr.top : (first.bottom - cr.top + 2);
+    }
     const line = document.createElement('i');
     line.className = 'group-beam';
     line.style.left = (first.left - cr.left) + 'px';
