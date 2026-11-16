@@ -103,6 +103,8 @@
   header .meta-original{margin-top:3px;color:var(--muted);font-size:12px;letter-spacing:.13em}
   header .meta-credit{margin-top:5px;color:var(--muted);font-size:11px;line-height:1.55;letter-spacing:.08em;text-align:right}
   .score-tempo{font-size:calc(.74rem * var(--scale,1));color:var(--ink-2);margin:-.1em 0 .6em .2em;letter-spacing:.05em;font-family:"Noto Sans TC",system-ui,sans-serif}
+  .score-tempo .tempo-note{font-size:1.5em;line-height:1;vertical-align:-.06em;margin-right:.02em}
+  .score-tempo .tempo-val{font-size:1em}
 
   .score-head{display:flex;gap:1.4em;align-items:baseline;margin:0 0 .55em 0;padding-left:.2em}
   .score-head .kt{font-size:calc(.8rem * var(--scale,1));color:var(--ink-2);font-weight:600;letter-spacing:.06em;font-family:"Noto Sans TC",system-ui,sans-serif}
@@ -493,7 +495,18 @@ document.addEventListener("visibilitychange", ()=>{
     mc.style.display = lines.length ? "" : "none";
   }
   const st=document.getElementById("scoreTempo");
-  if (st) st.textContent = SCORE.tempoLabel || ("♩=" + (SCORE.tempo || ""));
+  if (st){
+    const label = String(SCORE.tempoLabel || ("♩=" + (SCORE.tempo || "")));
+    const m = label.match(/^\s*([^\d=]+?)\s*=\s*(.+)$/);
+    st.textContent = "";
+    if (m){
+      const n = document.createElement("span"); n.className = "tempo-note"; n.textContent = m[1];
+      const v = document.createElement("span"); v.className = "tempo-val"; v.textContent = "=" + m[2];
+      st.appendChild(n); st.appendChild(v);
+    } else {
+      st.textContent = label;
+    }
+  }
   const kt=document.querySelectorAll(".kt");
   if(kt[0]) kt[0].textContent = "1=" + SCORE.key;
   if(kt[1]) kt[1].textContent = SCORE.meter || "";
