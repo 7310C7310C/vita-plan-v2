@@ -299,16 +299,21 @@
   body.embed .score-head{margin-top:0}
   body.embed .global-loading{position:fixed}
 
-  /* v2 annotations: red circle; text floats above with a light chip background */
-  #score .note.annot{background:transparent;box-shadow:0 0 0 2px #d93025;border-radius:50%}
-  #score .note.annot[data-annot]::after{
-    content:attr(data-annot);position:absolute;left:50%;bottom:calc(100% + 5px);transform:translateX(-50%);
-    max-width:11em;padding:1px 5px;border-radius:5px;background:#fff4f2;color:#b3261e;
-    border:1px solid rgba(217,48,37,.45);font-size:.62em;line-height:1.35;font-weight:600;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 1px 4px rgba(0,0,0,.18);
-    pointer-events:none;z-index:4
+  /* v2 annotations: one red ring per mark/group; optional semi-transparent text chip */
+  .score-wrap{position:relative}
+  .annot-layer{position:absolute;inset:0;pointer-events:none;z-index:6}
+  .annot-ring{position:absolute;border:2px solid #d93025;border-radius:50%;box-sizing:border-box}
+  .annot-chip{
+    position:absolute;left:50%;top:-17px;transform:translateX(-50%);
+    max-width:12em;padding:1px 6px;border-radius:5px;background:rgba(255,244,242,.82);color:#b3261e;
+    border:1px solid rgba(217,48,37,.4);font-size:.62em;line-height:1.35;font-weight:600;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 1px 4px rgba(0,0,0,.15);
+    pointer-events:none
   }
+  .annot-marquee{position:absolute;border:1.5px dashed #d93025;background:rgba(217,48,37,.08);border-radius:4px;pointer-events:none}
   body.annot-mode #score .note[data-id]{cursor:crosshair}
+  body.annot-mode #score{touch-action:none;user-select:none;-webkit-user-select:none}
+  body.annot-erase #score .note[data-id]{cursor:not-allowed}
   .annot-pop{position:fixed;z-index:9999;background:#fffdf5;border:1px solid #d8c9ae;border-radius:10px;box-shadow:0 10px 28px rgba(0,0,0,.22);padding:8px}
   .annot-pop-in{display:flex;gap:6px;align-items:center}
   .annot-pop input{width:210px;height:30px;border:1px solid #d8c9ae;border-radius:7px;padding:0 8px;font-size:13px;background:#fff;color:#3f3327;user-select:text;-webkit-user-select:text}
@@ -412,7 +417,10 @@
     <div class="meta">Dieu seul suffit · Fr Jean-Baptiste</div>
   </header>
   <div class="score-head"><span class="kt">1=G</span><span class="kt">6/8</span></div>
-  <div class="score" id="score"></div>
+  <div class="score-wrap" id="scoreWrap">
+    <div class="score" id="score"></div>
+    <div class="annot-layer" id="annotLayer"></div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -2158,6 +2166,11 @@ window.__hymn = {
           break;
         }
         case 'annot': annotSetMode(!!m.value); break;
+        case 'annotSave': annotSaveNow(); break;
+        case 'annotClear': annotClearAll(); break;
+        case 'annotEraser': annotSetEraser(!!m.value); break;
+        case 'annotUndo': annotUndo(); break;
+        case 'annotRedo': annotRedo(); break;
         case 'timbre': {
           const id = String(m.value || '');
           if (TIMBRES[id]){
@@ -2206,84 +2219,237 @@ window.__hymn = {
 })();
 
 /* ============================================================
-   v2 annotations: click/drag note or range -> yellow highlight;
-   optional text; stored locally per score.
+   v2 annotations v2: click a note or drag a marquee; the selected
+   notes are enclosed by one red ring; optional text chip with a
+   translucent background; clear/eraser/undo/redo; saved locally.
    ============================================================ */
-let annotMode = false;
-let annotStart = null;
-let annotPop = null;
 const ANNOT_KEY = 'v2.annot.' + SONG_ID;
-let annots = {};
-try{ annots = JSON.parse(localStorage.getItem(ANNOT_KEY) || '{}') || {}; }catch(e){ annots = {}; }
+let annotMode = false, annotEraser = false;
+let annotGroups = loadAnnots();
+let annotHistory = [], annotHistIndex = -1;
+let annotStart = null, annotMoved = false;
+let annotMarquee = null, annotPop = null;
 
-function annotSave(){ try{ localStorage.setItem(ANNOT_KEY, JSON.stringify(annots)); }catch(e){} }
-function annotId(el){ return el && el.getAttribute ? el.getAttribute('data-id') : null; }
-function annotApply(){
-  document.querySelectorAll('#score .note[data-id]').forEach(el=>{
-    const a = annots[annotId(el)];
-    el.classList.toggle('annot', !!a);
-    if (a && a.text){ el.setAttribute('data-annot', a.text); el.title = a.text; }
-    else { el.removeAttribute('data-annot'); el.removeAttribute('title'); }
+function loadAnnots(){
+  try{
+    const raw = JSON.parse(localStorage.getItem(ANNOT_KEY) || '[]');
+    if (Array.isArray(raw)){
+      return raw.filter(function(g){ return g && Array.isArray(g.ids) && g.ids.length; })
+        .map(function(g){ return {ids: g.ids.map(String), text: String(g.text || '')}; });
+    }
+    if (raw && typeof raw === 'object'){
+      /* migrate old per-note {id:{text}} format into one group per note */
+      return Object.keys(raw).map(function(id){ return {ids:[String(id)], text: String((raw[id] && raw[id].text) || '')}; });
+    }
+  }catch(e){}
+  return [];
+}
+function annotPersist(){ try{ localStorage.setItem(ANNOT_KEY, JSON.stringify(annotGroups)); }catch(e){} }
+function annotSend(){
+  try{
+    parent.postMessage({type:'vp2:annot', count: annotGroups.length, eraser: annotEraser,
+      undo: annotHistIndex > 0, redo: annotHistIndex >= 0 && annotHistIndex < annotHistory.length - 1}, location.origin);
+  }catch(e){}
+}
+function annotHistoryReset(){
+  annotHistory = [JSON.stringify(annotGroups)];
+  annotHistIndex = 0;
+}
+function annotCommit(){
+  annotPersist();
+  const snap = JSON.stringify(annotGroups);
+  if (annotHistIndex < 0 || annotHistory[annotHistIndex] !== snap){
+    annotHistory = annotHistory.slice(0, annotHistIndex + 1);
+    annotHistory.push(snap);
+    annotHistIndex = annotHistory.length - 1;
+  }
+  annotRender();
+  annotSend();
+}
+function annotHistoryGo(i){
+  if (i < 0 || i >= annotHistory.length) return;
+  annotHistIndex = i;
+  annotGroups = JSON.parse(annotHistory[i]);
+  annotPersist(); annotRender(); annotSend();
+}
+function annotUndo(){ annotHistoryGo(annotHistIndex - 1); }
+function annotRedo(){ annotHistoryGo(annotHistIndex + 1); }
+function annotSaveNow(){ annotPersist(); annotSend(); }
+function annotClearAll(){ annotGroups = []; annotCommit(); }
+function annotSetEraser(on){
+  annotEraser = !!on;
+  document.body.classList.toggle('annot-erase', annotEraser);
+  annotSend();
+}
+
+function annotNoteMap(){
+  const map = new Map();
+  document.querySelectorAll('#score .note[data-id]').forEach(function(el){
+    const id = el.getAttribute('data-id');
+    if (!map.has(id)) map.set(id, el);
+  });
+  return map;
+}
+function annotEls(ids){
+  const map = annotNoteMap();
+  return ids.map(function(id){ return map.get(String(id)); }).filter(Boolean);
+}
+function annotRender(){
+  const layer = document.getElementById('annotLayer');
+  if (!layer) return;
+  const lr = layer.getBoundingClientRect();
+  Array.prototype.slice.call(layer.querySelectorAll('.annot-ring,.annot-marquee')).forEach(function(el){ el.remove(); });
+  annotGroups.forEach(function(g){
+    const els = annotEls(g.ids);
+    if (!els.length) return;
+    let x1 = 1e9, y1 = 1e9, x2 = -1e9, y2 = -1e9;
+    els.forEach(function(el){
+      const r = el.getBoundingClientRect();
+      x1 = Math.min(x1, r.left); y1 = Math.min(y1, r.top);
+      x2 = Math.max(x2, r.right); y2 = Math.max(y2, r.bottom);
+    });
+    const pad = 7;
+    const ring = document.createElement('div');
+    ring.className = 'annot-ring';
+    ring.style.left = (x1 - lr.left - pad) + 'px';
+    ring.style.top = (y1 - lr.top - pad) + 'px';
+    ring.style.width = (x2 - x1 + pad * 2) + 'px';
+    ring.style.height = (y2 - y1 + pad * 2) + 'px';
+    if (g.text){
+      const chip = document.createElement('span');
+      chip.className = 'annot-chip';
+      chip.textContent = g.text;
+      ring.appendChild(chip);
+    }
+    layer.appendChild(ring);
   });
 }
 function annotHidePop(){ if (annotPop){ annotPop.remove(); annotPop = null; } }
-function annotShowPop(list){
+function annotShowPop(group){
   annotHidePop();
-  const r = list[list.length-1].getBoundingClientRect();
+  const els = annotEls(group.ids);
+  const r = els.length ? els[els.length - 1].getBoundingClientRect()
+                       : {left: 20, bottom: 120, right: 20};
   const d = document.createElement('div');
   d.className = 'annot-pop';
   d.innerHTML = '<div class="annot-pop-in"><input type="text" placeholder="标注文字（可留空）"><button data-act="save">保存</button><button data-act="cancel">取消</button></div>';
   d.style.left = Math.max(8, Math.min(window.innerWidth - 330, r.left)) + 'px';
   d.style.top = Math.max(8, Math.min(window.innerHeight - 70, r.bottom + 8)) + 'px';
   document.body.appendChild(d); annotPop = d;
-  const inp = d.querySelector('input'); inp.focus();
-  const save = ()=>{ const t = inp.value.trim(); list.forEach(el=>{ const id=annotId(el); annots[id]=annots[id]||{color:'yellow'}; annots[id].text=t; }); annotSave(); annotHidePop(); annotApply(); };
+  const inp = d.querySelector('input'); inp.value = group.text || ''; inp.focus();
+  const save = function(){
+    group.text = inp.value.trim();
+    annotCommit(); annotHidePop();
+  };
   d.querySelector('[data-act=save]').onclick = save;
-  d.querySelector('[data-act=cancel]').onclick = ()=>annotHidePop();
-  inp.addEventListener('keydown', e=>{ if(e.key==='Enter') save(); else if(e.key==='Escape') annotHidePop(); });
+  d.querySelector('[data-act=cancel]').onclick = function(){ annotHidePop(); };
+  inp.addEventListener('keydown', function(e){ if (e.key === 'Enter') save(); else if (e.key === 'Escape') annotHidePop(); });
 }
-function annotCollect(a,b){
-  const all = [...document.querySelectorAll('#score .note[data-id]')];
-  let i = all.indexOf(a), j = all.indexOf(b);
-  if (i < 0) return a ? [a] : [];
-  if (j < 0) j = i;
-  if (i > j){ const t=i; i=j; j=t; }
-  return all.slice(i, j+1);
+function annotMarqueeShow(x1, y1, x2, y2){
+  const layer = document.getElementById('annotLayer'); if (!layer) return;
+  if (!annotMarquee){ annotMarquee = document.createElement('div'); annotMarquee.className = 'annot-marquee'; layer.appendChild(annotMarquee); }
+  const lr = layer.getBoundingClientRect();
+  annotMarquee.style.left = (Math.min(x1, x2) - lr.left) + 'px';
+  annotMarquee.style.top = (Math.min(y1, y2) - lr.top) + 'px';
+  annotMarquee.style.width = Math.abs(x2 - x1) + 'px';
+  annotMarquee.style.height = Math.abs(y2 - y1) + 'px';
 }
-function annotHighlight(list){
-  list.forEach(el=>{ const id=annotId(el); if(!annots[id]) annots[id]={color:'yellow'}; el.classList.add('annot'); });
-  annotSave(); annotApply(); annotShowPop(list);
+function annotMarqueeHide(){ if (annotMarquee){ annotMarquee.remove(); annotMarquee = null; } }
+
+function annotClickNote(note){
+  if (!note) return;
+  const id = String(note.getAttribute('data-id'));
+  const gi = annotGroups.findIndex(function(g){ return g.ids.indexOf(id) >= 0; });
+  if (annotEraser){
+    if (gi >= 0){ annotGroups.splice(gi, 1); annotCommit(); }
+    return;
+  }
+  if (gi >= 0){ annotShowPop(annotGroups[gi]); return; }
+  const g = {ids:[id], text:''};
+  annotGroups.push(g);
+  annotCommit();
+  annotShowPop(g);
 }
+function annotSelectRect(x1, y1, x2, y2){
+  const a = Math.min(x1, x2), b = Math.max(x1, x2);
+  const c = Math.min(y1, y2), d = Math.max(y1, y2);
+  const ids = [];
+  annotNoteMap().forEach(function(el, id){
+    const r = el.getBoundingClientRect();
+    const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    if (cx >= a && cx <= b && cy >= c && cy <= d) ids.push(id);
+  });
+  if (!ids.length) return;
+  if (annotEraser){
+    annotGroups = annotGroups.filter(function(g){ return !g.ids.some(function(id){ return ids.indexOf(id) >= 0; }); });
+    annotCommit();
+    return;
+  }
+  const g = {ids: ids, text:''};
+  annotGroups.push(g);
+  annotCommit();
+  annotShowPop(g);
+}
+
 function annotSetMode(on){
   const was = annotMode;
   annotMode = !!on;
   document.body.classList.toggle('annot-mode', annotMode);
-  if (!annotMode){ annotHidePop(); return; }
-  if (!was){ try{ window.vp2CancelPlay && window.vp2CancelPlay(); }catch(e){} try{ engine.stop(); }catch(e){} setPlayUI(false); }
+  if (!annotMode){
+    annotEraser = false;
+    document.body.classList.remove('annot-erase');
+    annotHidePop(); annotMarqueeHide();
+    annotSend();
+    return;
+  }
+  if (!was){
+    try{ window.vp2CancelPlay && window.vp2CancelPlay(); }catch(e){}
+    try{ engine.stop(); }catch(e){}
+    setPlayUI(false);
+    annotHistoryReset();
+  }
+  annotRender(); annotSend();
 }
+
 document.addEventListener('pointerdown', function(e){
   if (!annotMode) return;
-  const n = e.target.closest('#score .note[data-id]');
-  if (!n) return;
+  if (!e.target.closest('#score')) return;
   e.preventDefault(); e.stopPropagation();
-  annotStart = n;
+  annotStart = {x: e.clientX, y: e.clientY, note: e.target.closest('#score .note[data-id]')};
+  annotMoved = false;
+}, true);
+document.addEventListener('pointermove', function(e){
+  if (!annotMode || !annotStart) return;
+  const dx = e.clientX - annotStart.x, dy = e.clientY - annotStart.y;
+  if (!annotMoved && (Math.abs(dx) + Math.abs(dy)) > 6) annotMoved = true;
+  if (annotMoved){
+    e.preventDefault(); e.stopPropagation();
+    annotMarqueeShow(annotStart.x, annotStart.y, e.clientX, e.clientY);
+  }
 }, true);
 document.addEventListener('pointerup', function(e){
   if (!annotMode || !annotStart) return;
-  const n = e.target.closest('#score .note[data-id]');
-  if (!n) return;
   e.preventDefault(); e.stopPropagation();
-  const start = annotStart; annotStart = null;
-  annotHighlight(annotCollect(start, n));
+  const st = annotStart; annotStart = null;
+  if (annotMoved){
+    annotMarqueeHide();
+    annotSelectRect(st.x, st.y, e.clientX, e.clientY);
+  } else {
+    annotClickNote(st.note || e.target.closest('#score .note[data-id]'));
+  }
 }, true);
 document.addEventListener('click', function(e){
-  if (annotMode && e.target.closest('#score .note[data-id]')){ e.preventDefault(); e.stopPropagation(); }
+  if (annotMode && e.target.closest('#score')){ e.preventDefault(); e.stopPropagation(); }
 }, true);
+document.addEventListener('keydown', function(e){
+  if (annotMode && e.key === 'Escape'){ annotHidePop(); annotMarqueeHide(); }
+});
 
-/* Re-apply after every render */
+/* Re-apply rings after every render */
 const _vp2Render = render;
-render = function(){ _vp2Render(); annotApply(); };
-setTimeout(annotApply, 0);
+render = function(){ _vp2Render(); annotRender(); };
+window.addEventListener('resize', function(){ annotRender(); });
+setTimeout(annotRender, 0);
 
 </script>
 </body>

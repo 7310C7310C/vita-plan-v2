@@ -35,6 +35,10 @@
     follow: true,
     theme: 'light',
     annot: false,
+    annotCount: 0,
+    annotEraser: false,
+    annotUndo: false,
+    annotRedo: false,
     loadToken: 0
   };
 
@@ -288,8 +292,27 @@
     state.autowrap = !!on;
     document.querySelectorAll('#v2WrapBtn, #v2WrapBarBtn').forEach(function(b){ b.classList.toggle('on', state.autowrap); });
   }
+  function updateAnnotTools(m){
+    if (m.count != null){
+      state.annotCount = +m.count || 0;
+      const clr = document.getElementById('v2AnnotClearBtn'); if (clr) clr.disabled = state.annotCount === 0;
+    }
+    if (typeof m.eraser === 'boolean'){
+      state.annotEraser = m.eraser;
+      const er = document.getElementById('v2AnnotEraserBtn'); if (er) er.classList.toggle('on', state.annotEraser);
+    }
+    if (typeof m.undo === 'boolean'){
+      state.annotUndo = m.undo;
+      const b = document.getElementById('v2AnnotUndoBtn'); if (b) b.disabled = !m.undo;
+    }
+    if (typeof m.redo === 'boolean'){
+      state.annotRedo = m.redo;
+      const b = document.getElementById('v2AnnotRedoBtn'); if (b) b.disabled = !m.redo;
+    }
+  }
   function setAnnot(on){
     state.annot = !!on;
+    document.body.classList.toggle('v2-annot-mode', state.annot);
     document.querySelectorAll('#v2AnnotBtn, #v2AnnotBarBtn').forEach(function(b){ b.classList.toggle('on', state.annot); });
     const pb = document.getElementById('v2PlayBtn');
     const q = document.getElementById('v2QuickPauseBtn');
@@ -299,6 +322,9 @@
     if (state.annot){
       post('stop');
       setPlayUI(false);
+      state.annotEraser = false;
+      const er = document.getElementById('v2AnnotEraserBtn'); if (er) er.classList.remove('on');
+      if (window.showToast) window.showToast('标记模式：点击或框选音符，可加文字');
     }
   }
   function applyUILang(lang){
@@ -315,6 +341,12 @@
     if (annotBar) annotBar.textContent = en ? 'Mark' : '标注';
     const wrapBar = document.getElementById('v2WrapBarBtn');
     if (wrapBar) wrapBar.textContent = en ? 'Wrap' : '自动换行';
+    const toolMap = {v2AnnotSaveBtn:'保存', v2AnnotClearBtn:'清空', v2AnnotEraserBtn:'橡皮擦', v2AnnotUndoBtn:'撤销', v2AnnotRedoBtn:'重做'};
+    const toolEn = {v2AnnotSaveBtn:'Save', v2AnnotClearBtn:'Clear', v2AnnotEraserBtn:'Eraser', v2AnnotUndoBtn:'Undo', v2AnnotRedoBtn:'Redo'};
+    Object.keys(toolMap).forEach(function(id){
+      const el = document.getElementById(id);
+      if (el) el.textContent = en ? toolEn[id] : toolMap[id];
+    });
     if (menuBtn) menuBtn.textContent = en ? 'Menu' : '菜单';
     const t = document.getElementById('v2MenuTitle'); if (t) t.textContent = en ? 'Player' : '播放器';
     setPlayUI(state.playing);
@@ -347,6 +379,8 @@
     const m = e.data || {};
     if (m.type === 'vp2:menu-close'){
       if (menu) menu.classList.remove('open');
+    } else if (m.type === 'vp2:annot'){
+      updateAnnotTools(m);
     } else if (m.type === 'vp2:ready'){
       ready(m);
     } else if (m.type === 'vp2:state'){
@@ -458,6 +492,29 @@
     }
     const annotBar = document.getElementById('v2AnnotBarBtn');
     if (annotBar) annotBar.addEventListener('click', function(){ setAnnot(!state.annot); });
+    const annotSave = document.getElementById('v2AnnotSaveBtn');
+    if (annotSave) annotSave.addEventListener('click', function(){
+      post('annotSave');
+      if (window.showToast) window.showToast('标记已保存到本机');
+    });
+    const annotClear = document.getElementById('v2AnnotClearBtn');
+    if (annotClear) annotClear.addEventListener('click', function(){
+      if (!state.annotCount) return;
+      const ask = state.uiLang === 'en' ? 'Clear all marks for this score?' : '清空本曲所有标记？';
+      if (!confirm(ask)) return;
+      post('annotClear');
+      if (window.showToast) window.showToast('已清空标记');
+    });
+    const annotEraser = document.getElementById('v2AnnotEraserBtn');
+    if (annotEraser) annotEraser.addEventListener('click', function(){
+      state.annotEraser = !state.annotEraser;
+      annotEraser.classList.toggle('on', state.annotEraser);
+      post('annotEraser', {value: state.annotEraser});
+    });
+    const annotUndo = document.getElementById('v2AnnotUndoBtn');
+    if (annotUndo) annotUndo.addEventListener('click', function(){ post('annotUndo'); });
+    const annotRedo = document.getElementById('v2AnnotRedoBtn');
+    if (annotRedo) annotRedo.addEventListener('click', function(){ post('annotRedo'); });
     const partsAll = document.getElementById('v2PartsAll');
     if (partsAll) partsAll.addEventListener('click', function(){
       ['S','A','T','B'].forEach(function(p){ state.parts[p] = true; });

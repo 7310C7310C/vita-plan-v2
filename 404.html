@@ -7,7 +7,7 @@
     <title>复活计划乐队</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="assets/css/style.css?v=20261115185326">
-    <link rel="stylesheet" href="assets/css/v2-ui.css?v=14">
+    <link rel="stylesheet" href="assets/css/v2-ui.css?v=15">
     <style>
         #loadingOverlay {
             display: block;
@@ -166,11 +166,6 @@
                 <button class="v2-head-btn v2-quick-pause" id="v2QuickPauseBtn" type="button" aria-label="播放" title="播放"><svg class="ico-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.14v13.72a1 1 0 0 0 1.52.85l10.5-6.86a1 1 0 0 0 0-1.7L9.52 4.29A1 1 0 0 0 8 5.14z"/></svg><svg class="ico-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4.5" width="4" height="15" rx="1.2"/><rect x="14" y="4.5" width="4" height="15" rx="1.2"/></svg></button>
         <div class="v2-menu" id="v2Menu">
             <button class="v2-menu-x" id="v2MenuClose" type="button" aria-label="关闭">×</button>
-            <div class="v2-row no-label">
-                <button class="v2-btn v2-play" id="v2PlayBtn" type="button" data-zh="播放" data-en="Play">播放</button>
-                <button class="v2-btn" id="v2StopBtn" type="button" data-zh="停止" data-en="Stop">停止</button>
-            </div>
-            <div class="v2-sep"></div>
             <div class="v2-row">
                 <label data-zh="声部" data-en="Parts">声部</label>
                 <div class="v2-ctl v2-ctl-5">
@@ -295,6 +290,15 @@
                 <span class="song-nav-text">下一首</span>
             </div>
         </div>
+
+        <!-- 标注工具（仅标注模式显示） -->
+        <div class="v2-annot-tools" id="v2AnnotTools">
+            <button class="v2-bar-btn" id="v2AnnotSaveBtn" type="button" data-zh="保存" data-en="Save">保存</button>
+            <button class="v2-bar-btn" id="v2AnnotClearBtn" type="button" data-zh="清空" data-en="Clear">清空</button>
+            <button class="v2-bar-btn" id="v2AnnotEraserBtn" type="button" data-zh="橡皮擦" data-en="Eraser">橡皮擦</button>
+            <button class="v2-bar-btn" id="v2AnnotUndoBtn" type="button" data-zh="撤销" data-en="Undo">撤销</button>
+            <button class="v2-bar-btn" id="v2AnnotRedoBtn" type="button" data-zh="重做" data-en="Redo">重做</button>
+        </div>
     </div>
     
     <div class="loading-overlay" id="loadingOverlay"></div>
@@ -310,7 +314,7 @@
       </div>
     </div>
     <script src="data/v2-scores.js?v=3"></script>
-    <script src="assets/js/v2-ui.js?v=10"></script>
+    <script src="assets/js/v2-ui.js?v=11"></script>
     <script src="assets/js/script.js?v=2026111603"></script>
     <script src="assets/js/v2-cache.js?v=4"></script>
 </body>

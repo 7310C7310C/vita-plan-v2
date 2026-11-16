@@ -64,6 +64,15 @@ body.v2-image-mode #v2QuickPauseBtn{display:none!important}
 .v2-bar-btn.on{background:rgba(184,137,63,.9);border-color:#d7a85a;opacity:1}
 .v2-bar-btn:hover{opacity:1}
 body.v2-image-mode #v2AnnotBarBtn,body.v2-image-mode #v2WrapBarBtn{display:none!important}
+.v2-annot-tools{position:fixed;left:50%;bottom:64px;transform:translateX(-50%);z-index:112;display:none;gap:6px;padding:6px 8px;background:rgba(30,26,20,.92);border:1px solid rgba(255,255,255,.25);border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+body.v2-annot-mode .v2-annot-tools{display:flex}
+.v2-annot-tools .v2-bar-btn{height:26px}
+.v2-annot-tools .v2-bar-btn:disabled{opacity:.4;cursor:default}
+.v2-annot-tools .v2-bar-btn.on{background:rgba(178,59,53,.9);border-color:#e07a72}
+@media (max-width:340px){
+  .v2-annot-tools{bottom:58px;gap:4px;padding:5px 6px}
+  .v2-annot-tools .v2-bar-btn{font-size:.66rem;padding:0 6px;height:24px}
+}
 
 body.v2-json-mode #prev-page,body.v2-json-mode #next-page,body.v2-json-mode .page-indicator-container,body.v2-json-mode #doodleEnterBtn,body.v2-json-mode #doodleExitBtn,body.v2-json-mode #doodleClearBtn,body.v2-json-mode #doodleEraserBtn,body.v2-json-mode #doodleUndoBtn,body.v2-json-mode #doodleRedoBtn,body.v2-json-mode #fitModeBtn{display:none!important}
 body.v2-image-mode .v2-menu{display:none!important}
@@ -84,7 +93,7 @@ body.v2-image-mode .v2-menu{display:none!important}
     position:fixed;top:56px;left:15px;right:auto;width:auto;max-width:calc(100vw - 30px);
     height:35px;flex:0 0 auto;z-index:111;justify-content:flex-start
   }
-  body.v2-json-mode .v2-head-actions{flex:1 1 auto;justify-content:flex-end}
+  body.v2-json-mode .v2-head-actions{flex:1 1 auto;justify-content:flex-start}
   body.v2-json-mode .v2-menu{position:fixed;top:102px;left:10px;right:10px;width:auto;max-height:calc(100vh - 150px)}
   .v2-bar-btn{font-size:.72rem;padding:0 8px}
 }
