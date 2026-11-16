@@ -726,7 +726,8 @@ const SCORE_PITCHES = (()=>{
 const DEFAULTS = {
   theme:"light", follow:true, tempo:SCORE.tempo, volume:100,
   timbre:"church_organ", parts:{S:true,A:true,T:true,B:true},
-  lyricFont:"hei", bold:true, scale:100, metronome:true, lang:"s", autowrap:true, capo:0
+  lyricFont:"hei", bold:true, scale:100, metronome:true, lang:"s", autowrap:true, capo:0,
+  tempoRev: SCORE.tempoRev || 0
 };
 const STORE_KEY = "ys.settings." + SONG_ID + ".v2";
 function loadSettings(){
@@ -734,7 +735,9 @@ function loadSettings(){
     const raw = localStorage.getItem(STORE_KEY);
     if (!raw) return Object.assign({}, DEFAULTS);
     const s = JSON.parse(raw);
-    return Object.assign({}, DEFAULTS, s, {parts:Object.assign({}, DEFAULTS.parts, s.parts||{})});
+    const merged = Object.assign({}, DEFAULTS, s, {parts:Object.assign({}, DEFAULTS.parts, s.parts||{})});
+    if (SCORE.tempoRev !== undefined && s.tempoRev !== SCORE.tempoRev) merged.tempo = DEFAULTS.tempo;
+    return merged;
   }catch(e){ return Object.assign({}, DEFAULTS); }
 }
 let settings = loadSettings();
@@ -2252,7 +2255,7 @@ function saveSettings(){
     localStorage.setItem(STORE_KEY, JSON.stringify({
       theme, follow, tempo:engine.tempo, volume:Math.round(engine.volume*100),
       timbre:engine.timbre, parts:engine.parts, lyricFont, bold, autowrap, scale,
-      metronome:engine.metronome, lang, capo
+      metronome:engine.metronome, lang, capo, tempoRev: DEFAULTS.tempoRev
     }));
   }catch(e){}
 }
