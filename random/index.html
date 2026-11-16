@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>随机音符播放器 v2.8.5</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.27/Tone.min.js"></script>
+    <script src="https://surikov.github.io/webaudiofont/npm/dist/WebAudioFontPlayer.js"></script>
+    <script src="https://surikov.github.io/webaudiofontdata/sound/0330_Aspirin_sf2_file.js"></script>
+    <script src="https://surikov.github.io/webaudiofontdata/sound/0000_JCLive_sf2_file.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.min.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <style>
+        body {
+            font-family: 'Noto Sans', 'Roboto', 'Arial';
+            padding: 20px;
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #E2D2BA; /* 敦煌砂岩色 */
+            color: #4A3728; /* 深褐色 */
+        }
+        h1, h3, h4 { 
+            color: #8C4B3C; /* 敦煌红 */
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        .control-group {
+            margin-bottom: 4px;
+            text-align: left;
+            background-color: #D9C7B8; /* 浅土黄色 */
+            padding: 15px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(74,55,40,0.1);
+            border: 1px solid #B88A6F; /* 赭石色边框 */
+        }
+        .control-group-inline {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+        
+        .control-group-inline label {
+            min-width: 80px;
+        }
+        
+        .control-group-inline input[type="range"] {
+            flex: 1;
+        }
+        .control-group-inline input[type="text"],
+        .control-group-inline select {
+            flex: 1;
+        }
+        input, select {
+            padding: 8px;
+            box-sizing: border-box;
+            background-color: #F0E6D9; /* 米黄色 */
+            color: #4A3728;
+            border: 1px solid #B88A6F;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        input:focus, select:focus {
+            outline: none;
+            box-shadow: 0 0 0 0px #8C4B3C;
+        }
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: #8C4B3C;
+            outline: none;
+            opacity: 1;
+            transition: opacity .2s;
+        }
+        input[type="range"]:hover {
+            opacity: 1;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #F0E6D9;
+            cursor: pointer;
+            border: 2px solid #8C4B3C;
+            border-radius: 50%;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #F0E6D9;
+            cursor: pointer;
+            border: 2px solid #8C4B3C;
+            border-radius: 50%;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #8C4B3C; /* 敦煌红 */
+            color: #F0E6D9;
+            border: none;
+            cursor: pointer;
+            margin: 5px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(74,55,40,0.2);
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background-color: #6D3A2E;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(74,55,40,0.3);
+        }
+        button:disabled { 
+            background-color: #B88A6F; 
+            box-shadow: none;
+            color: #E2D2BA;
+        }
+        #current-note-display {
+            flex: 1;
+            font-size: 27px;
+            color: #8C4B3C;
+            text-align: center;
+        }
+        .slider-container {
+            width: 100%;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 24px;
+        }
+        .switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .switch-container {
+            display: flex;
+            align-items: center;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #B88A6F;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: #F0E6D9;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        .control-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .control-left {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        input:checked + .slider { background-color: #8C4B3C; }
+        input:checked + .slider:before { 
+            transform: translateX(16px);
+        }
+        #play-count-value, #answer-count-value {
+            display: inline-block;
+            width: 10px;
+            text-align: center;
+        }
+        #note-selection {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #D9C7B8;
+            padding: 4px;
+            border: 1px solid #8C4B3C;
+            box-shadow: 0 0 20px rgba(74,55,40,0.2);
+            z-index: 1000;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90%;
+            overflow-y: auto;
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+        #overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(226,210,186,0.7);
+            z-index: 999;
+        }
+        #note-table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        #note-table td, #note-table th {
+            height: 40px;
+            border: 1px solid #B88A6F;
+            padding: 0px;
+            text-align: center;
+        }
+        #note-table tr:nth-child(even) {
+            background-color: #E2D2BA;
+        }
+        .note-checkbox {
+            margin: none;
+            transform: scale(0.9);
+        }
+        .alert-panel {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #D9C7B8;
+            padding: 20px;
+            border: 1px solid #8C4B3C;
+            box-shadow: 0 0 20px rgba(74,55,40,0.2);
+            z-index: 2001;
+            max-width: 90%;
+            border-radius: 8px;
+            text-align: center;
+            min-width: 270px;
+        }
+        
+        .alert-panel p {
+            margin-bottom: 15px;
+            color: #4A3728;
+        }
+        
+        .alert-panel button {
+            padding: 8px 16px;
+            background-color: #8C4B3C;
+            color: #F0E6D9;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .alert-panel button:hover {
+            background-color: #6D3A2E;
+        }
+        #note-selection, #alert-panel {
+            transition: all 0.3s ease-in-out;
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.9);
+            pointer-events: none;
+        }
+        
+        #note-selection.show, #alert-panel.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+            pointer-events: auto;
+        }
+        
+        #overlay {
+            transition: opacity 0.3s ease-in-out;
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        #overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        body {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+        #readonly-note-table {
+            border-collapse: collapse;
+            width: 100%;
+            table-layout: auto;
+        }
+        
+        #readonly-note-table td, #readonly-note-table th {
+            border: 1px solid #B88A6F;
+            padding: 0px;
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        #readonly-note-table tr:nth-child(even) {
+            background-color: #E2D2BA;
+        }
+        /* 移除最外层边框 */
+        #readonly-note-table tr:first-child th {
+            border-top: none;
+        }
+        
+        #readonly-note-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        #readonly-note-table tr td:first-child,
+        #readonly-note-table tr th:first-child {
+            border-left: none;
+        }
+        
+        #readonly-note-table tr td:last-child,
+        #readonly-note-table tr th:last-child {
+            border-right: none;
+        }
+        .note-selected {
+            background-color: #8C4B3C;
+            color: #F0E6D9;
+        }
+        
+        #selectButton, #eraserButton, #clearAllButton {
+            padding: 5px 10px;
+            margin-bottom: 10px;
+        }
+        
+        #selectButton.active, #eraserButton.active, #clearAllButton.active {
+            background-color: #6D3A2E;
+        }
+        
+        .note-highlighted {
+            background-color: #F0E6D9;
+            color: #8C4B3C;
+            font-weight: bold;
+        }
+        @media screen and (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            
+            #readonly-note-table {
+                font-size: 0.8em;
+            }
+        }
+        
+        @media screen and (max-width: 400px) {
+            #readonly-note-table {
+                font-size: 0.7em;
+            }
+            
+            #readonly-note-table td, #readonly-note-table th {
+                padding: 1px;
+            }
+        }
+        
+        #alert-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 2000;  /* 增加 z-index */
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        
+        #alert-overlay.show {
+            opacity: 1;
+        }
+        .note-temp-selected {
+            background-color: rgba(140, 75, 60, 0.5);  /* 半透明的选中颜色 */
+        }
+        
+        .note-temp-erased {
+            background-color: rgba(226, 210, 186, 0.5);  /* 半透明的擦除颜色 */
+        }
+        #readonly-note-table th:first-child,
+        #readonly-note-table td:first-child,
+        #note-table th:first-child,
+        #note-table td:first-child {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>随机音符播放器 v2.8.5</h1>
+    <h4>复活计划乐队</h4>
+
+    <div class="control-group" id="readonly-note-container" style="padding: 0px">
+        <div style="overflow-x: auto;">
+            <table id="readonly-note-table"></table>
+        </div>
+    </div>
+
+    <div class="control-group">
+        <div class="control-flex">
+            <div class="control-left">
+                <div class="slider-container">
+                    <div class="control-group-inline">
+                        <label for="play-count">纯音次数：</label>
+                        <input type="range" id="play-count" min="1" max="7" value="1">
+                        <span id="play-count-value">1</span>
+                    </div>
+                    
+                    <div class="control-group-inline">
+                        <label for="answer-count">答案次数：</label>
+                        <input type="range" id="answer-count" min="1" max="7" value="1">
+                        <span id="answer-count-value">1</span>
+                    </div>
+                </div>
+                <div class="switch-container">
+                    <span>语音播报：</span>
+                    <label class="switch">
+                        <input type="checkbox" id="speech-toggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div id="current-note-display"></div>
+        </div>
+    </div>
+    
+    <div class="control-group">
+        <div class="control-group-inline" style="margin-bottom: 0px">
+            <label for="instrument">音色：</label>
+                <select id="instrument">
+                    <option value="bass" selected>电贝司</option>
+                    <option value="piano">钢琴</option>
+                    <option value="sawtooth">锯齿波</option>
+                    <option value="square">方波</option>
+                    <option value="triangle">三角波</option>
+                </select>
+        </div>
+    </div>
+
+    <div class="control-group" style="text-align: center;">
+        <div class="switch-container" style="display: inline-flex; align-items: center;">
+            <span>不播 # 音：</span>
+            <label class="switch">
+                <input type="checkbox" id="exclude-sharp">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div style="margin-top: 10px;">
+            <button id="start-btn">开始</button>
+            <button id="stop-btn" disabled>停止</button>
+        </div>
+    </div>
+
+    <div id="overlay"></div>
+    <div id="note-selection">
+        <h3>自定义练习音符</h3>
+        <div class="button-group">
+            <button id="selectButton" class="active">选择</button>
+            <button id="eraserButton">橡皮擦</button>
+            <button id="clearAllButton">清除全部</button>
+        </div>
+        <table id="note-table"></table>
+        <button id="confirm-selection" style="margin-top: 5px;">确定</button>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+
+    <script>
+        const notes = ['A0', 'A#0', 'B0', 'C1', 'C#1', 'D1', 'D#1', 'E1', 'F1', 'F#1', 'G1', 'G#1', 'A1', 'A#1', 'B1', 'C2', 'C#2', 'D2', 'D#2', 'E2', 'F2', 'F#2', 'G2', 'G#2', 'A2', 'A#2', 'B2', 'C3', 'C#3', 'D3', 'D#3', 'E3', 'F3', 'F#3', 'G3', 'G#3', 'A3', 'A#3', 'B3', 'C4', 'C#4', 'D4', 'D#4', 'E4', 'F4', 'F#4', 'G4', 'G#4', 'A4', 'A#4', 'B4', 'C5', 'C#5', 'D5', 'D#5', 'E5', 'F5', 'F#5', 'G5', 'G#5', 'A5', 'A#5', 'B5', 'C6', 'C#6', 'D6', 'D#6', 'E6', 'F6', 'F#6', 'G6', 'G#6', 'A6', 'A#6', 'B6', 'C7', 'C#7', 'D7', 'D#7', 'E7', 'F7', 'F#7', 'G7', 'G#7', 'A7', 'A#7', 'B7', 'C8'];
+        let instrument = 'bass', playCount = 1, answerCount = 1;
+        let synth = null;
+        let currentNote = null;
+        let isPlaying = false;
+        let excludeSharp = false;
+        let supportSpeech = 'speechSynthesis' in window;
+        let speechEnabled = supportSpeech;
+        let selectedNotes = new Set(notes);
+        let mode = 'select';
+        
+        const speakInterval = 2000;
+        const playInterval = 1500;
+
+        var audioContext = new AudioContext();
+        var player = new WebAudioFontPlayer();
+        player.loader.decodeAfterLoading(audioContext, '_tone_0330_Aspirin_sf2_file');
+
+        $(function() {
+            if (supportSpeech) {
+                // 预先初始化语音合成系统
+                speechSynthesis.speak(new SpeechSynthesisUtterance(''));
+            }
+            setupBassInstrument();
+            
+            createReadonlyNoteTable();
+
+            $("#play-count").on("input", function() {
+                playCount = this.value;
+                $("#play-count-value").text(this.value);
+            });
+            
+            $("#answer-count").on("input", function() {
+                answerCount = this.value;
+                $("#answer-count-value").text(this.value);
+            });
+
+            $("#instrument").on("change", function() {
+                instrument = this.value;
+                if (instrument === 'bass') {
+                    setupBassInstrument();
+                } else if (instrument === 'piano') {
+                    setupPianoInstrument();
+                } else {
+                    synth = new Tone.Synth({
+                        oscillator: { type: instrument }
+                    }).toDestination();
+                }
+            });
+
+            $("#exclude-sharp").on("change", function() {
+                excludeSharp = this.checked;
+            });
+
+            $("#start-btn").on("click", startPlaying);
+            $("#stop-btn").on("click", stopPlaying);
+
+            $("#confirm-selection").on("click", hideNoteSelection);
+
+            $("#speech-toggle").prop("checked", speechEnabled);
+            $("#speech-toggle").on("change", function() {
+                if (!supportSpeech && this.checked) {
+                    showAlert("检测到该浏览器不支持语音播报，\n请使用 Chrome 等浏览器。");
+                    $(this).prop("checked", false);
+                } else {
+                    speechEnabled = this.checked;
+                }
+            });
+            $("#note-selection, #alert-panel").on("transitionend", function(e) {
+                if (e.originalEvent.propertyName === "opacity" && !$(this).hasClass("show")) {
+                    $(this).css("display", "none");
+                }
+            });
+            
+            $("#overlay").on("transitionend", function(e) {
+                if (e.originalEvent.propertyName === "opacity" && !$(this).hasClass("show")) {
+                    $(this).css("display", "none");
+                }
+            });
+            
+            $("#readonly-note-container").on("click", showNoteSelection);
+
+            $('#alert-close').on('click', hideAlert);
+
+            createNoteSelection();
+        });
+
+        function setupBassInstrument() {
+            // 确保 WebAudioFont 已加载
+            player.loader.decodeAfterLoading(audioContext, '_tone_0330_Aspirin_sf2_file');
+        }
+        
+        function setupPianoInstrument() {
+            player.loader.decodeAfterLoading(audioContext, '_tone_0000_JCLive_sf2_file');
+        }
+
+        function createNoteSelection() {
+            const noteTable = $("#note-table");
+            noteTable.empty();
+            const octaves = ['0', '1', '2', '3', '4', '5', '6', '7', '8'];
+            const baseNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+        
+            let headerRow = $('<tr>');
+            headerRow.append($('<th>'));
+            baseNotes.forEach(note => {
+                headerRow.append($('<th>').text(note));
+            });
+            noteTable.append(headerRow);
+        
+            octaves.forEach(octave => {
+                let row = $('<tr>');
+                row.append($('<td>').text(octave));
+                baseNotes.forEach(note => {
+                    let fullNote = note + octave;
+                    if (notes.includes(fullNote)) {
+                        let cell = $('<td>').text(fullNote);
+                        if (selectedNotes.has(fullNote)) {
+                            cell.addClass('note-selected');
+                        }
+                        row.append(cell);
+                    } else {
+                        row.append($('<td>'));
+                    }
+                });
+                noteTable.append(row);
+            });
+        
+            setupNoteSelection();
+        }
+        
+        function setupNoteSelection() {
+            let isSelecting = false;
+            let startCell = null;
+            let tempSelectedCells = new Set();
+            $('#selectButton').addClass('active');
+            $('#eraserButton').removeClass('active');
+        
+            $('#selectButton').on('click', function() {
+                mode = 'select';
+                $(this).addClass('active');
+                $('#eraserButton').removeClass('active');
+            });
+        
+            $('#eraserButton').on('click', function() {
+                mode = 'eraser';
+                $(this).addClass('active');
+                $('#selectButton').removeClass('active');
+            });
+            
+            $('#clearAllButton').on('click', function() {
+                selectedNotes.clear();
+                $('#note-table td').removeClass('note-selected');
+                updateNoteSelection();
+                stopPlaying(); // 添加这行来停止播放
+            });
+        
+            $('#note-table').on('mousedown touchstart', 'td:not(:first-child)', function(e) {
+                e.preventDefault();
+                isSelecting = true;
+                startCell = this;
+                tempSelectedCells.clear();
+                updateTempSelection(this);
+            });
+        
+            $(document).on('mousemove touchmove', function(e) {
+                if (!isSelecting) return;
+                
+                let target = document.elementFromPoint(
+                    e.type.includes('touch') ? e.originalEvent.touches[0].clientX : e.clientX,
+                    e.type.includes('touch') ? e.originalEvent.touches[0].clientY : e.clientY
+                );
+                
+                if (target && target.tagName === 'TD' && target.cellIndex !== 0 && target.parentNode.parentNode === $('#note-table')[0]) {
+                    updateTempSelection(target);
+                }
+            });
+        
+            $(document).on('mouseup touchend', function() {
+                if (isSelecting) {
+                    applyFinalSelection();
+                }
+                isSelecting = false;
+                startCell = null;
+                clearTempSelection();
+            });
+        
+            function updateTempSelection(endCell) {
+                if (!startCell || !endCell) return;
+        
+                clearTempSelection();
+        
+                let cells = $('#note-table td:not(:first-child)').get();
+                let startIndex = cells.indexOf(startCell);
+                let endIndex = cells.indexOf(endCell);
+        
+                let minIndex = Math.min(startIndex, endIndex);
+                let maxIndex = Math.max(startIndex, endIndex);
+        
+                cells.slice(minIndex, maxIndex + 1).forEach(cell => {
+                    if (cell.textContent) {
+                        tempSelectedCells.add(cell);
+                        if (mode === 'select') {
+                            $(cell).addClass('note-temp-selected');
+                        } else if (mode === 'eraser') {
+                            $(cell).addClass('note-temp-erased');
+                        }
+                    }
+                });
+            }
+        
+            function clearTempSelection() {
+                $('#note-table td').removeClass('note-temp-selected note-temp-erased');
+                tempSelectedCells.clear();
+            }
+        
+            function applyFinalSelection() {
+                tempSelectedCells.forEach(cell => {
+                    if (mode === 'select') {
+                        $(cell).removeClass('note-temp-selected').addClass('note-selected');
+                        selectedNotes.add(cell.textContent);
+                    } else if (mode === 'eraser') {
+                        $(cell).removeClass('note-temp-erased note-selected');
+                        selectedNotes.delete(cell.textContent);
+                    }
+                });
+                clearTempSelection();
+                updateNoteSelection();
+                
+                // 检查是否所有音符都被擦除
+                if (selectedNotes.size === 0) {
+                    stopPlaying(); // 如果所有音符都被擦除，停止播放
+                }
+            }
+            // 页面加载完成后自动显示面板
+            showNoteSelection();
+            
+            // 清空已选音符
+            selectedNotes.clear();
+            updateNoteSelection();
+        }
+
+        function showNoteSelection() {
+            $("#overlay").css("display", "block");
+            $("#note-selection").css("display", "block");
+            setTimeout(() => {
+                $("#overlay").addClass("show");
+                $("#note-selection").addClass("show");
+            }, 10);
+        
+            // 添加点击事件监听器到 overlay
+            $("#overlay").on("click", hideNoteSelection);
+        
+            // 默认选中"选择"按钮
+            $('#selectButton').addClass('active');
+            $('#eraserButton').removeClass('active');
+            mode = 'select';
+        }
+        
+        function hideNoteSelection() {
+            if(selectedNotes.size === 0) {
+                showAlert("请至少选择一个音符");
+                return;
+            }
+            
+            $("#overlay").removeClass("show");
+            $("#note-selection").removeClass("show");
+            setTimeout(() => {
+                $("#overlay").css("display", "none");
+                $("#note-selection").css("display", "none");
+            }, 300);
+        
+            // 移除点击事件监听器
+            $("#overlay").off("click", hideNoteSelection);
+            
+            updateReadonlyNoteTable();
+        }
+        
+        function updateNoteSelection() {
+          $('#note-table td').removeClass('note-selected');
+          selectedNotes.forEach(note => {
+            $(`#note-table td:contains('${note}')`).addClass('note-selected');
+          });
+        }
+
+        function playRepeatNote() {
+            updateCurrentNoteDisplay("");
+            highlightCurrentNote(null);
+            if (isPlaying) {
+                for (let i = 0; i < playCount; i++) {
+                    setTimeout(playOneNote, i * playInterval);
+                }
+                setTimeout(() => speakNoteName(currentNote), playCount * playInterval);
+            }
+        }
+        
+        function playOneNote() {
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            
+            var pitch = Tone.Frequency(currentNote).toMidi();
+            if (instrument === 'bass') {
+                player.queueWaveTable(audioContext, audioContext.destination, _tone_0330_Aspirin_sf2_file, 0, pitch, 0.7);
+            } else if (instrument === 'piano') {
+                player.queueWaveTable(audioContext, audioContext.destination, _tone_0000_JCLive_sf2_file, 0, pitch, 0.7);
+            } else {
+                synth.triggerAttackRelease(currentNote, '0.7s');
+            }
+        }
+        
+        function getRandomNote() {
+            let validNotes = Array.from(selectedNotes);
+            if (excludeSharp) {
+                validNotes = validNotes.filter(note => !note.includes('#'));
+            }
+            currentNote = validNotes[Math.floor(Math.random() * validNotes.length)];
+        }
+        
+        function speakNoteName(note) {
+            if (isPlaying) {
+                const utterance = supportSpeech && speechEnabled ? new SpeechSynthesisUtterance(note.replace('#', ' sharp ')) : null;
+                for (let j = 0; j < answerCount; j++) {
+                    setTimeout(() => {
+                        if (supportSpeech && speechEnabled) {
+                            speechSynthesis.speak(utterance);
+                        }
+                        highlightCurrentNote(note);
+                        updateCurrentNoteDisplay(currentNote);
+                        playOneNote();
+                    }, j * speakInterval);
+                }
+                
+                setTimeout(() => {
+                    getRandomNote();
+                    playRepeatNote();
+                }, answerCount * speakInterval);
+            }
+        }
+
+        function updateCurrentNoteDisplay(note) {
+            $('#current-note-display').text(note);
+        }
+
+        function startPlaying() {
+            isPlaying = true;
+            $("#start-btn").prop("disabled", true);
+            $("#stop-btn").prop("disabled", false);
+            
+            getRandomNote();
+            playRepeatNote();
+        }
+
+        function stopPlaying() {
+            isPlaying = false;
+            $("#start-btn").prop("disabled", false);
+            $("#stop-btn").prop("disabled", true);
+            updateCurrentNoteDisplay(""); // 清空当前音符显示
+            highlightCurrentNote(null); // 移除高亮
+        }
+        
+        function showAlert(message) {
+            $('#alert-message').html(message.replace(/\n/g, '<br>'));
+            $('#alert-panel').css({"display": "block", "z-index": 2001});  // 确保 z-index 正确设置
+            
+            // 创建一个新的遮罩层
+            if (!$('#alert-overlay').length) {
+                $('body').append('<div id="alert-overlay"></div>');
+            }
+            $('#alert-overlay').css({
+                "display": "block",
+                "z-index": 2000  // 确保它在其他元素之上，但在 alert-panel 之下
+            });
+        
+            setTimeout(() => {
+                $('#alert-panel').addClass("show");
+                $('#alert-overlay').addClass("show");
+            }, 10);
+        
+            // 添加点击事件监听器到新的遮罩层
+            $('#alert-overlay').on("click", hideAlert);
+        }
+        
+        function hideAlert() {
+            $('#alert-panel').removeClass("show");
+            $('#alert-overlay').removeClass("show");
+            setTimeout(() => {
+                $('#alert-panel').css("display", "none");
+                $('#alert-overlay').css("display", "none");
+            }, 300);
+        
+            // 移除点击事件监听器
+            $('#alert-overlay').off("click", hideAlert);
+        }
+        
+        function createReadonlyNoteTable() {
+            const noteTable = $("#readonly-note-table");
+            noteTable.empty();
+            const octaves = ['0', '1', '2', '3', '4', '5', '6', '7', '8'];
+            const baseNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+        
+            let headerRow = $('<tr>');
+            headerRow.append($('<th>'));
+            baseNotes.forEach(note => {
+                headerRow.append($('<th>').text(note));
+            });
+            noteTable.append(headerRow);
+        
+            octaves.forEach(octave => {
+                let row = $('<tr>');
+                row.append($('<td>').text(octave));
+                baseNotes.forEach(note => {
+                    let fullNote = note + octave;
+                    if (notes.includes(fullNote)) {
+                        let cell = $('<td>').text(fullNote);
+                        row.append(cell);
+                    } else {
+                        row.append($('<td>'));
+                    }
+                });
+                noteTable.append(row);
+            });
+        }
+        
+        function updateReadonlyNoteTable() {
+            $("#readonly-note-table td").removeClass('note-selected');
+            selectedNotes.forEach(note => {
+                $(`#readonly-note-table td:contains('${note}')`).addClass('note-selected');
+            });
+        }
+        
+        function highlightCurrentNote(note) {
+            $("#readonly-note-table td").removeClass('note-highlighted');
+            if (note) {
+                $(`#readonly-note-table td:contains('${note}')`).addClass('note-highlighted');
+            }
+        }
+    </script>
+    <div id="alert-panel" class="alert-panel">
+        <p id="alert-message"></p>
+        <button id="alert-close">关闭</button>
+    </div>
+    <div id="alert-overlay"></div>
+</body>
+</html>

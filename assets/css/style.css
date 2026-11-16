@@ -1,0 +1,1876 @@
+/* 全局样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Noto Sans', 'Roboto', 'Arial';
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+body {
+    background-color: #f5f1e8;
+    color: #5a4a3a;
+    min-height: 100vh;
+    transition: background-color 0.3s;
+}
+
+/* 圣诞主题样式 */
+body.christmas-theme {
+    background: linear-gradient(135deg, #1a472a 0%, #2d5a3d 50%, #1a472a 100%);
+    color: #ffffff;
+    position: relative;
+    overflow-x: hidden;
+}
+
+body.christmas-theme::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
+        radial-gradient(circle at 80% 40%, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
+        radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
+        radial-gradient(circle at 90% 90%, rgba(255, 255, 255, 0.1) 2px, transparent 2px);
+    background-size: 100px 100px, 150px 150px, 80px 80px, 120px 120px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+body.christmas-theme .container {
+    position: relative;
+    z-index: 2;
+}
+
+body.christmas-theme .main-title {
+    color: #ffd700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+body.christmas-theme .christmas-tree-left,
+body.christmas-theme .christmas-tree-right {
+    font-size: 1.2em;
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+/* 默认隐藏圣诞树，只在圣诞主题时显示 */
+.christmas-tree-left,
+.christmas-tree-right {
+    display: none;
+}
+
+body.christmas-theme .christmas-tree-left,
+body.christmas-theme .christmas-tree-right {
+    display: inline;
+}
+
+
+
+body.christmas-theme .category-card {
+    background: linear-gradient(145deg, #b22222 0%, #cd5c5c 100%);
+    color: #ffffff;
+    border: 2px solid #ffd700;
+    box-shadow: 0 4px 15px rgba(178, 34, 34, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+body.christmas-theme .category-card::before {
+    content: '❄️';
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 1.2rem;
+    opacity: 0.7;
+}
+
+body.christmas-theme .category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(178, 34, 34, 0.4);
+    border-color: #ffffff;
+}
+
+body.christmas-theme .category-card h2 {
+    color: #ffffff;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+body.christmas-theme .category-card p {
+    color: #ffd700;
+}
+
+body.christmas-theme #weeklyButton.category-card {
+    background: linear-gradient(145deg, #8b0000 0%, #a52a2a 100%);
+    border-color: #ffd700;
+}
+
+body.christmas-theme .song-item {
+    background: linear-gradient(145deg, #b22222 0%, #cd5c5c 100%);
+    color: #ffffff;
+    border: 1px solid #ffd700;
+    box-shadow: 0 2px 8px rgba(178, 34, 34, 0.3);
+}
+
+body.christmas-theme .song-item:hover {
+    background: linear-gradient(145deg, #cd5c5c 0%, #dc143c 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(178, 34, 34, 0.4);
+}
+
+body.christmas-theme .song-number {
+    color: #ffd700;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+body.christmas-theme .song-category {
+    background: linear-gradient(145deg, #ffd700 0%, #ffed4e 100%);
+    color: #8b0000;
+    font-weight: bold;
+}
+
+body.christmas-theme .back-button {
+    background: linear-gradient(145deg, #b22222 0%, #cd5c5c 100%);
+    color: #ffffff;
+    border: 2px solid #ffd700;
+}
+
+body.christmas-theme .back-button:hover {
+    background: linear-gradient(145deg, #cd5c5c 0%, #dc143c 100%);
+    transform: translateY(-2px);
+}
+
+body.christmas-theme #categoryTitle,
+body.christmas-theme #weeklyTitle {
+    color: #ffd700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+body.christmas-theme .update-date {
+    color: #ffd700;
+}
+
+body.christmas-theme #weeklyButtonDate {
+    color: #ffd700 !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+body.christmas-theme .search-input {
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid #ffd700;
+    color: #8b0000;
+}
+
+body.christmas-theme .search-input:focus {
+    border-color: #ffffff;
+    box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.3);
+}
+
+body.christmas-theme .search-icon {
+    color: #8b0000;
+}
+
+body.christmas-theme .clear-search {
+    color: #8b0000;
+}
+
+body.christmas-theme .version-preference {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid #ffd700;
+    backdrop-filter: blur(10px);
+}
+
+body.christmas-theme .version-preference span {
+    color: #ffd700;
+}
+
+body.christmas-theme .version-select {
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid #ffd700;
+    color: #8b0000;
+}
+
+body.christmas-theme .close-button {
+    background: rgba(139, 0, 0, 0.8);
+    border: 2px solid #ffd700;
+}
+
+body.christmas-theme .close-button:hover {
+    background: rgba(165, 42, 42, 0.9);
+    border-color: #ffffff;
+}
+
+body.christmas-theme .page-controls-container {
+    background: rgba(139, 0, 0, 0.8);
+    border: 2px solid #ffd700;
+}
+
+body.christmas-theme .song-nav {
+    background: rgba(139, 0, 0, 0.6);
+    border: none;
+}
+
+body.christmas-theme .song-nav:hover {
+    background: rgba(165, 42, 42, 0.8);
+}
+
+body.christmas-theme .version-toggle-button {
+    color: #ffd700;
+    border: none;
+}
+
+body.christmas-theme .version-toggle-button:hover {
+    background: rgba(255, 215, 0, 0.2);
+}
+
+body.christmas-theme .version-buttons {
+    background: rgba(139, 0, 0, 0.9);
+    border: 2px solid #ffd700;
+}
+
+body.christmas-theme .version-button {
+    color: #ffffff;
+    border: 1px solid transparent;
+}
+
+body.christmas-theme .version-button:hover {
+    background: rgba(255, 215, 0, 0.2);
+    border-color: #ffd700;
+}
+
+body.christmas-theme .version-button.active {
+    background: rgba(255, 215, 0, 0.3);
+    border-color: #ffd700;
+}
+
+/* 历史面板圣诞主题样式 */
+body.christmas-theme .history-panel-container {
+    background: linear-gradient(135deg, #1a472a 0%, #2d5a3d 50%, #1a472a 100%) !important;
+    border: 2px solid #ffd700 !important;
+    backdrop-filter: blur(10px);
+}
+
+body.christmas-theme .history-panel-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
+        radial-gradient(circle at 80% 40%, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
+        radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
+        radial-gradient(circle at 90% 90%, rgba(255, 255, 255, 0.1) 2px, transparent 2px);
+    background-size: 100px 100px, 150px 150px, 80px 80px, 120px 120px;
+    pointer-events: none;
+    z-index: -1;
+}
+
+body.christmas-theme .history-panel-title {
+    color: #ffd700 !important;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5) !important;
+}
+
+body.christmas-theme .history-tabs {
+    background: rgba(26, 71, 42, 0.8) !important;
+    border-bottom: 2px solid #ffd700 !important;
+}
+
+body.christmas-theme .history-tab {
+    color: #ffffff !important;
+    background: transparent !important;
+    border: 1px solid transparent !important;
+}
+
+body.christmas-theme .history-tab.active {
+    background: rgba(255, 215, 0, 0.3) !important;
+    border-color: #ffd700 !important;
+    color: #ffd700 !important;
+}
+
+body.christmas-theme .history-tab:hover {
+    background: rgba(255, 215, 0, 0.2) !important;
+    border-color: #ffd700 !important;
+}
+
+body.christmas-theme .history-panel-close {
+    background: linear-gradient(145deg, #b22222 0%, #cd5c5c 100%) !important;
+    color: #ffffff !important;
+    border: 2px solid #ffd700 !important;
+}
+
+body.christmas-theme .history-panel-close:hover {
+    background: linear-gradient(145deg, #cd5c5c 0%, #dc143c 100%) !important;
+    transform: translateY(-2px) !important;
+}
+
+body.christmas-theme .section-title {
+    color: #ffd700;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+body.christmas-theme .history-item {
+    background: linear-gradient(145deg, #b22222 0%, #cd5c5c 100%);
+    color: #ffffff;
+    border: 1px solid #ffd700;
+    box-shadow: 0 2px 8px rgba(178, 34, 34, 0.3);
+}
+
+body.christmas-theme .history-item:hover {
+    background: linear-gradient(145deg, #cd5c5c 0%, #dc143c 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(178, 34, 34, 0.4);
+}
+
+body.christmas-theme .clear-button {
+    background: linear-gradient(145deg, #b22222 0%, #cd5c5c 100%);
+    color: #ffffff;
+    border: 2px solid #ffd700;
+}
+
+body.christmas-theme .clear-button:hover {
+    background: linear-gradient(145deg, #cd5c5c 0%, #dc143c 100%);
+    transform: translateY(-2px);
+}
+
+/* 语言切换按钮和历史按钮圣诞主题样式 */
+body.christmas-theme #languageButton {
+    background: linear-gradient(145deg, #b22222 0%, #cd5c5c 100%);
+    color: #ffffff;
+    border: 2px solid #ffd700;
+}
+
+body.christmas-theme #languageButton:hover {
+    background: linear-gradient(145deg, #cd5c5c 0%, #dc143c 100%);
+    transform: translateY(-2px);
+}
+
+body.christmas-theme #historyButton {
+    background: linear-gradient(145deg, #b22222 0%, #cd5c5c 100%);
+    color: #ffffff;
+    border: 2px solid #ffd700;
+}
+
+body.christmas-theme #historyButton:hover {
+    background: linear-gradient(145deg, #cd5c5c 0%, #dc143c 100%);
+    transform: translateY(-2px);
+}
+
+body.christmas-theme .empty-list-message {
+    color: #ffd700;
+}
+
+/* 搜索结果显示圣诞主题样式 */
+body.christmas-theme .search-results-title {
+    color: #ffd700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+body.christmas-theme .no-results {
+    color: #ffd700;
+}
+
+/* 加载指示器圣诞主题样式 */
+body.christmas-theme .loading-indicator {
+    color: #ffd700;
+}
+
+/* 版本选择模态框圣诞主题样式 */
+body.christmas-theme #version-modal {
+    background: rgba(0, 0, 0, 0.8) !important;
+}
+
+body.christmas-theme #version-modal .modal-content {
+    background: linear-gradient(145deg, #b22222 0%, #cd5c5c 100%) !important;
+    border: 3px solid #ffd700 !important;
+    color: #ffffff !important;
+}
+
+body.christmas-theme #version-modal .modal-title {
+    color: #ffd700 !important;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5) !important;
+}
+
+body.christmas-theme #version-modal button {
+    background: linear-gradient(145deg, #8b0000 0%, #a52a2a 100%) !important;
+    color: #ffffff !important;
+    border: 2px solid #ffd700 !important;
+}
+
+body.christmas-theme #version-modal button:hover {
+    background: linear-gradient(145deg, #a52a2a 0%, #b22222 100%) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* 圣诞装饰浮动动画 */
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-10px) rotate(5deg);
+    }
+}
+
+/* 重新设计的下雪动画 */
+@keyframes snowfall {
+    0% {
+        transform: translateY(-10px) translateX(0px) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(100vh) translateX(var(--drift-x)) rotate(var(--rotation));
+        opacity: 0;
+    }
+}
+
+
+
+/* 重新设计的雪花样式 */
+body.christmas-theme .snowflake {
+    position: fixed;
+    color: white;
+    pointer-events: none;
+    z-index: 1;
+    animation: snowfall linear forwards;
+    opacity: 1;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* 主界面样式 */
+#main-view {
+    display: block;
+}
+
+.main-title {
+    text-align: center;
+    margin: 30px 0 20px;
+    font-size: 2.5rem;
+    color: #8c6a4d;
+    letter-spacing: 2px;
+}
+
+.categories-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 10px;
+}
+
+.category-card {
+    background-color: #e8dfd3;
+    border-radius: 8px;
+    padding: 25px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+}
+
+.category-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.category-card h2 {
+    margin-bottom: 10px;
+    color: #6b4f3b;
+}
+
+/* 确保按钮和 div 表现一致 */
+button.category-card {
+    border: none; /* 去掉默认边框 */
+    width: 100%; /* 和分类卡片一样宽 */
+    font-family: inherit; /* 继承字体 */
+    font-size: inherit; /* 继承字号 */
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    margin-bottom: 15px; /* 和分类卡片一样的间距 */
+}
+
+/* 只覆盖本周歌曲按钮的背景色 */
+#weeklyButton.category-card {
+    background-color: #c1b1a375; /* 略深的颜色 */
+}
+
+/* 分类界面样式 */
+#category-view {
+    display: none;
+}
+
+/* 本周歌曲界面样式 */
+#weekly-view {
+    display: none;
+}
+
+.back-button {
+    background-color: #d4c8b8;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    margin-bottom: 30px;
+    cursor: pointer;
+    font-size: 1rem;
+    color: #5a4a3a;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+#categoryTitle, #weeklyTitle {
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 1.8rem;
+    color: #8c6a4d;
+}
+
+.update-date {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #8c6a4d;
+    font-style: italic;
+}
+
+.songs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 0 20px;
+}
+
+.song-item {
+    background-color: #e8dfd3;
+    padding: 15px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+}
+
+.song-item:hover {
+    background-color: #d9cdbc;
+}
+
+.song-number {
+    font-weight: bold;
+    margin-right: 15px;
+    color: #8c6a4d;
+    min-width: 35px;
+}
+
+.song-category {
+    background-color: #8c6a4d;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    margin-right: 15px;
+}
+
+/* 乐谱查看器样式 */
+#viewer-view {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.95);
+    z-index: 100;
+    flex-direction: column;
+}
+
+.viewer-content {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    position: relative;
+    overflow-y: auto;
+    padding: 0;
+}
+
+.sheet-container {
+    position: relative;
+    max-width: 800px;
+    margin: 0;
+    overflow-x: visible;
+}
+
+.sheet-image {
+    display: block;
+    transition: all 0.3s ease;
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+}
+/* 适应高度时横向居中 */
+.fit-height-mode {
+    display: block !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+/* 页码指示器和版本按钮容器 */
+.page-controls-container {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    z-index: 110;
+    background-color: rgba(0,0,0,0.5);
+    border-radius: 20px;
+    padding: 0 4px; /* 统一内边距 */
+    height: 32px;
+    /* 添加以下属性确保宽度自适应内容 */
+    width: auto;
+    max-width: none;
+    white-space: nowrap;
+    border: 1px solid rgba(255,255,255,0.5);
+    transition: border 0.2s;
+}
+
+.song-nav {
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    opacity: 0.7;
+    padding: 8px 12px;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    background-color: rgba(0,0,0,0.3);
+    border-radius: 16px;
+    transition: all 0.2s ease;
+    min-width: 60px;
+    justify-content: center;
+    height: 28px;
+    border: none;
+}
+
+.song-nav:hover {
+    opacity: 1;
+    background-color: rgba(0,0,0,0.5);
+    transform: scale(1.05);
+}
+
+.song-nav.disabled {
+    opacity: 0.3;
+    cursor: default;
+    background-color: rgba(0,0,0,0.1);
+}
+
+.song-nav.disabled:hover {
+    transform: none;
+    background-color: rgba(255,255,255,0.05);
+}
+
+.song-nav-text {
+    font-size: 0.9rem;
+    margin: 0 3px;
+    display: inline;
+    font-weight: 500;
+}
+
+.version-toggle-button {
+    position: relative; /* 添加这行 */
+    background-color: transparent;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: all 0.2s;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.version-toggle-button:hover {
+    opacity: 1;
+}
+
+.version-toggle-button .arrow {
+    margin-left: 5px;
+    transition: transform 0.2s;
+    font-size: 0.8rem;
+}
+
+.page-indicator-container {
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    height: 32px;
+}
+
+.page-nav {
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    opacity: 0.7;
+    padding: 0 8px;
+    user-select: none;
+}
+
+.page-nav:hover {
+    opacity: 1;
+}
+
+.page-indicator {
+    color: white;
+    text-align: center;
+    padding: 0 10px;
+    font-size: 0.9rem;
+}
+
+.version-buttons {
+    position: absolute;
+    bottom: 40px;
+    left: 33%; /* 改为居中定位 */
+    transform: translateX(-50%); /* 添加水平居中 */
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    background-color: rgba(0,0,0,0.7);
+    border-radius: 8px;
+    padding: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 120;
+    /* 添加最小宽度确保与按钮对齐 */
+    min-width: 100px;
+}
+
+.version-buttons.show {
+    display: flex;
+}
+
+.version-button {
+    background-color: transparent;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    text-align: left;
+    white-space: nowrap;
+    font-size: 0.9rem;
+}
+
+.version-button:hover {
+    opacity: 1;
+    background-color: rgba(255,255,255,0.1);
+}
+
+.version-button.active {
+    opacity: 1;
+    background-color: rgba(140, 106, 77, 0.7);
+}
+
+.close-button {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: rgba(0,0,0,0.5);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 110;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    border: 1px solid rgba(255,255,255,0.5);
+}
+
+.close-button:hover {
+    opacity: 1;
+    background-color: rgba(0,0,0,0.7);
+    border: 1px solid rgba(255,255,255,0.8);
+}
+
+/* 优先显示选项 */
+.version-select {
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #d4c8b8;
+    background-color: #f5f1e8;
+    color: #5a4a3a;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.version-select:hover {
+    border-color: #8c6a4d;
+}
+
+.version-select:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(140, 106, 77, 0.2);
+}
+
+.version-preference {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 30px 0 30px 0;
+    gap: 8px;
+    background: #ede5db;
+    border-radius: 18px;
+    padding: 8px 18px;
+    box-shadow: 0 1px 4px rgba(140,106,77,0.06);
+}
+.version-preference span {
+    font-weight: 500;
+    color: #7a5a3a;
+    margin-right: 8px; /* 新增，调整间距 */
+}
+.version-select {
+    border-radius: 12px;
+    padding: 6px 16px;
+    background: #f8f5f0;
+    border: 1px solid #d4c8b8;
+    color: #5a4a3a;
+    font-size: 1rem;
+}
+
+/* 搜索框样式 */
+.search-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 15px 0;
+    width: 100%;
+}
+
+.search-box {
+    position: relative;
+    width: 90%;
+    max-width: 500px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 10px 15px;
+    padding-right: 70px;
+    border-radius: 20px;
+    border: 1px solid #d4c8b8;
+    background-color: #f5f1e8;
+    color: #5a4a3a;
+    font-family: inherit;
+    font-size: 1rem;
+    transition: all 0.3s;
+}
+
+.search-input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(140, 106, 77, 0.2);
+    border-color: #8c6a4d;
+}
+
+.search-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #8c6a4d;
+    pointer-events: none;
+}
+
+.clear-search {
+    position: absolute;
+    right: 45px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #8c6a4d;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    background: none;
+    border: none;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    z-index: 2;
+}
+
+.clear-search:hover {
+    color: #5a4a3a;
+}
+
+.clear-search.visible {
+    opacity: 0.7;
+    pointer-events: auto;
+}
+
+.search-results {
+    display: none;
+    margin-top: 20px;
+}
+
+.search-results.show {
+    display: block;
+}
+
+.search-results-title {
+    text-align: center;
+    color: #8c6a4d;
+    margin-bottom: 15px;
+}
+
+.no-results {
+    text-align: center;
+    color: #5a4a3a;
+    padding: 20px;
+    font-style: italic;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .main-title {
+        font-size: 2rem;
+        margin: 20px 0 30px;
+    }
+    
+    .category-card {
+        padding: 20px;
+    }
+    
+    #categoryTitle, #weeklyTitle {
+        font-size: 1.5rem;
+        margin-bottom: 25px;
+    }
+    
+    .close-button {
+        width: 35px;
+        height: 35px;
+        font-size: 1.2rem;
+    }
+    
+    .version-toggle-button {
+        font-size: 0.8rem;
+        padding: 5px 8px;
+    }
+    
+    .page-indicator {
+        font-size: 0.8rem;
+    }
+    
+    .song-category {
+        margin-right: 10px;
+        font-size: 0.7rem;
+    }
+    
+    .search-input {
+        padding: 8px 12px;
+        padding-right: 65px;
+        font-size: 0.9rem;
+    }
+    
+    .search-icon {
+        right: 12px;
+    }
+    
+    .search-container {
+        margin: 10px 0;
+    }
+
+    .loading-indicator {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-size: 1.2rem;
+        z-index: 105;
+        display: none;
+    }
+
+    .loading-spinner {
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top: 4px solid white;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 10px;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* 在查看器背景上添加半透明遮罩 */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        z-index: 104;
+        display: none;
+    }
+
+    .clear-search {
+        right: 38px;
+        width: 22px;
+        height: 22px;
+        font-size: 1.1rem;
+    }
+    
+    .song-nav {
+        padding: 10px 14px;
+        min-width: 70px;
+        font-size: 1rem;
+        height: 30px;
+    }
+    
+    .song-nav-text {
+        font-size: 0.8rem;
+    }
+}
+
+/* 最近查看和收藏区域样式 */
+.section-title {
+    text-align: center;
+    color: #8c6a4d;
+    margin: 25px 0 15px;
+    font-size: 1.5rem;
+    position: relative;
+}
+
+.section-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 25px 0 15px;
+    position: relative;
+}
+
+.section-header .section-title {
+    margin: 0;
+}
+
+.clear-button {
+    position: absolute;
+    right: 0;
+    background: none;
+    border: none;
+    color: #8c6a4d;
+    font-size: 0.9rem;
+    cursor: pointer;
+    opacity: 0.7;
+    padding: 5px 10px;
+    transition: opacity 0.2s;
+}
+
+.clear-button:hover {
+    opacity: 1;
+    text-decoration: underline;
+}
+
+.recently-viewed-container {
+    margin-bottom: 20px;
+}
+
+.empty-list-message {
+    text-align: center;
+    padding: 15px;
+    color: #8c6a4d;
+    font-style: italic;
+}
+
+/* 临时收藏按钮样式 */
+.favorite-button {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background-color: rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.5);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 110;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.favorite-button:hover {
+    opacity: 1;
+    background-color: rgba(0,0,0,0.7);
+    border: 1px solid rgba(255,255,255,0.8);
+}
+
+.favorite-button.active svg {
+    fill: #ff5e5e;
+    stroke: #ff5e5e;
+}
+
+.viewer-breadcrumb {
+    position: fixed;
+    top: 20px;
+    left: 70px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 20px;
+    color: white;
+    font-size: 0.85rem;
+    z-index: 110;
+    white-space: nowrap;
+    max-width: calc(100vw - 160px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 0.85;
+    pointer-events: none;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+}
+
+/* 收藏项目的取消收藏按钮 */
+.unfavorite-button {
+    background: none;
+    border: none;
+    color: #8c6a4d;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-left: 10px;
+    transition: all 0.2s;
+}
+
+.unfavorite-button svg {
+    width: 16px;
+    height: 16px;
+    fill: #ff5e5e;
+    stroke: #ff5e5e;
+    transition: all 0.2s;
+}
+
+.unfavorite-button:hover {
+    background-color: rgba(255, 94, 94, 0.1);
+    transform: scale(1.1);
+}
+
+/* 收藏项目布局 */
+.favorite-item {
+    display: flex;
+    align-items: center;
+}
+
+.favorite-item .song-info {
+    flex: 1;
+    display: flex;
+}
+
+.favorite-item .song-category {
+    margin-right: 15px;
+}
+
+@media (max-width: 768px) {
+    .favorite-button {
+        width: 35px;
+        height: 35px;
+        top: 15px;
+        left: 15px;
+    }
+
+    .viewer-breadcrumb {
+        top: 15px;
+        left: 60px;
+        height: 35px;
+        font-size: 0.78rem;
+        padding: 0 10px;
+        max-width: calc(100vw - 130px);
+    }
+    
+    .section-title {
+        font-size: 1.3rem;
+    }
+    
+    .clear-button {
+        font-size: 0.8rem;
+    }
+}
+
+/* 最近查看和收藏区域样式 */
+.section-title {
+    text-align: center;
+    color: #8c6a4d;
+    margin: 25px 0 15px;
+    font-size: 1.5rem;
+    position: relative;
+}
+
+.section-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 25px 0 15px;
+    position: relative;
+}
+
+.section-header .section-title {
+    margin: 0;
+}
+
+.clear-button {
+    position: absolute;
+    right: 0;
+    background: none;
+    border: none;
+    color: #8c6a4d;
+    font-size: 0.9rem;
+    cursor: pointer;
+    opacity: 0.7;
+    padding: 5px 10px;
+    transition: opacity 0.2s;
+}
+
+.clear-button:hover {
+    opacity: 1;
+    text-decoration: underline;
+}
+
+.history-panel-container {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 320px;
+    height: 100vh;
+    background-color: rgba(245, 241, 232, 0.97);
+    box-shadow: -3px 0 10px rgba(0, 0, 0, 0.15);
+    z-index: 150;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.history-panel-container.show {
+    transform: translateX(0);
+}
+
+.history-panel-header {
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(140, 106, 77, 0.2);
+}
+
+.history-panel-title {
+    font-size: 1.3rem;
+    color: #8c6a4d;
+    margin: 0;
+}
+
+.history-panel-close {
+    background-color: rgba(140, 106, 77, 0.7);
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.history-panel-close:hover {
+    background-color: rgba(140, 106, 77, 0.9);
+    transform: scale(1.05);
+}
+
+.history-panel-content {
+    padding: 0 15px 20px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.history-tab-container {
+    display: flex;
+    border-bottom: 1px solid rgba(140, 106, 77, 0.2);
+    margin: 0 -15px 15px;
+}
+
+.history-tab {
+    flex: 1;
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+    color: #8c6a4d;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.history-tab.active {
+    border-bottom: 2px solid #8c6a4d;
+    background-color: rgba(140, 106, 77, 0.1);
+}
+
+.history-tab:hover {
+    background-color: rgba(140, 106, 77, 0.05);
+}
+
+.history-tab-panel {
+    display: none;
+}
+
+.history-tab-panel.active {
+    display: block;
+}
+
+.history-button {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: rgba(140, 106, 77, 0.7);
+    border: none;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 110;
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.history-button:hover {
+    background-color: rgba(140, 106, 77, 0.9);
+    transform: scale(1.05);
+}
+
+.history-button svg {
+    width: 24px;
+    height: 24px;
+}
+
+.recently-viewed-container,
+.favorites-container {
+    margin-bottom: 20px;
+}
+
+.empty-list-message {
+    text-align: center;
+    padding: 15px;
+    color: #8c6a4d;
+    font-style: italic;
+}
+
+/* 收藏按钮样式 */
+.favorite-button {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background-color: rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.5);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 110;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.favorite-button:hover {
+    opacity: 1;
+    background-color: rgba(0,0,0,0.7);
+    border: 1px solid rgba(255,255,255,0.8);
+}
+
+.favorite-button.active svg {
+    fill: #ff5e5e;
+    stroke: #ff5e5e;
+}
+
+@media (max-width: 768px) {
+    .favorite-button {
+        width: 35px;
+        height: 35px;
+        top: 15px;
+        left: 15px;
+    }
+    
+    .history-button {
+        width: 40px;
+        height: 40px;
+        top: 15px;
+        right: 15px;
+    }
+    
+    .history-button svg {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .history-panel-container {
+        width: 100%;
+    }
+    
+    .section-title {
+        font-size: 1.3rem;
+    }
+    
+    .clear-button {
+        font-size: 0.8rem;
+    }
+}
+
+/* 语言切换按钮样式 */
+.language-button {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background-color: rgba(140, 106, 77, 0.7);
+    border: none;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    transition: background-color 0.2s, transform 0.2s;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.language-button:hover {
+    background-color: rgba(140, 106, 77, 0.9);
+    transform: scale(1.05);
+}
+
+@media (max-width: 768px) {
+    .language-button {
+        width: 40px;
+        height: 40px;
+        top: 15px;
+        left: 15px;
+        font-size: 0.8rem;
+    }
+}
+
+/* 在查看器模式下隐藏语言按钮 */
+#viewer-view .language-button,
+#category-view .language-button,
+#weekly-view .language-button {
+    display: none;
+}
+
+/* 在搜索结果显示时隐藏语言按钮 */
+body.search-active .language-button {
+    display: none;
+}
+
+/* 最近查看和收藏区域样式 */
+.recently-viewed-container,
+.favorites-container {
+    margin-bottom: 20px;
+}
+
+#weeklyButton .update-date {
+    font-size: 0.9rem;
+    color: #8c6a4d;
+    margin-top: 5px;
+    font-style: italic;
+}
+
+/* Toast 样式 */
+.toast-container {
+    position: fixed;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: none;
+}
+.toast-message {
+    background: rgba(140,106,77,0.97);
+    color: #fff;
+    padding: 12px 28px;
+    border-radius: 24px;
+    margin-top: 10px;
+    font-size: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+    opacity: 0;
+    animation: toast-in 0.3s forwards, toast-out 0.3s 1.7s forwards;
+    pointer-events: auto;
+}
+@keyframes toast-in {
+    from { opacity: 0; transform: translateY(-20px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes toast-out {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+/* 搜索高亮样式 */
+.search-highlight {
+    background: #ffe08a;
+    color: #8c6a4d;
+    border-radius: 3px;
+    padding: 0 2px;
+}
+.doodle-btn{opacity:0.9;transition:opacity 0.2s;}.doodle-btn:hover{opacity:1;}
+
+/* 版本选择弹窗样式 */
+#version-modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.18); /* 透明度可以适当调节 */
+    backdrop-filter: blur(8px);    /* 毛玻璃效果 */
+    -webkit-backdrop-filter: blur(8px); /* 兼容Safari */
+    justify-content: center;
+    align-items: center;
+}
+
+#modalVersionBtnList {
+display: flex;
+flex-direction: column;
+margin-bottom: 10px;
+}
+
+/* 版本弹窗按钮样式：使用类名方便为特定按钮（如“原谱”）增加强调样式 */
+.modal-version-btn {
+    margin: 10px 0 !important;
+    display: block;
+    width: 100%;
+    padding: 12px 0;      /* 增大点击区域 */
+    font-size: 1.1rem;
+    border-radius: 8px;
+    border: none;
+    background: #8c6a4d;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.18s, transform 0.12s, box-shadow 0.18s;
+}
+
+.modal-version-btn + .modal-version-btn {
+    margin-top: 14px !important;
+}
+
+.modal-version-btn:hover {
+    background: #a07a5a;
+    transform: translateY(-2px);
+}
+
+/* 使“原谱”按钮在视觉上最大化、最容易注意到 */
+.modal-version-btn.primary-version-btn {
+    font-size: 1.8rem; /* 更大字体 */
+    padding: 20px 0; /* 更大点击区域 */
+    font-weight: 800;
+    box-shadow: 0 18px 40px rgba(106,75,51,0.28);
+    background: #6a4b33; /* 纯色背景，取消渐变 */
+    color: #fff;
+    border: 2px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+}
+
+.modal-version-btn.primary-version-btn:hover {
+    background: #7b5940;
+    transform: translateY(-4px) scale(1.02);
+}
+
+/* 在小屏幕设备上限制最大尺寸，避免溢出 */
+@media (max-width: 420px) {
+    .modal-version-btn.primary-version-btn {
+        font-size: 1.25rem;
+        padding: 14px 0;
+    }
+}
+
+@media (max-width: 900px) {
+    .sheet-container {
+        overflow-x: auto;
+    }
+}
+
+/* 高清平板竖向：取消宽度限制，让乐谱充满屏幕 */
+@media (min-width: 768px) and (orientation: portrait) {
+    .sheet-container {
+        max-width: 100%;
+        width: 100%;
+    }
+}
+/* ==================== 离线歌谱 ==================== */
+.offline-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 0 10px 15px;
+    padding: 14px 16px;
+    background: #ede5db;
+    border: 1px solid #d4c8b8;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
+    text-align: center;
+}
+
+.offline-card-status {
+    color: #6b4f3b;
+    font-size: 0.85rem;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+.offline-card-btn {
+    min-width: 170px;
+    max-width: 100%;
+    min-height: 44px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 22px;
+    background: #8c6a4d;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 0.9rem;
+    line-height: 1.25;
+    white-space: normal;
+    cursor: pointer;
+    transition: background 0.18s, transform 0.12s;
+}
+
+.offline-card-btn:hover {
+    background: #a07a5a;
+    transform: translateY(-1px);
+}
+
+.offline-card-btn:disabled {
+    opacity: 0.6;
+    cursor: default;
+    transform: none;
+}
+
+body.search-active #offlineSection {
+    display: none;
+}
+
+body.christmas-theme .offline-card {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #ffd700;
+    backdrop-filter: blur(10px);
+}
+
+body.christmas-theme .offline-card-status {
+    color: #ffffff;
+}
+
+body.christmas-theme .offline-card-btn {
+    background: #8b0000;
+    border: 1px solid #ffd700;
+}
+
+body.christmas-theme .offline-card-btn:hover {
+    background: #a52a2a;
+}
+
+/* 全螢幕進度層 */
+body.vp-offline-busy {
+    overflow: hidden;
+}
+
+.vp-offline-overlay {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    inset: 0;
+    z-index: 20000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.62);
+    touch-action: none;
+    overscroll-behavior: contain;
+}
+
+.vp-offline-modal {
+    width: min(92vw, 430px);
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    padding: 24px;
+    border-radius: 16px;
+    background: #fffbe9;
+    color: #5a4a3a;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+.vp-offline-modal h2 {
+    margin-bottom: 10px;
+    color: #6b4f3b;
+    font-size: 1.25rem;
+}
+
+.vp-offline-modal p {
+    margin-bottom: 14px;
+    line-height: 1.5;
+    font-size: 0.95rem;
+}
+
+.vp-offline-progress {
+    width: 100%;
+    height: 10px;
+    margin: 4px 0 8px;
+    border-radius: 6px;
+    background: #e6dccf;
+    overflow: hidden;
+}
+
+.vp-offline-progress-bar {
+    width: 0;
+    height: 100%;
+    border-radius: 6px;
+    background: #8c6a4d;
+    transition: width 0.2s ease;
+}
+
+.vp-offline-count {
+    min-height: 1.2em;
+    color: #8c6a4d;
+    font-size: 0.85rem;
+}
+
+.vp-offline-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+}
+
+.vp-offline-actions:empty {
+    display: none;
+}
+
+.vp-offline-btn {
+    min-height: 44px;
+    padding: 9px 18px;
+    border: none;
+    border-radius: 22px;
+    background: #d4c8b8;
+    color: #5a4a3a;
+    font-family: inherit;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+.vp-offline-btn:hover {
+    background: #c6b8a6;
+}
+
+.vp-offline-btn.primary {
+    background: #8c6a4d;
+    color: #ffffff;
+}
+
+.vp-offline-btn.primary:hover {
+    background: #a07a5a;
+}
+
+body.christmas-theme .vp-offline-modal {
+    background: #1a472a;
+    color: #ffffff;
+    border: 2px solid #ffd700;
+}
+
+body.christmas-theme .vp-offline-modal h2,
+body.christmas-theme .vp-offline-count {
+    color: #ffd700;
+}
+
+body.christmas-theme .vp-offline-progress {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+body.christmas-theme .vp-offline-progress-bar {
+    background: #ffd700;
+}
+
+body.christmas-theme .vp-offline-btn.primary {
+    background: #8b0000;
+    border: 1px solid #ffd700;
+}
+
+@media (max-width: 560px) {
+    .offline-card-btn {
+        min-width: 0;
+        width: 80%;
+    }
+}
