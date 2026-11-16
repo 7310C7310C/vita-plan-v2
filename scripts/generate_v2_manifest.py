@@ -38,6 +38,14 @@ def main() -> None:
     ).hexdigest()[:16]
     out = {"version": version, "files": files}
     OUT.write_text(json.dumps(out, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    # Runtime mapping as a tiny JS file so the app never needs a sync XHR.
+    scores_path = ROOT / "data" / "v2-scores.json"
+    if scores_path.exists():
+        data = json.loads(scores_path.read_text(encoding="utf-8"))
+        (ROOT / "data" / "v2-scores.js").write_text(
+            "window.VP2_DATA = " + json.dumps(data, ensure_ascii=False, indent=2) + ";\n",
+            encoding="utf-8",
+        )
     print(f"wrote {OUT.relative_to(ROOT)} version={version} files={len(files)}")
 
 

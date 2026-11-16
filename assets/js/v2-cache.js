@@ -1,4 +1,4 @@
-/* v2 background cache: register SW and prefetch every score JSON (non-blocking). */
+/* v2 background cache: delayed SW registration + prefetch every score JSON. */
 (function(){
   'use strict';
 
@@ -7,10 +7,13 @@
   }
   const base = basePath();
 
-  if ('serviceWorker' in navigator){
+  function register(){
+    if (!('serviceWorker' in navigator)) return;
     navigator.serviceWorker.register(base + 'sw-v2.js', {scope: base, updateViaCache: 'none'})
       .catch(function(){});
   }
+  if (document.readyState === 'complete') setTimeout(register, 2500);
+  else window.addEventListener('load', function(){ setTimeout(register, 2500); }, {once:true});
 
   function start(){
     if (!('caches' in window)) return;
@@ -38,9 +41,24 @@
           localStorage.setItem(versionKey, m.version);
         });
       })
+      .then(() => {
+        /* Warm the frame after the first paint so the first score opens fast. */
+        return caches.open('v2-shell-2').then(cache =>
+          cache.match(base + 'player-frame.html').then(hit => {
+            if (hit) return null;
+            return fetch(base + 'player-frame.html').then(res => {
+              if (res && res.ok) return cache.put(base + 'player-frame.html', res);
+            });
+          })
+        );
+      })
       .catch(function(){});
   }
 
-  if ('requestIdleCallback' in window) requestIdleCallback(start, {timeout: 3000});
-  else setTimeout(start, 1500);
+  function schedule(){
+    if ('requestIdleCallback' in window) requestIdleCallback(start, {timeout: 4000});
+    else setTimeout(start, 2500);
+  }
+  if (document.readyState === 'complete') schedule();
+  else window.addEventListener('load', schedule, {once:true});
 })();

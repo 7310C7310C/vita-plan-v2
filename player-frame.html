@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Vita Plan</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600&family=Noto+Serif+SC:wght@400;600&family=Noto+Sans+TC:wght@400;600&family=Noto+Sans+SC:wght@400;600&family=LXGW+WenKai+TC&family=Huninn&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#faf7f0; --panel:#fffdf8; --ink:#241f1a; --ink-2:#5f5449; --muted:#8a7d6d;
@@ -297,7 +294,7 @@
   }
 
   body.embed .toolbar, body.embed .back {display:none!important}
-  body.embed .wrap{max-width:none;padding:10px 16px 92px}
+  body.embed .wrap{max-width:none;padding:64px 16px 92px}
   body.embed .score-head{margin-top:0}
   body.embed .global-loading{position:fixed}
 
@@ -417,14 +414,12 @@
 <script>
 (function(){
   const qs = new URLSearchParams(location.search);
-  const scorePath = qs.get("score");
-  const id = qs.get("id") || "yangmu";
-  const url = scorePath ? scorePath : ("songs/" + id + ".json");
-  const xhr = new XMLHttpRequest();
-  xhr.open("GET", url, false);
-  xhr.send();
-  window.__SCORE = JSON.parse(xhr.responseText);
-  window.__SONG_ID = qs.get("id") || window.__SCORE.id || id;
+  const id = qs.get("id") || "";
+  const empty = {id:id||"__empty__",title:"乐谱未加载",credit:"",key:"C",keyBase:60,meter:"4/4",beatUnit:1,tempo:80,compound:false,clickStep:1,lyricsMode:"note",phrases:[[0]],bars:[{beats:4,chords:[],V:{S:[]}}],lyrics:[[]],slurs:[],ties:[],repeat:null};
+  let data = null;
+  try{ const raw = localStorage.getItem("v2.current.score"); if (raw) data = JSON.parse(raw); }catch(e){}
+  window.__SCORE = data || empty;
+  window.__SONG_ID = qs.get("id") || (data && data.id) || id || "__empty__";
   document.body.classList.add("embed");
   setTimeout(()=>document.body.classList.add("ready"), 2500);   /* 保险：即使初始化失敗也显示 */
 })();
@@ -1094,6 +1089,7 @@ const ICONS = {
   moon:'<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>'
 };
 
+function escHtml(v){ return String(v==null?"":v).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 function renderBar(bi){
   const bar = SCORE.bars[bi], n = bar.beats;
   const tripCells = new Set();
@@ -1106,9 +1102,9 @@ function renderBar(bi){
 
   const basis = Math.max(n*1.75 + 0.5, 3.2);
   let h = `<div class="bar${bi===SCORE.bars.length-1?" final repeat-end":""}${bi===(SCORE.repeat?SCORE.repeat.from:-1)?" repeat-start":""}" data-bar="${bi}" style="flex:0.25 1 ${basis.toFixed(2)}em;max-width:${(basis*2.1).toFixed(2)}em">`;
-  h += `<div class="bnum">${bi+1}${bar.tag?`<span class="btag">${bar.tag}</span>`:""}</div>`;
+  h += `<div class="bnum">${bi+1}${bar.tag?`<span class="btag">${escHtml(bar.tag)}</span>`:""}</div>`;
   h += `<div class="chordrow" style="grid-template-columns:repeat(${n},minmax(0,1fr))">`;
-  chordCells.forEach(c=>{ h += `<span title="${c}">${c}</span>`; });
+  chordCells.forEach(c=>{ h += `<span title="${escHtml(c)}">${escHtml(c)}</span>`; });
   h += `</div>`;
 
   const voiceRow = (v)=>{
@@ -1174,12 +1170,12 @@ function renderBar(bi){
           const s = ev[3];
           const t = (s!==null && s!==undefined && verse[s]) ? verse[s] : "";
           const left = (ev[0]-ci)*100, width = Math.max(22, ev[1]*100);
-          r += `<span class="lsub" style="left:${left}%;width:${width}%"><span>${t}</span></span>`;
+          r += `<span class="lsub" style="left:${left}%;width:${width}%"><span>${escHtml(t)}</span></span>`;
         });
         r += `</div>`;
         return;
       }
-      r += `<div class="cell${align}"><span>${txt}</span></div>`;
+      r += `<div class="cell${align}"><span>${escHtml(txt)}</span></div>`;
     });
     h += r + `</div>`;
   });
@@ -2084,6 +2080,7 @@ window.__hymn = {
 /* v2 parent <-> frame API */
 (function(){
   window.addEventListener('message', function(e){
+    if (e.origin !== location.origin) return;
     const m = e.data || {};
     if (m.type !== 'vp2:cmd') return;
     try{
@@ -2106,13 +2103,13 @@ window.__hymn = {
         }
         case 'annot': annotSetMode(!!m.value); break;
       }
-      parent.postMessage({type:'vp2:state', playing:engine.playing, tempo:engine.tempo, parts:engine.parts, lang:lang}, '*');
+      parent.postMessage({type:'vp2:state', playing:engine.playing, tempo:engine.tempo, parts:engine.parts, lang:lang}, location.origin);
     }catch(err){}
   });
   window.addEventListener('load', function(){
     try{ parent.postMessage({type:'vp2:ready', title:SCORE.title, id:SONG_ID,
       tempo:engine.tempo, parts:engine.parts, lang:lang,
-      metronome:engine.metronome, volume:Math.round(engine.volume*100)}, '*'); }catch(e){}
+      metronome:engine.metronome, volume:Math.round(engine.volume*100)}, location.origin); }catch(e){}
   });
 })();
 

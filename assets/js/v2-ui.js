@@ -25,16 +25,12 @@
     lang: 's',
     uiLang: 'zh',
     metro: false,
-    volume: 100
+    volume: 100,
+    loadToken: 0
   };
 
-  /* v2-scores.json is tiny; load sync so showSong() can decide immediately. */
-  try{
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', 'data/v2-scores.json', false);
-    xhr.send();
-    state.data = JSON.parse(xhr.responseText);
-  }catch(e){ state.data = null; }
+  /* Runtime mapping is a tiny JS file loaded before this script (no sync XHR). */
+  state.data = window.VP2_DATA || null;
 
   function basePath(){
     try{ return new URL('.', document.baseURI).pathname; }catch(e){ return '/'; }
@@ -49,32 +45,67 @@
   function has(cat, id){ return !!scoreFor(cat, id); }
   function post(cmd, extra){
     if (!frame || !frame.contentWindow) return;
-    frame.contentWindow.postMessage(Object.assign({type:'vp2:cmd', cmd:cmd}, extra || {}), '*');
+    frame.contentWindow.postMessage(Object.assign({type:'vp2:cmd', cmd:cmd}, extra || {}), location.origin);
   }
   function setLoading(on){
     if (!loadingOverlay || !loadingIndicator) return;
     loadingOverlay.style.display = on ? 'block' : 'none';
     loadingIndicator.style.display = on ? 'block' : 'none';
   }
-  function enter(cat, song, score){
+  function validScorePath(path){
+    return /^data\/scores\/[a-z0-9_-]+\/[0-9]+\.json$/i.test(String(path || ''));
+  }
+  function errorScore(song){
+    return {id:'__error__', title:(song && song.title) || '乐谱加载失败', credit:'',
+      key:'C', keyBase:60, meter:'4/4', beatUnit:1, tempo:80, compound:false, clickStep:1,
+      lyricsMode:'note', phrases:[[0]], bars:[{beats:4, chords:[], V:{S:[]}}],
+      lyrics:[[]], slurs:[], ties:[], repeat:null};
+  }
+  async function loadScore(score){
+    const path = String(score && score.file || '');
+    if (!validScorePath(path)) throw new Error('invalid score path');
+    const url = basePath() + path;
+    try{
+      const cache = await caches.open('v2-json-v1');
+      const hit = await cache.match(url, {ignoreSearch:true});
+      if (hit) return await hit.json();
+    }catch(e){}
+    const res = await fetch(url, {cache:'no-cache'});
+    if (!res.ok) throw new Error('score http ' + res.status);
+    const data = await res.json();
+    try{
+      const cache = await caches.open('v2-json-v1');
+      await cache.put(url, new Response(JSON.stringify(data), {headers:{'Content-Type':'application/json'}}));
+    }catch(e){}
+    return data;
+  }
+  async function enter(cat, song, score){
+    const token = ++state.loadToken;
     state.active = true; state.image = false; state.ready = false;
     state.cat = cat; state.song = song; state.score = score;
+    state.playing = false;
+    setPlayUI(false);
     document.body.classList.add('v2-active', 'v2-json-mode');
     document.body.classList.remove('v2-image-mode');
     if (headActions) headActions.style.display = 'flex';
     if (menuBtn) menuBtn.style.display = '';
     if (imageBtn){ imageBtn.style.display = ''; imageBtn.textContent = state.uiLang === 'en' ? 'Image' : '图片谱'; }
     if (menu) menu.classList.remove('open');
+    const annot = document.getElementById('v2AnnotBtn'); if (annot) annot.classList.remove('on');
     const vc = document.getElementById('viewerContent');
     if (vc) vc.classList.add('v2-mode');
-    if (frame){
-      frame.src = basePath() + 'player-frame.html?score=' + encodeURIComponent(score.file);
-    }
     setLoading(true);
     document.title = song.title || '复活计划乐队';
-    setTimeout(()=>{ if (!state.ready) setLoading(false); }, 6000);
+    let data;
+    try{ data = await loadScore(score); }
+    catch(e){ data = errorScore(song); }
+    if (token !== state.loadToken || !state.active) return;
+    try{ localStorage.setItem('v2.current.score', JSON.stringify(data)); }catch(e){}
+    if (frame) frame.src = basePath() + 'player-frame.html';
+    setTimeout(()=>{ if (!state.ready && token === state.loadToken) setLoading(false); }, 6000);
   }
   function leave(){
+    state.loadToken++;
     state.active = false; state.image = false; state.ready = false;
     document.body.classList.remove('v2-active', 'v2-json-mode', 'v2-image-mode');
     if (headActions) headActions.style.display = 'none';
@@ -200,6 +231,7 @@
   }
 
   window.addEventListener('message', function(e){
+    if (e.origin !== location.origin) return;
     const m = e.data || {};
     if (m.type === 'vp2:ready'){
       ready(m);
@@ -218,9 +250,10 @@
         if (!state.active) return;
         if (state.image){
           setImageMode(false);
+          if (window.__vpSetImageMode) window.__vpSetImageMode(false);
         } else {
           setImageMode(true);
-          if (window.__vpLoadImage) window.__vpLoadImage(1);
+          if (window.__vpSetImageMode) window.__vpSetImageMode(true);
         }
       });
     }

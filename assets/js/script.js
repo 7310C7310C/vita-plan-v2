@@ -11,7 +11,7 @@ function versionedImageUrl(path) {
 
 // 加载数据的函数
 function loadSongsData() {
-    fetch(`data/songs.json?v=${jsonVersion}`, {cache:'no-store'})
+    fetch(`data/songs.json?v=${jsonVersion}`, {cache:'no-cache'})
         .then(response => {
             if (!response.ok) {
                 throw new Error('网络响应错误');
@@ -435,6 +435,10 @@ function initApp() {
     initLanguage();
     
     renderCategories();
+    try {
+        const wb = document.getElementById('weeklyButton');
+        if (wb && window.VP2UI) wb.href = VP2UI.basePath() + 'weekly';
+    } catch (e) {}
     renderVersionPreference();
     setupEventListeners();
     setupSearchFunction();
@@ -450,7 +454,17 @@ function initApp() {
     document.getElementById('weeklyButtonDate').textContent = 
         `${t('updateDate')}${songsData.weeklySongs.updateDate}`;
     
-    showVersionModal();
+    if (!isV2DeepLink()) showVersionModal();
+}
+
+function isV2DeepLink() {
+    try {
+        let p = location.pathname;
+        const b = window.VP2UI ? VP2UI.basePath() : '/';
+        if (p.indexOf(b) === 0) p = p.slice(b.length);
+        p = p.replace(/^\/+|\/+$/g, '');
+        return p.split('/').filter(Boolean).length > 0;
+    } catch (e) { return false; }
 }
 
 // 初始化主题设置
@@ -1614,9 +1628,17 @@ function closeViewer() {
     renderRecentlyViewed();
     renderFavorites();
     
-    // 清除打开来源标记
+    // 关闭后保留分类/本周上下文
+    let backUrl = (window.VP2UI ? VP2UI.basePath() : '/');
+    if (window.VP2UI) {
+        if (currentState.openedFrom === 'category' && currentState.currentCategory && VP2UI.routeForCategory) {
+            backUrl = VP2UI.routeForCategory(currentState.currentCategory) || backUrl;
+        } else if (currentState.openedFrom === 'weekly') {
+            backUrl = VP2UI.basePath() + 'weekly';
+        }
+    }
     currentState.openedFrom = null;
-    history.replaceState(null, null, (window.VP2UI ? VP2UI.basePath() : '/'));
+    history.replaceState(null, null, backUrl);
     // 退出时恢复图片适应模式为宽度适应
     isFitHeight = false;
     updateSheetFitMode();
@@ -2135,16 +2157,10 @@ function performSearch() {
         // 存储当前歌曲列表，用于导航
         currentState.currentSongList = matchedSongs;
         matchedSongs.forEach((song, index) => {
-            const songElement = document.createElement('div');
-            songElement.className = 'song-item';
-            songElement.innerHTML = `
+            const songElement = makeSongLink(song.category, song, `
                 <div class="song-category">${highlight(t(song.category, 'categories') + ' ' + song.id)}</div>
                 <div class="song-title">${highlight(song.title)}</div>
-            `;
-            songElement.addEventListener('click', () => {
-                showSong(song.category, song);
-                // 不再清除搜索结果和搜索框
-            });
+            `);
             searchResultsList.appendChild(songElement);
         });
     } else {
@@ -2970,3 +2986,7 @@ function updateSheetFitMode() {
 // 每次图片加载后自动同步适应模式
 sheetImage.addEventListener('load', updateSheetFitMode);
 window.__vpLoadImage = loadImage;
+window.__vpSetImageMode = function(on){
+    currentState.v2ImageMode = !!on;
+    if (on){ currentState.currentPage = 1; loadImage(1); updatePageIndicator(); }
+};

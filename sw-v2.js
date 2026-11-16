@@ -1,18 +1,7 @@
-/* Vita Plan v2 service worker: shell + all JSON scores + latest weekly fallback. */
-const SHELL_CACHE = 'v2-shell-1';
+/* Vita Plan v2 service worker: small shell, SWR assets, cached JSON scores. */
+const SHELL_CACHE = 'v2-shell-2';
 const JSON_CACHE = 'v2-json-v1';
-const SHELL = [
-  'index.html',
-  'assets/css/style.css',
-  'assets/css/v2-ui.css',
-  'assets/js/v2-ui.js',
-  'assets/js/script.js',
-  'assets/js/v2-cache.js',
-  'player-frame.html',
-  'favicon.ico',
-  'data/songs.json',
-  'data/v2-scores.json'
-];
+const SHELL = ['index.html', 'favicon.ico', 'data/v2-scores.js'];
 
 self.addEventListener('install', event => {
   event.waitUntil(
@@ -24,13 +13,13 @@ self.addEventListener('install', event => {
 
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(keys.map(key => {
-        if (key === SHELL_CACHE || key === JSON_CACHE) return null;
-        if (key.indexOf('v2-') === 0) return caches.delete(key);
-        return caches.delete(key); /* drop v1 offline caches on this origin */
-      })))
-      .then(() => self.clients.claim())
+    caches.keys().then(keys => Promise.all(keys.map(key => {
+      if (key === SHELL_CACHE || key === JSON_CACHE) return null;
+      if (key.indexOf('v2-shell-') === 0) return caches.delete(key);
+      if (key.indexOf('v2-json-') === 0) return caches.delete(key);
+      if (key.indexOf('vita-plan-assets-') === 0) return caches.delete(key);
+      return null;
+    }))).then(() => self.clients.claim())
   );
 });
 
@@ -46,7 +35,7 @@ self.addEventListener('fetch', event => {
     return;
   }
   if (path.indexOf('/data/scores/') !== -1) {
-    event.respondWith(cacheFirst(req, JSON_CACHE));
+    event.respondWith(cacheFirst(req));
     return;
   }
   if (path.endsWith('/data/v2-scores.json') || path.endsWith('/data/v2-manifest.json')) {
@@ -58,19 +47,29 @@ self.addEventListener('fetch', event => {
     return;
   }
   if (path.endsWith('.js') || path.endsWith('.css') || path.endsWith('.html') || path.endsWith('favicon.ico')) {
-    event.respondWith(networkFirst(req));
+    event.respondWith(staleWhileRevalidate(req));
     return;
   }
   event.respondWith(fetch(req).catch(() => caches.match(req, {ignoreSearch:true})));
 });
 
-async function cacheFirst(req, cacheName){
-  const cache = await caches.open(cacheName);
+async function cacheFirst(req){
+  const cache = await caches.open(JSON_CACHE);
   const hit = await cache.match(req, {ignoreSearch:true});
   if (hit) return hit;
   const res = await fetch(req);
   if (res && res.ok) cache.put(req, res.clone());
   return res;
+}
+
+async function staleWhileRevalidate(req){
+  const cache = await caches.open(SHELL_CACHE);
+  const hit = await cache.match(req);
+  const network = fetch(req).then(res => {
+    if (res && res.ok) cache.put(req, res.clone());
+    return res;
+  }).catch(() => null);
+  return hit || network || Response.error();
 }
 
 async function navigationFirst(req){
@@ -99,7 +98,6 @@ async function networkFirst(req){
     }
     return res;
   }catch(e){
-    const cached = await caches.match(req, {ignoreSearch:true});
-    return cached || Response.error();
+    return (await caches.match(req, {ignoreSearch:true})) || Response.error();
   }
 }
