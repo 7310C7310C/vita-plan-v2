@@ -64,6 +64,10 @@ self.addEventListener('fetch', event => {
     event.respondWith(networkFirst(req));
     return;
   }
+  if (path.endsWith('/player-frame.html')) {
+    event.respondWith(cacheFirstShell(req));
+    return;
+  }
   if (req.mode === 'navigate') {
     event.respondWith(navigationFirst(req));
     return;
@@ -74,6 +78,15 @@ self.addEventListener('fetch', event => {
   }
   event.respondWith(fetch(req).catch(() => caches.match(req, {ignoreSearch:true})));
 });
+
+async function cacheFirstShell(req){
+  const cache = await caches.open(SHELL_CACHE);
+  const hit = await cache.match(req, {ignoreSearch:true});
+  if (hit) return hit;
+  const res = await fetch(req);
+  if (res && res.ok) cache.put(req, res.clone());
+  return res;
+}
 
 async function cacheFirst(req){
   const cache = await caches.open(JSON_CACHE);

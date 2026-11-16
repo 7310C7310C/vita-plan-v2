@@ -140,10 +140,28 @@
   function pushPath(path){
     try{ history.pushState({v2:true}, '', basePath() + path); }catch(e){}
   }
-  function pushRoute(cat, id){
-    const href = routeFor(cat, id);
+  function versionCode(version){
+    return ({'原谱':'o','贝司':'b','吉他':'g','备选':'a'})[version] || '';
+  }
+  function withVersion(href, version){
+    const code = versionCode(version);
+    if (!code || code === 'o') return href;
+    return href + '?v=' + encodeURIComponent(code);
+  }
+  function pushRoute(cat, id, version){
+    let href = routeFor(cat, id);
     if (!href) return;
+    href = withVersion(href, version);
     try{ history.pushState({v2song:true}, '', href); }catch(e){}
+  }
+  function setVersionQuery(version){
+    try{
+      const url = new URL(location.href);
+      const code = versionCode(version);
+      if (!code || code === 'o') url.searchParams.delete('v');
+      else url.searchParams.set('v', code);
+      history.replaceState(history.state, '', url.pathname + url.search);
+    }catch(e){}
   }
   function handleRoute(songsData){
     try{

@@ -1243,6 +1243,7 @@ if (weeklyView.style.display === 'block') {
     
     currentState.currentCategory = categoryName;
     currentState.currentSong = song;
+    document.title = song.title || '复活计划乐队';
     currentState.currentPage = 1;
     currentState.totalPages = song.pages;
     currentState.availableVersions = ['原谱', ...(song.versions || [])];
@@ -1253,6 +1254,14 @@ if (weeklyView.style.display === 'block') {
     } else {
         currentState.currentVersion = '原谱';
     }
+    // 分享链接里的 ?v=o|b|g|a 直接指定版本
+    try {
+        const qv = new URLSearchParams(location.search).get('v');
+        const vmap = {o:'原谱', b:'贝司', g:'吉他', a:'备选'};
+        if (qv && vmap[qv] && currentState.availableVersions.includes(vmap[qv])) {
+            currentState.currentVersion = vmap[qv];
+        }
+    } catch (e) {}
 
     const v2Score = (window.VP2UI && VP2UI.has(categoryName, song.id))
         ? VP2UI.scoreFor(categoryName, song.id) : null;
@@ -1292,7 +1301,7 @@ if (weeklyView.style.display === 'block') {
     document.querySelector('.viewer-content').scrollTop = 0;
     
     // 添加历史记录（v2 用可分享路由）
-    if (window.VP2UI) VP2UI.pushRoute(categoryName, song.id);
+    if (window.VP2UI) VP2UI.pushRoute(categoryName, song.id, currentState.currentVersion);
     else history.pushState({viewingSheet: true}, null);
 }
 
@@ -1371,6 +1380,7 @@ function renderVersionButtons() {
                     updatePageIndicator();
                 }
                 renderVersionButtons();
+                if (window.VP2UI && VP2UI.setVersionQuery) VP2UI.setVersionQuery(currentState.currentVersion);
                 // 关闭折叠菜单
                 versionButtonsContainer.classList.remove('show');
                 // 更新箭头方向
@@ -1647,6 +1657,7 @@ function closeViewer() {
     if (document.body.classList.contains('christmas-theme')) {
         showChristmasDecorations();
     }
+    document.title = '复活计划乐队';
 }
 
 // 设置事件监听器
