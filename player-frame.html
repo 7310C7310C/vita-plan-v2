@@ -1059,8 +1059,11 @@ class Engine{
       const t = this.timeAt(ev.beat);
       if (t > untilTime) break;
       if (this.parts[ev.voice]){
-        this.currentSyl = ev.syl;
-        this.note(ev.midi, Math.max(t,this.ctx.currentTime), ev.dur*60/this.tempo, ev.voice, ev.vowel);
+        const durSec = ev.dur * 60 / this.tempo;
+        if (isFinite(ev.midi) && isFinite(t) && isFinite(durSec)){
+          this.currentSyl = ev.syl;
+          this.note(ev.midi, Math.max(t,this.ctx.currentTime), durSec, ev.voice, ev.vowel);
+        }
       }
       i++;
       this.scheduledUpTo = ev.beat+1e-6;
@@ -1094,7 +1097,7 @@ class Engine{
     }
   }
   click(time,accent){
-    if (!this.ctx) return;
+    if (!this.ctx || !isFinite(time)) return;
     const ctx = this.ctx, o = ctx.createOscillator(), g = ctx.createGain();
     o.type = "square"; o.frequency.value = accent?1750:1150;
     g.gain.setValueAtTime(0.0001,time);
@@ -1115,6 +1118,7 @@ class Engine{
   synth(midi,when,durSec){
     const ctx = this.ctx;
     if (!ctx) return;
+    if (!isFinite(when) || !isFinite(durSec) || !isFinite(midi)) return;
     const t0 = Math.max(when,ctx.currentTime), dur = Math.max(0.12,durSec);
     const base = 440*Math.pow(2,(midi-69)/12);
     const g = ctx.createGain(), f = ctx.createBiquadFilter();
