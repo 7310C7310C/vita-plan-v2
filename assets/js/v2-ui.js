@@ -196,11 +196,9 @@
     const q = document.getElementById('v2QuickPauseBtn');
     if (q){
       const label = state.uiLang === 'en' ? (playing ? 'Pause' : 'Play') : (playing ? '暂停' : '播放');
-      const span = q.querySelector('span');
-      if (span) span.textContent = label;
       q.title = label; q.setAttribute('aria-label', label);
       q.classList.toggle('playing', !!playing);
-      q.style.display = 'flex';
+      q.style.display = state.active ? 'flex' : 'none';
     }
   }
   function syncParts(parts){
@@ -226,7 +224,7 @@
   function applyUILang(lang){
     const en = lang === 'en';
     state.uiLang = en ? 'en' : 'zh';
-    document.querySelectorAll('#v2Menu [data-zh], #v2QuickPauseBtn [data-zh]').forEach(el=>{
+    document.querySelectorAll('#v2Menu [data-zh]').forEach(el=>{
       const t = en ? (el.getAttribute('data-en') || el.getAttribute('data-zh')) : el.getAttribute('data-zh');
       if (el.tagName === 'INPUT') return;
       if (el.children.length === 0) el.textContent = t;
