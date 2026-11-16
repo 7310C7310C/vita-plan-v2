@@ -2300,11 +2300,15 @@ function loadAnnots(){
     const raw = JSON.parse(localStorage.getItem(ANNOT_KEY) || '[]');
     if (Array.isArray(raw)){
       return raw.filter(function(g){ return g && Array.isArray(g.ids) && g.ids.length; })
-        .map(function(g){ return {ids: g.ids.map(String), text: String(g.text || '')}; });
+        .map(function(g){
+          const ids = g.ids.map(String);
+          const shape = g.shape === 'rect' ? 'rect' : (ids.length > 1 ? 'rect' : 'circle');
+          return {ids: ids, text: String(g.text || ''), shape: shape};
+        });
     }
     if (raw && typeof raw === 'object'){
       /* migrate old per-note {id:{text}} format into one group per note */
-      return Object.keys(raw).map(function(id){ return {ids:[String(id)], text: String((raw[id] && raw[id].text) || '')}; });
+      return Object.keys(raw).map(function(id){ return {ids:[String(id)], text: String((raw[id] && raw[id].text) || ''), shape:'circle'}; });
     }
   }catch(e){}
   return [];
@@ -2383,15 +2387,25 @@ function annotRender(){
     svg.style.top = top + 'px';
     svg.style.width = w + 'px';
     svg.style.height = h + 'px';
-    const mkEllipse = function(cls, sw){
-      const e = document.createElementNS(SVG_NS, 'ellipse');
-      e.setAttribute('cx', w / 2); e.setAttribute('cy', h / 2);
-      e.setAttribute('rx', Math.max(1, w / 2 - 1.5)); e.setAttribute('ry', Math.max(1, h / 2 - 1.5));
-      e.setAttribute('class', cls); e.setAttribute('stroke-width', sw);
-      return e;
+    const isRect = g.shape === 'rect' || (g.shape === undefined && g.ids.length > 1);
+    const mkShape = function(cls, sw){
+      let el;
+      if (isRect){
+        el = document.createElementNS(SVG_NS, 'rect');
+        el.setAttribute('x', 1.5); el.setAttribute('y', 1.5);
+        el.setAttribute('width', Math.max(1, w - 3)); el.setAttribute('height', Math.max(1, h - 3));
+        const r = Math.min(6, Math.max(1, (h - 3) / 2));
+        el.setAttribute('rx', r); el.setAttribute('ry', r);
+      } else {
+        el = document.createElementNS(SVG_NS, 'ellipse');
+        el.setAttribute('cx', w / 2); el.setAttribute('cy', h / 2);
+        el.setAttribute('rx', Math.max(1, w / 2 - 1.5)); el.setAttribute('ry', Math.max(1, h / 2 - 1.5));
+      }
+      el.setAttribute('class', cls); el.setAttribute('stroke-width', sw);
+      return el;
     };
     if (annotMode && !annotEraser){
-      const hit = mkEllipse('annot-hit', 16);
+      const hit = mkShape('annot-hit', 16);
       hit.addEventListener('click', function(e){
         e.stopPropagation(); e.preventDefault();
         annotActive = gi; annotRender();
@@ -2399,7 +2413,7 @@ function annotRender(){
       });
       svg.appendChild(hit);
     }
-    svg.appendChild(mkEllipse('annot-vis', 2));
+    svg.appendChild(mkShape('annot-vis', 2));
     layer.appendChild(svg);
 
     if (g.text){
@@ -2472,7 +2486,7 @@ function annotClickNote(note){
   const id = String(note.getAttribute('data-id'));
   const gi = annotGroups.findIndex(function(g){ return g.ids.indexOf(id) >= 0; });
   if (gi >= 0){ annotActive = gi; annotShowPop(annotGroups[gi]); return; }
-  const g = {ids:[id], text:''};
+  const g = {ids:[id], text:'', shape:'circle'};
   annotGroups.push(g);
   annotActive = annotGroups.length - 1;
   annotCommit();
@@ -2504,7 +2518,7 @@ function annotSelectRect(x1, y1, x2, y2){
     if (cx >= a && cx <= b && cy >= c && cy <= d) ids.push(id);
   });
   if (!ids.length) return;
-  const g = {ids: ids, text:''};
+  const g = {ids: ids, text:'', shape:'rect'};
   annotGroups.push(g);
   annotActive = annotGroups.length - 1;
   annotCommit();
