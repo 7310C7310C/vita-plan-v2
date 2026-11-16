@@ -186,8 +186,7 @@
   .meter-stack i{line-height:1.05}
   .chordrow,.vrow,.lrow{display:grid;align-items:center}
   .chordrow{height:calc(1.45 * var(--em));font-family:"Noto Sans TC",system-ui,sans-serif;font-size:calc(.64 * var(--em));font-weight:700;color:var(--accent);line-height:1.05}
-  .chordrow span{text-align:center;white-space:nowrap;overflow:visible}
-  .chordrow span.chord-first{text-align:left;padding-left:.08em}
+  .chordrow span{text-align:left;white-space:nowrap;overflow:visible;padding-left:0}
   .vrow{height:calc(2.15 * var(--em))}
   .lrow{height:calc(1.45 * var(--em));font-family:var(--lyric-font);font-size:calc(.88 * var(--em));
     font-weight:var(--lyric-weight,400);color:var(--ink-2)}
@@ -1256,17 +1255,44 @@ function fixBeams(){
     notes.forEach(n=>{ const uu=n.querySelector('.u1'); if (uu) uu.style.display='none'; });
   });
 }
+function alignChords(){
+  document.querySelectorAll('#score .bar').forEach(bar=>{
+    const row=bar.querySelector('.chordrow'); if(!row) return;
+    const spans=Array.prototype.slice.call(row.children);
+    let vrow=bar.querySelector('.vrow[data-vrow="S"]');
+    if (!vrow) vrow=bar.querySelector('.vrow');
+    if (!vrow) return;
+    const cells=Array.prototype.slice.call(vrow.children).filter(c=>c.classList && c.classList.contains('cell'));
+    spans.forEach((span,ci)=>{
+      span.dataset.align='0';
+      span.dataset.shift='0';
+      span.style.transform='';
+      if(!span.textContent.trim()) return;
+      const cell=cells[ci]; if(!cell) return;
+      const note=cell.querySelector('.note .num') || cell.querySelector('.note');
+      if(!note) return;
+      const nr=note.getBoundingClientRect(), sr=span.getBoundingClientRect();
+      const dx=nr.left - sr.left;
+      if (isFinite(dx)){ span.dataset.align=String(dx); span.style.transform='translateX('+dx+'px)'; }
+    });
+  });
+}
 function fixChordOverlaps(){
   document.querySelectorAll('#score .chordrow').forEach(row=>{
     const spans = Array.prototype.slice.call(row.children).filter(s=>s.textContent.trim());
-    spans.forEach(s=>{ s.style.transform = ''; s.dataset.shift = '0'; });
+    spans.forEach(s=>{
+      const base = +(s.dataset.align || 0);
+      s.dataset.shift = '0';
+      s.style.transform = base ? ('translateX(' + base + 'px)') : '';
+    });
     for (let i=0;i<spans.length-1;i++){
       const a = spans[i].getBoundingClientRect(), b = spans[i+1].getBoundingClientRect();
       if (a.right > b.left - 1){
+        const baseNext = +(spans[i+1].dataset.align || 0);
         const prev = +(spans[i+1].dataset.shift || 0);
         const shift = prev + Math.ceil(a.right - b.left + 2);
         spans[i+1].dataset.shift = String(shift);
-        spans[i+1].style.transform = 'translateX(' + shift + 'px)';
+        spans[i+1].style.transform = 'translateX(' + (baseNext + shift) + 'px)';
       }
     }
   });
@@ -1459,6 +1485,7 @@ function render(){
   applySelectionUI();
   applyPartUI();
   drawSlurs();
+  alignChords();
   fixChordOverlaps();
   fixBeams();
   if (lang === "t") convertTree(scoreEl);
