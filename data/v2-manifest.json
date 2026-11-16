@@ -1,0 +1,25 @@
+{
+  "version": "47c6e43a2b9ed214",
+  "files": [
+    {
+      "path": "data/scores/jt/017.json",
+      "hash": "a3f1ac2437ac4b762deb00b23876dff17572ac576054db01cfdc28ab2735d1df",
+      "size": 22302
+    },
+    {
+      "path": "data/scores/lz/008.json",
+      "hash": "8624afa387dad0926eb6d1b3f8b8be34a4988f7edd96ad582596110e22df2cd6",
+      "size": 7219
+    },
+    {
+      "path": "data/scores/lz/019.json",
+      "hash": "7206628438bf8b82aa5dc78281378829e734815a7cb81ad7d23a10efb690faa6",
+      "size": 11150
+    },
+    {
+      "path": "data/scores/lz/020.json",
+      "hash": "5f16fb26d854978f88a52bed1bfd2f0a30776a2d3993d1b167bc8dd06842e424",
+      "size": 9329
+    }
+  ]
+}
