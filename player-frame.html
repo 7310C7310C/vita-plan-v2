@@ -1370,7 +1370,6 @@ function renderBar(bi){
   };
 
   if (SHOW_VOICES.indexOf("S")>=0) h += voiceRow("S");
-  if (SHOW_VOICES.indexOf("A")>=0) h += voiceRow("A");
   const sCells = layoutVoice(bar,"S");
   SCORE.lyrics.forEach((verse,vi)=>{
     let r = `<div class="lrow" style="grid-template-columns:repeat(${n},minmax(0,1fr))">`;
@@ -1398,6 +1397,7 @@ function renderBar(bi){
     });
     h += r + `</div>`;
   });
+  if (SHOW_VOICES.indexOf("A")>=0) h += voiceRow("A");
   if (SHOW_VOICES.indexOf("T")>=0) h += voiceRow("T");
   if (SHOW_VOICES.indexOf("B")>=0) h += voiceRow("B");
   return h + `</div>`;
@@ -1462,8 +1462,8 @@ function render(){
     gutter.className = "gutter";
     let gh = `<div class="g-cell g-bnum"></div><div class="g-cell g-chord"></div>`;
     if (SHOW_VOICES.indexOf("S")>=0) gh += `<div class="g-cell g-voice" data-gv="S">S</div>`;
-    if (SHOW_VOICES.indexOf("A")>=0) gh += `<div class="g-cell g-voice" data-gv="A">A</div>`;
     gh += VERSE_LABELS.map(v=>`<div class="g-cell g-lyr">${v}</div>`).join("");
+    if (SHOW_VOICES.indexOf("A")>=0) gh += `<div class="g-cell g-voice" data-gv="A">A</div>`;
     if (SHOW_VOICES.indexOf("T")>=0) gh += `<div class="g-cell g-voice" data-gv="T">T</div>`;
     if (SHOW_VOICES.indexOf("B")>=0) gh += `<div class="g-cell g-voice" data-gv="B">B</div>`;
     gutter.innerHTML = gh;
