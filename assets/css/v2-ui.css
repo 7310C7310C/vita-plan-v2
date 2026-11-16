@@ -11,6 +11,11 @@ body.v2-image-mode #v2MenuBtn{display:none}
 .v2-head-actions{display:none;align-items:center;gap:8px;position:relative;flex:0 0 auto;pointer-events:auto}
 body.v2-active .v2-head-actions{display:flex}
 body.v2-active{overscroll-behavior:none}
+/* no browser tap flash / bright focus frame on controls */
+*{-webkit-tap-highlight-color:transparent}
+button,.v2-head-btn,.v2-bar-btn,.v2-btn,.v2-chip,.v2-menu-x,.song-nav,.version-toggle-button,.doodle-btn,a{-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+button:focus,.v2-head-btn:focus,.v2-bar-btn:focus,.v2-btn:focus,.v2-chip:focus,.v2-menu-x:focus,.song-nav:focus,.version-toggle-button:focus,.doodle-btn:focus,a:focus{outline:none}
+button:focus-visible,.v2-head-btn:focus-visible,.v2-bar-btn:focus-visible,.v2-btn:focus-visible,.v2-chip:focus-visible,.v2-menu-x:focus-visible,.song-nav:focus-visible,.version-toggle-button:focus-visible,.doodle-btn:focus-visible,a:focus-visible{outline:2px solid rgba(215,168,90,.45);outline-offset:2px}
 body.v2-active .viewer-content{overscroll-behavior:contain}
 body.v2-active .v2-frame{overscroll-behavior:contain}
 .v2-head-btn{height:40px;padding:0 14px;border-radius:20px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.5);color:#fff;font-size:.85rem;cursor:pointer;opacity:.85;white-space:nowrap}
@@ -63,8 +68,8 @@ body.v2-image-mode #v2QuickPauseBtn{display:none!important}
 .v2-menu .v2-select optgroup{font-weight:700}
 
 .v2-quick-pause:disabled{opacity:.45;cursor:not-allowed}
-.v2-bar-btn{background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.35);color:#fff;height:26px;padding:0 10px;border-radius:13px;font-size:.78rem;line-height:1;cursor:pointer;opacity:.85;white-space:nowrap}
-.v2-bar-btn.on{background:rgba(184,137,63,.9);border-color:#d7a85a;opacity:1}
+.v2-bar-btn{background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.22);color:#fff;height:26px;padding:0 10px;border-radius:13px;font-size:.78rem;line-height:1;cursor:pointer;opacity:.85;white-space:nowrap;-webkit-user-select:none;user-select:none}
+.v2-bar-btn.on{background:rgba(184,137,63,.85);border-color:rgba(215,168,90,.45);opacity:1}
 .v2-bar-btn:hover{opacity:1}
 body.v2-image-mode #v2AnnotBarBtn,body.v2-image-mode #v2WrapBarBtn{display:none!important}
 .v2-annot-tools{position:fixed;left:50%;bottom:64px;transform:translateX(-50%);z-index:112;display:none;gap:6px;padding:6px 8px;background:rgba(30,26,20,.92);border:1px solid rgba(255,255,255,.25);border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.25)}
@@ -91,14 +96,14 @@ body.v2-image-mode .v2-menu{display:none!important}
   .v2-quick-pause svg{width:14px;height:14px}
   .v2-menu{position:fixed;top:58px;right:10px;left:10px;width:auto;max-height:70vh}
 }
-/* 窄屏新谱（JSON）：面包屑像收藏键一样独立换行置左；其他按钮保持原行 */
+/* 窄屏新谱（JSON）：收藏+面包屑同一行，其他按钮换行置左 */
 @media (max-width:600px){
-  body.v2-json-mode .viewer-topbar{flex-wrap:nowrap;align-items:center;height:35px}
+  body.v2-json-mode .viewer-topbar{flex-wrap:wrap;align-items:center;height:auto;row-gap:6px}
   body.v2-json-mode .viewer-topbar .viewer-breadcrumb{
-    position:fixed;top:56px;left:15px;right:auto;width:auto;max-width:calc(100vw - 30px);
-    height:35px;flex:0 0 auto;z-index:111;justify-content:flex-start
+    position:static;top:auto;left:auto;flex:0 1 auto;width:auto;
+    max-width:calc(100vw - 130px);height:35px;justify-content:flex-start
   }
-  body.v2-json-mode .v2-head-actions{flex:1 1 auto;justify-content:flex-start}
+  body.v2-json-mode .v2-head-actions{flex:1 1 100%;justify-content:flex-start}
   body.v2-json-mode .v2-menu{position:fixed;top:102px;left:10px;right:10px;width:auto;max-height:calc(100vh - 150px)}
   .v2-bar-btn{font-size:.72rem;padding:0 8px}
 }
