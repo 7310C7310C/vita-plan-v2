@@ -2085,6 +2085,14 @@ window.__hymn = {
       lang:lang, metronome:engine.metronome, volume:Math.round(engine.volume*100)};
   }
   function vp2Send(){ try{ parent.postMessage(vp2State(), location.origin); }catch(e){} }
+  /* 任何来源（含点谱上音符 playFrom、隐藏播放键、可见性）改了播放 UI 都同步父页 */
+  try{
+    const prevSetPlayUI = window.setPlayUI;
+    window.setPlayUI = function(playing){
+      try{ prevSetPlayUI(playing); }catch(e){}
+      vp2Send();
+    };
+  }catch(e){}
   try{
     const prevEnd = engine.onEnd;
     engine.onEnd = function(){ try{ if (prevEnd) prevEnd(); }catch(e){} vp2Send(); };
