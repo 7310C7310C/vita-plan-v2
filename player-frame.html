@@ -424,7 +424,7 @@
   xhr.open("GET", url, false);
   xhr.send();
   window.__SCORE = JSON.parse(xhr.responseText);
-  window.__SONG_ID = id;
+  window.__SONG_ID = qs.get("id") || window.__SCORE.id || id;
   document.body.classList.add("embed");
   setTimeout(()=>document.body.classList.add("ready"), 2500);   /* 保险：即使初始化失敗也显示 */
 })();
