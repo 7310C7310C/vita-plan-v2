@@ -192,6 +192,8 @@
     state.playing = !!playing;
     const b = document.getElementById('v2PlayBtn');
     if (b) b.textContent = state.uiLang === 'en' ? (playing ? 'Pause' : 'Play') : (playing ? '暂停' : '播放');
+    const q = document.getElementById('v2QuickPauseBtn');
+    if (q) q.style.display = playing ? 'flex' : 'none';
   }
   function syncParts(parts){
     if (!parts) return;
@@ -285,6 +287,8 @@
     }
     const play = document.getElementById('v2PlayBtn');
     if (play) play.addEventListener('click', function(){ post(state.playing ? 'pause' : 'play'); });
+    const quickPause = document.getElementById('v2QuickPauseBtn');
+    if (quickPause) quickPause.addEventListener('click', function(){ post('pause'); setPlayUI(false); });
     const stop = document.getElementById('v2StopBtn');
     if (stop) stop.addEventListener('click', function(){ post('stop'); setPlayUI(false); });
     document.querySelectorAll('#v2Menu [data-part]').forEach(el=>{

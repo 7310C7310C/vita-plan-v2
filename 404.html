@@ -7,7 +7,7 @@
     <title>复活计划乐队</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="assets/css/style.css?v=20261115185326">
-    <link rel="stylesheet" href="assets/css/v2-ui.css?v=1">
+    <link rel="stylesheet" href="assets/css/v2-ui.css?v=2">
     <style>
         #loadingOverlay {
             display: block;
@@ -158,11 +158,12 @@
                 <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>
             </svg>
         </button>
-        <div id="viewer-breadcrumb" class="viewer-breadcrumb"></div>
-        <div class="v2-head-actions" id="v2HeadActions">
-            <button class="v2-head-btn" id="v2ImageBtn" type="button">图片谱</button>
-            <button class="v2-head-btn" id="v2MenuBtn" type="button">菜单</button>
-        </div>
+        <div class="viewer-topbar">
+            <div id="viewer-breadcrumb" class="viewer-breadcrumb"></div>
+            <div class="v2-head-actions" id="v2HeadActions">
+                <button class="v2-head-btn" id="v2ImageBtn" type="button">图片谱</button>
+                <button class="v2-head-btn" id="v2MenuBtn" type="button">菜单</button>
+                <button class="v2-head-btn v2-quick-pause" id="v2QuickPauseBtn" type="button" aria-label="暂停" title="暂停" style="display:none"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4.5" width="4" height="15" rx="1.2"/><rect x="14" y="4.5" width="4" height="15" rx="1.2"/></svg></button>
         <div class="v2-menu" id="v2Menu">
             <div class="v2-row"><strong id="v2MenuTitle">播放器</strong></div>
             <div class="v2-row">
@@ -190,6 +191,7 @@
                 <label data-zh="音量" data-en="Volume">音量</label>
                 <input id="v2Vol" type="range" min="0" max="100" value="100">
                 <span class="v2-val" id="v2VolVal">100</span>
+            </div>
             </div>
         </div>
         <div class="viewer-content" id="viewerContent">
@@ -270,9 +272,9 @@
         <div id="modalVersionBtnList" style="display:flex;flex-direction:column;gap:14px;margin-bottom:10px;"></div>
       </div>
     </div>
-    <script src="data/v2-scores.js?v=1"></script>
-    <script src="assets/js/v2-ui.js?v=1"></script>
-    <script src="assets/js/script.js?v=20261115185326"></script>
-    <script src="assets/js/v2-cache.js?v=1"></script>
+    <script src="data/v2-scores.js?v=2"></script>
+    <script src="assets/js/v2-ui.js?v=2"></script>
+    <script src="assets/js/script.js?v=2026111601"></script>
+    <script src="assets/js/v2-cache.js?v=2"></script>
 </body>
 </html>
