@@ -37,3 +37,4 @@ body.v2-image-mode .v2-menu{display:none!important}
 /* v2 has no manual full-offline card */
 #offlineSection{display:none!important}
 a.song-item{text-decoration:none;color:inherit}
+a.category-card{text-decoration:none;color:inherit;display:block}

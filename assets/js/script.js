@@ -935,13 +935,20 @@ function renderCategories() {
     Object.keys(songsData.categories).forEach(categoryName => {
         const category = songsData.categories[categoryName];
         const songCount = Object.keys(category.songs).length;
-        const categoryElement = document.createElement('div');
+        const categoryElement = document.createElement('a');
         categoryElement.className = 'category-card';
+        let catHref = null;
+        try { catHref = window.VP2UI && VP2UI.routeForCategory ? VP2UI.routeForCategory(categoryName) : null; } catch (e) {}
+        if (catHref) categoryElement.href = catHref;
         categoryElement.innerHTML = `
             <h2 data-original-name="${categoryName}">${t(categoryName, 'categories')}</h2>
             <p>${songCount} ${t('songsCount')}</p>
         `;
-        categoryElement.addEventListener('click', () => showCategory(categoryName));
+        categoryElement.addEventListener('click', (e) => {
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+            e.preventDefault();
+            showCategory(categoryName);
+        });
         categoriesContainer.appendChild(categoryElement);
     });
 }
@@ -985,6 +992,9 @@ function renderVersionPreference() {
 function showCategory(categoryName) {
     const category = songsData.categories[categoryName];
     if (!category) return;
+    if (window.VP2UI && VP2UI.routeForCategory) {
+        try { history.pushState({v2:true}, '', VP2UI.routeForCategory(categoryName)); } catch (e) {}
+    }
 
     // 对"答唱咏（朱健仁）"卡片进行特殊处理
     if (categoryName === "答唱咏（朱健仁）") {
@@ -1080,6 +1090,7 @@ function showCategory(categoryName) {
 
 // 显示本周歌曲
 function showWeeklySongs() {
+    if (window.VP2UI && VP2UI.pushPath) VP2UI.pushPath('weekly');
     currentState.openedFrom = null;
     updateDate.textContent = `${t('updateDate')}${songsData.weeklySongs.updateDate}`;
     weeklySongsContainer.innerHTML = '';
@@ -1699,7 +1710,11 @@ function setupEventListeners() {
     });
 
     // 本周歌曲按钮点击事件
-    weeklyButton.addEventListener('click', showWeeklySongs);
+    weeklyButton.addEventListener('click', (e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+        e.preventDefault();
+        showWeeklySongs();
+    });
 
     // 为"本周歌曲"标题添加彩蛋：点击复制歌曲列表
     weeklyTitle.addEventListener('click', () => {

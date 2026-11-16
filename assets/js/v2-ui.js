@@ -98,9 +98,16 @@
     if (menuBtn) menuBtn.style.display = on ? 'none' : '';
     if (on && menu) menu.classList.remove('open');
   }
+  function routeForCategory(cat){
+    const code = codeFor(cat);
+    return code ? (basePath() + code) : null;
+  }
   function routeFor(cat, id){
     const code = codeFor(cat);
     return code ? (basePath() + code + '/' + id) : null;
+  }
+  function pushPath(path){
+    try{ history.pushState({v2:true}, '', basePath() + path); }catch(e){}
   }
   function pushRoute(cat, id){
     const href = routeFor(cat, id);
@@ -114,6 +121,12 @@
       if (p.indexOf(base) === 0) p = p.slice(base.length);
       p = p.replace(/^\/+|\/+$/g, '');
       const parts = p.split('/').filter(Boolean);
+      if (parts.length === 1){
+        if (parts[0] === 'weekly'){ if (window.showWeeklySongs) window.showWeeklySongs(); return true; }
+        const cat1 = Object.keys(state.data.codes).find(c => state.data.codes[c] === parts[0]);
+        if (cat1 && window.showCategory){ window.showCategory(cat1); return true; }
+        return false;
+      }
       if (parts.length !== 2) return false;
       const code = parts[0], id = parts[1];
       const cat = Object.keys(state.data.codes).find(c => state.data.codes[c] === code);
@@ -280,7 +293,7 @@
 
   window.VP2UI = {
     has, scoreFor, enter, leave, setImageMode, isActive:()=>state.active, isImage:()=>state.image,
-    pushRoute, routeFor, handleRoute, basePath, post, setUILang: applyUILang,
+    pushRoute, routeFor, routeForCategory, pushPath, handleRoute, basePath, post, setUILang: applyUILang,
     get state(){ return state; }
   };
 
