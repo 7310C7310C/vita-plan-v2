@@ -1,129 +1,163 @@
-# 复活计划乐队（Vita Plan）
+# 复活计划乐队 · v2
 
-> 复活计划乐队的在线歌谱库。打开网页即可查看本周歌曲、分类歌谱与不同乐器版本，适合排练前查谱、排练中翻谱和演出前复习。
+> 本仓库是 **v2**。v1 的 README 与说明已全部废弃，不再沿用。
+>
+> v2 以 v1 的站点外观、分类、搜索、收藏与后台为基础，播放器改为读取 JSON 乐谱；v1 保留在独立仓库与 `v1.kcan.cc`，v2 不改动 v1。
 
-- 主站：<https://kcan.cc/>
-- 备用站：<https://7310c7310c.github.io/vita-plan/>
-- 英文名：**Vita Plan**（仓库地址中的 `vita-plan` 是仓库标识）
+## 地址
 
-## 三步开始
+| 环境 | 地址 |
+| --- | --- |
+| Staging | <https://v2.kcan.cc/> |
+| 生产（待切换） | <https://kcan.cc/> |
+| v1（保留） | <https://v1.kcan.cc/> |
+| GitHub Pages 备份 | 仓库 Pages（不对外链接，仅灾备） |
 
-1. 打开主站，直接进入歌谱首页。
-2. 点「本周歌曲」，或从分类中选歌；也可以直接搜索歌名、编号或分类。
-3. 点开歌曲查看乐谱，按需切换版本、翻页或收藏。
+## 当前状态
 
-## 歌谱浏览
+- 已完成 v2 基础站、播放器、标注、离线 JSON、admin 登录/读取。
+- 已数字化 4 首：`jt/017`、`lz/008`、`lz/019`、`lz/020`。
+- 其余歌曲仍只有 v1 图片谱；全站数字化是后续主線。
+- 正式上线前：`v2.kcan.cc` 验收 → 切 `kcan.cc` root → v1 留 `v1.kcan.cc` → 清理 v1 的 `/001`、`/tmp`。
 
-- **本周歌曲**：显示本周排练或礼仪使用的歌曲，并标注适用日期。
-- **分类浏览**：进堂咏、垂怜曲、光荣颂、答唱咏（朱健仁）、福音前欢呼、奉献咏、天主经、领主咏、礼成咏、圣诞、圣神、备用、其他。
-- **答唱咏**：按通用、甲年、乙年、丙年分组，方便按礼仪年查找。
-- **搜索**：支持歌名、歌曲编号和分类；英文界面下也可用英文分类名搜索。
-- **数量**：目前收录 181 首、13 个分类，随每周更新持续增加。
+## 与 v1 的边界
 
-## 乐谱阅读器
+- v2 任何页面**不链接** v1，也不链接 GitHub Pages；对外只走 `kcan.cc`。
+- v1 是独立仓库/独立站点；v2 的更新不得影响 v1。
+- v2 复用 v1 的 `assets/css/style.css`、`assets/js/script.js` 作为站点外壳，但播放器为 `player-frame.html`。
 
-- **版本切换**：每首歌以「原谱」为基础，另有贝司、吉他、备选等版本（仅显示已上传的版本）。
-- **优先版本**：首页可选择优先显示的版本；打开歌曲时自动选用，没有该版本则回退到原谱。
-- **翻页**：底部显示页码，可上一页／下一页；也可切换上一首／下一首。
-- **适应屏幕**：可在「适应宽度」和「适应高度」之间切换，平板阅读更方便。
-- **键盘操作**：`←` `→` 翻页，`↑` `↓` 切换歌曲，`F` 切换适应模式，`Esc` 关闭乐谱。
-- **手机操作**：在乐谱上左右滑动翻页；底部按钮可切歌、切版本。
-- **涂改**：支持画笔、橡皮擦、撤销、重做和清空，按「歌曲＋版本＋页码」保存在当前浏览器，下次打开会自动恢复。
-- **收藏**：在乐谱右上角点心形按钮，加入或取消收藏。
-- **圣诞主题**：管理员开启后，首页会显示雪花、圣诞树等装饰。
+## 功能
 
-## 收藏与最近查看
+- 首页、搜索、分类、本周歌曲、最近查看、收藏。
+- 默认显示 JSON 乐谱；顶栏「图片谱」按钮切到对应图片版本，再点「返回」回 JSON。
+- 版本：原谱 / 贝司 / 吉他 / 备选；URL 使用 `?v=o|b|g|a`。
+- 顶栏：收藏、面包屑、图片谱、菜单、播放/暂停图标、关闭；窄屏新谱下收藏+面包屑一行，其余按钮换行靠左。
+- 播放器菜单：声部（含全选）、节拍器、速度、音量、音色（128 种/16 组）、字号、跟随播放、夜间、简繁、重置。
+- 标注：点击或拖框选择音符，红圈/圆角矩形包住；可加半透文字；支持保存、清空、橡皮擦、撤销、重做；标记存本机。
+- 底栏：上一首、版本、标注（原涂改位置）、自动换行、下一首。
+- 离线：壳与全部 JSON 谱可离线；图片、OpenCC、字体不保证离线。
+- 中英界面：只翻 UI/分类，不翻曲名与歌词。
 
-- 右上角「历史与收藏」面板可查看最近查看和收藏的歌曲。
-- 最近查看最多保留 10 条，收藏数量不限。
-- 这些记录只保存在当前浏览器，不会上传服务器，也不会在手机与电脑之间同步。
+## 路由
 
-## 离线歌谱
+| 路径 | 说明 |
+| --- | --- |
+| `/` | 首页 |
+| `/weekly` | 本周歌曲 |
+| `/{code}` | 分类 |
+| `/{code}/{id}` | 歌曲 |
+| `?v=o/b/g/a` | 原谱/贝司/吉他/备选 |
 
-- 首页「本周歌曲」上方提供「离线歌谱」：首次下载全部约 **36MB**，包含全部 385 张乐谱和页面资源。
-- 离线下载需要支持 Web Locks 的现代浏览器；较旧浏览器仍可在线使用。
-- 下载完成后，页面与乐谱由浏览器缓存提供，刷新不会重新下载 36MB；已缓存内容可离线打开。
-- 网站内容更新后不会自动下载，需要在离线卡片上手动点「检查更新」；只下载清单中真正有变化的文件。
-- 支持离线功能且已有完整缓存时，每次进入或刷新页面会在后台自动检查一次更新；没有网络时直接跳过。
-- 自动检查无更新时完全静默；发现新版本才弹出「发现新版本，是否立即更新？」确认框。手动检查仍会显示进度、无更新提示与错误信息。
-- 离线缓存只保存在**当前浏览器、当前网址**。清理网站数据、使用无痕模式、更换设备或更换网址（不同 origin）都会失效，需要重新下载。
-- 首次缓存会在后台进行，按钮上显示进度，可继续浏览或看谱；中断后按钮会变成「继续缓存」。
-- 更新安装期间建议保持页面打开；完成后按提示刷新。
-
-## 低容量／不支持的浏览器
-
-- 没有完整离线 cache，且浏览器回报 quota 低于 48MB 或 free 低于 40MB 时，离线卡片会隐藏、卸载 Service Worker、清除离线 cache 与 IndexedDB，并自动重新整理一次；之后以一般线上模式使用。
-- 已有完整离线 cache 不会因容量数字偏低被清除，会保留离线歌谱并继续显示「缓存于……」。
-- 缺少 Web Locks 等离线 API，或无法确认存储容量时，保留既有 cache，只显示「离线缓存不可用」。
-- 可用 <https://kcan.cc/tools/storage-test.html> 检测当前浏览器与设备的离线缓存能力；此页只读取 origin，不会写入歌谱数据。
-
-## 中英文界面
-
-- 右上角「中/En」可切换界面语言，选择会被记住。
-- 英文界面下，标题显示为 **Vita Plan**，分类名也会翻译成英文。
-- 歌曲标题以录入时的名称为准，不随界面语言自动翻译。
-
-## 乐手小工具
-
-- **转调对照表**：<https://kcan.cc/key/> — 选择源调与目标调，快速查看对应音名。
-- **随机音符播放器**：<https://kcan.cc/random/> — 随机出音练习，可设置音色、次数和自定义练习音符。
-- **离线缓存容量检测**：<https://kcan.cc/tools/storage-test.html> — 检测当前浏览器与设备的离线缓存能力，不会写入歌谱数据。
-
-## 使用提示
-
-- 本站无需注册或登录，打开网址即可使用。
-- 首次下载离线歌谱或检查更新时需要联网；已缓存的页面和图片可离线打开。
-- 涂改、收藏、最近查看、语言偏好和离线缓存都保存在本机浏览器。清理网站数据、使用无痕模式或更换设备后会丢失。
-- 离线缓存按网址（origin）隔离，kcan.cc 与 GitHub Pages 备用站不共用。
-- 歌曲没有某个版本，说明该版本尚未上传；可向管理员反馈。
-- 本站为公开网页，请勿在歌谱或涂改中放置敏感信息。
-
-## 给管理员
-
-<details>
-<summary>展开查看后台与发布说明</summary>
-
-管理后台：<https://kcan.cc/admin/>
-
-登录需要具备该仓库 **Contents 读写权限** 的 GitHub Personal Access Token。可选择记住登录状态，Token 只保存在当前浏览器；公用电脑请勿勾选。
-
-后台可以完成：
-
-- 编辑本周歌曲与适用日期
-- 新增、修改、删除歌曲和分类，重整歌曲编号
-- 上传乐谱图片，裁剪空白边距并自动压缩
-- 开启或关闭圣诞主题
-- 查看待发布更改、Git 提交历史和发布回滚
-- 点「发布到 GitHub」提交到 `main`
-
-发布后，GitHub Actions 会自动把内容部署到：
-
-- `https://kcan.cc/`（VPS 上的 `/var/www/vita-plan`）
-- `https://7310c7310c.github.io/vita-plan/`（GitHub Pages 备用站）
-
-建议等 Actions 执行成功后再通知乐队成员。
-
-**离线清单**：后台发布会根据最终 Git tree 自动生成 `data/offline-manifest.json`。如果是手动修改 `index.html`、`assets/css/style.css`、`assets/js/script.js`、`assets/js/offline.js`、`data/songs.json`、`favicon.ico` 或 `img/**`，必须先运行：
-
-```bash
-python3 scripts/generate_offline_manifest.py
-```
-
-再把 manifest 一起 commit。手动修改图片以外的页面资源时，还要同步 bump `index.html` 里对应的 `?v=`（`assets/js/script.js`、`assets/css/style.css`、`assets/js/offline.js`）；若改了 `data/songs.json`，也要 bump `assets/js/script.js` 里的 `jsonVersion`。否则浏览器可能继续使用 HTTP/memory cache 里的旧资源。后台发布会自动处理这些版本号。
-
-GitHub Actions 部署前会运行 `python3 scripts/generate_offline_manifest.py --check`；manifest 过期会让部署失败，不会更新 VPS。
-
-手工替换图片时，文件名遵循：
+分类码：
 
 ```text
-img/<分类>/<分类>_<编号>_<标题>_<页码>.jpeg
-img/<分类>/<分类>_<编号>_<标题>_<版本>_<页码>.jpeg
+jt 进堂咏   cl 垂怜曲   gr 光荣颂   dc 答唱咏（朱健仁）
+fy 福音前欢呼 fx 奉献咏  tz 天主经   lz 领主咏
+lc 礼成咏   sd 圣诞     ss 圣神     by 备用
+qt 其他
 ```
 
-仓库为纯静态 HTML/CSS/JavaScript，无构建步骤；歌曲索引在 `data/songs.json`。仓库地址：<https://github.com/7310C7310C/vita-plan>。英文名统一写作 **Vita Plan**。
+编号沿用 v1，永不重排；删歌留空号。
 
-</details>
+## 乐谱数据
 
-## 反馈
+- 乐谱：`data/scores/{code}/{id}.json`
+- 运行时映射：`data/v2-scores.json` → 构建时生成 `data/v2-scores.js`
+- 离线清单：`data/v2-manifest.json`（脚本生成）
+- 歌曲目录：`data/songs.json`
+- 生成脚本：`scripts/generate_v2_manifest.py`
 
-发现问题或有建议，欢迎在 [GitHub Issues](../../issues) 留言，或直接联系乐队管理员。
+JSON 主要字段：
+
+```text
+id title credit original credits key keyBase meter beatUnit tempo tempoLabel
+compound clickStep lyricsMode voiceOct phrases bars lyrics slurs ties dc repeat
+```
+
+- `original`：原文歌名，居中显示在标题下（可省略）。
+- `credits`：作词/作曲/说明，多行右对齐（可省略）。
+- `tempoLabel`：默认速度，如 `♩=100`、`♪=176`，显示在调性/节拍下方。
+- `repeat`：`{from,to}` 小节索引；`dc`：`{from,to}`。
+
+新增一首 JSON 谱：
+
+1. 放入 `data/scores/{code}/{id}.json`。
+2. 在 `data/v2-scores.json` 的 `scores` 增加 `"{code}/{id}": {"file":"data/scores/{code}/{id}.json","label":"四声部"}`。
+3. 运行 `python3 scripts/generate_v2_manifest.py`。
+4. 若改了 `player-frame.html` 或前端资源，按下方「版本规则」升级缓存版本。
+
+## 目录
+
+```text
+index.html / 404.html      站点外壳（404.html 与 index 同步）
+player-frame.html          JSON 乐谱播放器（iframe）
+assets/css/v2-ui.css       v2 顶栏/菜单/底栏/标注工具样式
+assets/js/v2-ui.js         父页与播放器桥接、菜单、路由、标注状态
+assets/js/v2-cache.js      Service Worker 注册与 manifest 同步
+assets/js/script.js        v1 站点外壳逻辑（v2 复用）
+assets/js/offline.js       v1 离线逻辑（v2 页面不加载，admin/旧逻辑仍引用）
+sw-v2.js                   v2 Service Worker
+sw.js                      v1 Service Worker（v2 页面不注册）
+data/                      歌曲目录、乐谱 JSON、映射与 manifest
+img/                       图片谱（按分类）
+admin/                     管理后台（GitHub API）
+scripts/                   manifest 生成脚本
+key/ random/ tools/        v1 小工具页
+```
+
+## 本地运行
+
+无构建步骤。仓库根目录启动静态服务器即可：
+
+```bash
+python3 -m http.server 8080
+# 打开 http://localhost:8080/
+```
+
+`index.html`/`404.html` 开头的 `document.write('<base ...>')` 用于兼容 GitHub Pages 子路径；本地根路径与 `v2.kcan.cc` 都走 `/`。
+
+## 部署
+
+- 推送 `main` 后 GitHub Actions（`.github/workflows/deploy.yml`）SSH 到服务器：
+  `/var/www/vita-plan-v2` → `git pull` → `chown www-data`。
+- Nginx：`v1.kcan.cc` / `v2.kcan.cc` 独立 server block；gzip、CSP `frame-ancestors 'self'`、XFO 已配置。
+- GitHub Pages：仓库设置中从分支发布，`.nojekyll` + `404.html` 保证深链可用；仅灾备，不对外宣传。
+
+## 缓存与离线
+
+| 内容 | 缓存方式 |
+| --- | --- |
+| 壳（HTML/CSS/JS/favicon） | SW `v2-shell-*`，stale-while-revalidate |
+| `songs.json` | network-first，失败回缓存 |
+| JSON 乐谱 | SW install 预缓存 + `v2-manifest` 版本同步，cache-first |
+| 图片谱 | **不进 SW**；nginx 无长缓存头，仅浏览器启发式缓存 + 首页 10 秒预载本周图片 |
+| 采样音源 | smplr 自带 Cache Storage（`smplr`），按乐器缓存 |
+| 简繁 OpenCC | jsDelivr 外部脚本，仅浏览器 HTTP 缓存 |
+| 字体 | **无 webfont**，使用系统字体；无字体缓存 |
+
+### 版本规则
+
+改动前端资源或 `player-frame.html` 后，必须同时：
+
+1. 更新引用处的 `?v=`（`v2-ui.js` / `v2-ui.css` / `v2-cache.js` 等）。
+2. 升级 `sw-v2.js` 的 `SHELL_CACHE`（如 `v2-shell-44`）。
+3. 若 `index.html` 有改动，同步复制为 `404.html`。
+
+只改 `data/scores/*.json` 时，运行 manifest 脚本即可；SW install / 运行期同步会更新乐谱缓存。
+
+## 管理后台
+
+- 地址：`/admin/`，用 GitHub fine-grained PAT 登录。
+- Token 只需 `7310C7310C/vita-plan-v2` 的 **Contents: Read/Write**。
+- Token 仅存本机；后台可编辑本周歌曲、歌曲与图片、提交历史、发布。
+- 已知限制：v2 发布流程尚未自动生成 `v2-manifest.json`；发布后需手动运行脚本或确认 manifest。
+- 后台「重整编号」已停用（v2 编号永不重排）。
+
+## 开发约定
+
+- 提交说明用中文。
+- 编号沿用 v1，永不重排；删歌留空号。
+- v2 不新增指向 v1 / GitHub Pages 的对外链接。
+- 标注只存本机（`v2.annot.<songId>`）；设置按曲存在 `ys.settings.<songId>.v2`。
+- 播放/标注改动需回归：顶部播放图标、B1 早暂停、背景暂停、repeat 第二遍、区间内重点、标注红圈/删除、图片谱返回、离线。
+- 已知遗留：320 图片谱底栏偏宽；admin 发布不生成 v2 manifest；图片不保证离线；字体依赖系统。
