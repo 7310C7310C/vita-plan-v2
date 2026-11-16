@@ -63,7 +63,7 @@
     document.body.classList.remove('v2-image-mode');
     if (headActions) headActions.style.display = 'flex';
     if (menuBtn) menuBtn.style.display = '';
-    if (imageBtn){ imageBtn.style.display = ''; imageBtn.textContent = '图片谱'; }
+    if (imageBtn){ imageBtn.style.display = ''; imageBtn.textContent = state.uiLang === 'en' ? 'Image' : '图片谱'; }
     if (menu) menu.classList.remove('open');
     const vc = document.getElementById('viewerContent');
     if (vc) vc.classList.add('v2-mode');
@@ -94,7 +94,7 @@
     const vc = document.getElementById('viewerContent');
     if (vc) vc.classList.toggle('v2-mode', !on);
     if (on){ post('stop'); }
-    if (imageBtn) imageBtn.textContent = on ? '简谱' : '图片谱';
+    if (imageBtn) imageBtn.textContent = on ? (state.uiLang === 'en' ? 'Score' : '简谱') : (state.uiLang === 'en' ? 'Image' : '图片谱');
     if (menuBtn) menuBtn.style.display = on ? 'none' : '';
     if (on && menu) menu.classList.remove('open');
   }
