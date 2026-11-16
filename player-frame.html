@@ -606,14 +606,8 @@ const GM_GROUPS = [
   {name:"民族", gain:1.6, items:[
     ["sitar","西塔琴"],["banjo","斑鸠琴"],["shamisen","三味线"],["koto","古筝"],
     ["kalimba","拇指琴"],["bagpipe","风笛"],["fiddle","民謠提琴"],["shanai","唢吶"]] },
-  {name:"打击", gain:2.2, items:[
-    ["tinkle_bell","铃鐺"],["agogo","阿哥哥铃"],["steel_drums","钢鼓"],["woodblock","木鱼"],
-    ["taiko_drum","太鼓"],["melodic_tom","旋律鼓"],["synth_drum","合成鼓"],["reverse_cymbal","反钹"]] },
-  {name:"音效", gain:1.0, items:[
-    ["guitar_fret_noise","吉他擦弦"],["breath_noise","呼吸声"],["seashore","海浪"],
-    ["bird_tweet","鸟鸣"],["telephone_ring","电话铃"],["helicopter","直升机"],
-    ["applause","掌声"],["gunshot","槍声"]] }
 ];
+
 const TIMBRES = {};
 GM_GROUPS.forEach(g=>g.items.forEach(([id,label])=>{ TIMBRES[id] = {label, group:g.name, gain:g.gain}; }));
 
@@ -2275,10 +2269,20 @@ window.__hymn = {
         case 'timbre': {
           const id = String(m.value || '');
           if (TIMBRES[id]){
+            const label = TIMBRES[id].label || id;
+            const already = engine.instName === id && !!engine.inst;
             engine.timbre = id;
             if (timbreEl) timbreEl.value = id;
             saveSettings();
-            engine.loadTimbre(id).then(function(inst){ if (inst && engine.playing && engine.onReady) engine.onReady(id); });
+            if (already){
+              try{ parent.postMessage({type:'vp2:timbre', state:'ready', label:label}, location.origin); }catch(e){}
+            } else {
+              try{ parent.postMessage({type:'vp2:timbre', state:'loading', label:label}, location.origin); }catch(e){}
+              engine.loadTimbre(id).then(function(inst){
+                try{ parent.postMessage({type:'vp2:timbre', state: inst ? 'ready' : 'failed', label:label}, location.origin); }catch(e){}
+                if (inst && engine.playing && engine.onReady) engine.onReady(id);
+              });
+            }
           }
           break;
         }

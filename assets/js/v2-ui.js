@@ -383,6 +383,14 @@
     const m = e.data || {};
     if (m.type === 'vp2:menu-close'){
       if (menu) menu.classList.remove('open');
+    } else if (m.type === 'vp2:timbre'){
+      if (window.showToast){
+        const label = m.label || (state.uiLang === 'en' ? 'Timbre' : '音色');
+        const en = state.uiLang === 'en';
+        if (m.state === 'loading') window.showToast(en ? label + ' loading… (synth for now)' : label + ' 音色加载中…（先用合成音）');
+        else if (m.state === 'ready') window.showToast(en ? label + ' ready' : label + ' 音色已就绪');
+        else if (m.state === 'failed') window.showToast(en ? label + ' failed; using synth' : label + ' 加载失败，继续使用合成音');
+      }
     } else if (m.type === 'vp2:annot'){
       updateAnnotTools(m);
     } else if (m.type === 'vp2:ready'){
