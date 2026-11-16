@@ -1,5 +1,5 @@
 /* Vita Plan v2 service worker: pre-cache shell + all JSON scores after first paint. */
-const SHELL_CACHE = 'v2-shell-54';
+const SHELL_CACHE = 'v2-shell-55';
 const JSON_CACHE = 'v2-json-v2';
 const SHELL = [
   'index.html',
@@ -62,6 +62,10 @@ self.addEventListener('fetch', event => {
   }
   if (path.endsWith('/data/v2-scores.json') || path.endsWith('/data/v2-manifest.json')) {
     event.respondWith(networkFirst(req));
+    return;
+  }
+  if (path.endsWith('/data/chords-guitar.json')) {
+    event.respondWith(staleWhileRevalidate(req));
     return;
   }
   if (path.endsWith('/player-frame.html')) {
