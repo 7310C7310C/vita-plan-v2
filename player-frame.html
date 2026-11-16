@@ -308,13 +308,13 @@
   .annot-layer{position:absolute;inset:0;pointer-events:none;z-index:6}
   .annot-ring{position:absolute;overflow:visible;pointer-events:none}
   .annot-ring svg{display:block;width:100%;height:100%;overflow:visible}
-  .annot-vis{fill:none;stroke:#d93025;stroke-width:2;pointer-events:none}
-  .annot-ring.active .annot-vis{stroke-width:2.6}
+  .annot-vis{fill:none;stroke:rgba(217,48,37,.72);stroke-width:2;pointer-events:none}
+  .annot-ring.active .annot-vis{stroke:rgba(217,48,37,.9);stroke-width:2.6}
   .annot-hit{fill:none;stroke:rgba(0,0,0,0);stroke-width:16;pointer-events:stroke;cursor:pointer}
   .annot-chip{
     position:absolute;transform:translateX(-50%);
-    max-width:12em;padding:1px 6px;border-radius:5px;background:rgba(255,244,242,.82);color:#b3261e;
-    border:1px solid rgba(217,48,37,.4);font-size:.62em;line-height:1.35;font-weight:600;
+    max-width:12em;padding:1px 6px;border-radius:5px;background:rgba(255,244,242,.68);color:rgba(179,38,30,.92);
+    border:1px solid rgba(217,48,37,.3);font-size:.62em;line-height:1.35;font-weight:600;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 1px 4px rgba(0,0,0,.15);
     pointer-events:auto;cursor:pointer;z-index:3
   }
@@ -322,11 +322,11 @@
     position:absolute;margin-left:-11px;margin-top:-11px;width:22px;height:22px;padding:0;box-sizing:border-box;
     border-radius:50%;border:2px solid #fff;background:#d93025;color:#fff;font-size:13px;line-height:1;
     display:flex;align-items:center;justify-content:center;cursor:pointer;pointer-events:auto;z-index:4;
-    box-shadow:0 1px 4px rgba(0,0,0,.28);font-weight:700;text-shadow:0 1px 1px rgba(0,0,0,.25)
+    box-shadow:0 1px 4px rgba(0,0,0,.28);font-weight:700;text-shadow:0 1px 1px rgba(0,0,0,.25);opacity:.78
   }
-  .annot-del:hover{background:#b3261e;border-color:#fff;color:#fff;transform:none;box-shadow:0 0 0 2px rgba(217,48,37,.45),0 2px 6px rgba(0,0,0,.35)}
+  .annot-del:hover{background:#b3261e;border-color:#fff;color:#fff;transform:none;opacity:1;box-shadow:0 0 0 2px rgba(217,48,37,.45),0 2px 6px rgba(0,0,0,.35)}
   .annot-del:active{background:#8f1d18;transform:none}
-  .annot-marquee{position:absolute;border:1.5px dashed #d93025;background:rgba(217,48,37,.08);border-radius:4px;pointer-events:none}
+  .annot-marquee{position:absolute;border:1.5px dashed rgba(217,48,37,.6);background:rgba(217,48,37,.06);border-radius:4px;pointer-events:none}
   body.annot-mode #score .note[data-id]{cursor:crosshair}
   body.annot-mode #score{touch-action:none;user-select:none;-webkit-user-select:none}
   body.annot-erase #score .note[data-id],body.annot-erase .annot-hit,body.annot-erase .annot-chip,body.annot-erase .annot-del{cursor:crosshair}
@@ -477,7 +477,7 @@ document.addEventListener("visibilitychange", ()=>{
     if (engine && engine.playing){ resumeOnVisible = true; engine.pause(); setPlayUI(false); }
   } else if (resumeOnVisible){
     resumeOnVisible = false;
-    if (!annotMode) engine.play(engine.anchorBeat).then(()=>setPlayUI(engine.playing));
+    if (!annotMode) engine.play(engine.anchorBeat, true).then(()=>setPlayUI(engine.playing));
   }
 });
 {
@@ -768,6 +768,8 @@ class Engine{
     this.unavailableNotified = false;
     this.loading = null; this.sampleFailed = false; this.progress = null;
     this.activeSynth = new Set();
+    this.activeClicks = new Set();
+    this.playToken = 0;
     this.onEnd = null; this.onAudioBlocked = null; this.onProgress = null;
     this.onReady = null; this.onUnavailable = null;
     this.buildTimeline();
@@ -925,7 +927,12 @@ class Engine{
     finally { this.loading = null; }
   }
 
-  async play(fromBeat){
+  async play(fromBeat, keepRepeat){
+    const token = ++this.playToken;
+    /* 立即停掉目前播放與已排程音符/節拍，避免重複點擊時疊音 */
+    this.playing = false;
+    if (this.timer){ clearInterval(this.timer); this.timer = null; }
+    this.stopAll();
     const ctx = this.ensureCtx();
     if (!ctx){
       this.usePerf = true; this.audioBlocked = true;
@@ -936,13 +943,14 @@ class Engine{
     } else if (ctx.state!=="running"){
       try{ await Promise.race([ctx.resume(), sleep(420)]); }catch(e){}
     }
+    if (token !== this.playToken) return;
     const blocked = !ctx || ctx.state!=="running";
     this.usePerf = blocked;
     if (this.audioBlocked !== blocked){
       this.audioBlocked = blocked;
       if (this.onAudioBlocked) this.onAudioBlocked(blocked);
     }
-    if (typeof fromBeat === "number") this.seek(fromBeat);
+    if (typeof fromBeat === "number") this.seek(fromBeat, keepRepeat);
     this.playing = true;
     this.anchorTime = this.clockNow()+0.04;
     this.scheduledUpTo = this.anchorBeat;
@@ -958,6 +966,7 @@ class Engine{
     }
   }
   pause(){
+    this.playToken++;
     if (!this.playing) return;
     this.anchorBeat = this.position;
     this.playing = false;
@@ -965,18 +974,22 @@ class Engine{
     this.stopAll();
   }
   stop(){
+    this.playToken++;
     this.playing = false;
     clearInterval(this.timer); this.timer = null;
     this.stopAll();
     if (this.dcDone){ this.dcDone = false; this.rangeEnd = this.totalBeats; }
+    this.repeatDone = false;
     this.anchorBeat = this.rangeStart;
   }
-  seek(beat){
+  seek(beat, keepRepeat){
     beat = Math.max(0,Math.min(this.totalBeats-1e-6,beat));
     if (this.dcDone && (beat >= this.rangeEnd-1e-6 || beat < this.rangeStart)){
       this.dcDone = false; this.rangeEnd = this.totalBeats;
     }
-    this.repeatDone = !!(this.repeat && beat >= this.repeat.end-1e-6);
+    if (!keepRepeat || (this.repeat && beat < this.repeat.start - 1e-6)){
+      this.repeatDone = !!(this.repeat && beat >= this.repeat.end-1e-6);
+    }
     this.stopAll();
     this.anchorBeat = beat;
     this.anchorTime = this.clockNow()+0.02;
@@ -1089,6 +1102,8 @@ class Engine{
     g.gain.exponentialRampToValueAtTime(0.0001,time+0.045);
     o.connect(g); g.connect(this.master);
     o.start(time); o.stop(time+0.06);
+    this.activeClicks.add(o);
+    o.onended = ()=>{ this.activeClicks.delete(o); };
   }
   note(midi,time,durSec,part,vowel){
     if (this.inst && this.audioReady()){
@@ -1121,6 +1136,10 @@ class Engine{
     const now = this.ctx ? this.ctx.currentTime : 0;
     this.activeSynth.forEach(n=>{ try{ n.stop(now+0.03); }catch(e){} });
     this.activeSynth.clear();
+    if (this.activeClicks){
+      this.activeClicks.forEach(n=>{ try{ n.stop(now+0.02); }catch(e){} });
+      this.activeClicks.clear();
+    }
   }
   setTempo(bpm){
     const pos = this.position;
@@ -1619,9 +1638,9 @@ function setPlayUI(playing){
   const stop = $("#stopBtn");
   if (stop) stop.style.display = playing ? "" : "none";
 }
-async function playFrom(beat){
+async function playFrom(beat, keepRepeat){
   if (annotMode) return;
-  await engine.play(beat);
+  await engine.play(beat, keepRepeat);
   setPlayUI(engine.playing);
 }
 async function togglePlay(){
@@ -1634,7 +1653,7 @@ async function togglePlay(){
   } else {
     from = engine.anchorBeat >= engine.totalBeats-1e-6 ? 0 : engine.anchorBeat;
   }
-  await playFrom(from);
+  await playFrom(from, true);
 }
 $("#playBtn").addEventListener("click", togglePlay);
 $("#stopBtn").addEventListener("click", ()=>{ engine.stop(); setPlayUI(false); highlight(-1); });
@@ -2205,7 +2224,8 @@ window.__hymn = {
           preload();
           if (!engine.playing){
             const seq = ++playSeq;
-            const p = engine.play(engine.anchorBeat >= engine.totalBeats-1e-6 ? 0 : engine.anchorBeat);
+            const startBeat = engine.anchorBeat >= engine.totalBeats-1e-6 ? 0 : engine.anchorBeat;
+            const p = engine.play(startBeat, startBeat > 0);
             const done = function(){
               if (seq !== playSeq){
                 try{ engine.stop(); }catch(e){}

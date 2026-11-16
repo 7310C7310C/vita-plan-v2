@@ -515,6 +515,12 @@
       state.annotEraser = !state.annotEraser;
       annotEraser.classList.toggle('on', state.annotEraser);
       post('annotEraser', {value: state.annotEraser});
+      if (window.showToast){
+        const en = state.uiLang === 'en';
+        window.showToast(state.annotEraser
+          ? (en ? 'Eraser mode: drag across marks to erase' : '橡皮擦模式：拖过标记即可清除')
+          : (en ? 'Eraser off' : '已退出橡皮擦模式'));
+      }
     });
     const annotUndo = document.getElementById('v2AnnotUndoBtn');
     if (annotUndo) annotUndo.addEventListener('click', function(){ post('annotUndo'); });
