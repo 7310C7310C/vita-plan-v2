@@ -32,6 +32,7 @@
     autowrap: true,
     follow: true,
     theme: 'light',
+    capo: 0,
     annot: false,
     annotCount: 0,
     annotEraser: false,
@@ -272,6 +273,10 @@
       state.theme = m.theme;
       const b = document.getElementById('v2ThemeBtn'); if (b) b.classList.toggle('on', m.theme === 'dark');
     }
+    if (m.capo != null){
+      state.capo = Math.max(0, Math.min(12, +m.capo || 0));
+      const el = document.getElementById('v2Capo'); if (el) el.value = String(state.capo);
+    }
   }
   function setAutowrap(on){
     state.autowrap = !!on;
@@ -410,6 +415,20 @@
           setImageMode(true);
           if (window.__vpSetImageMode) window.__vpSetImageMode(true);
         }
+      });
+    }
+    const capoSel = document.getElementById('v2Capo');
+    if (capoSel){
+      for (let i=0;i<=12;i++){
+        const o=document.createElement('option');
+        o.value=String(i);
+        o.textContent = i ? String(i) : '关闭';
+        if (!i){ o.setAttribute('data-zh','关闭'); o.setAttribute('data-en','Off'); }
+        capoSel.appendChild(o);
+      }
+      capoSel.addEventListener('change', function(){
+        state.capo = +capoSel.value || 0;
+        post('capo', {value: state.capo});
       });
     }
     if (menuBtn && menu){

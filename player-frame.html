@@ -106,6 +106,7 @@
   .score-tempo .tempo-note{display:inline-block;width:.62em;height:.92em;vertical-align:-.06em;margin-right:.12em;fill:currentColor}
   .score-tempo .tempo-note svg{display:block;width:100%;height:100%}
   .score-tempo .tempo-val{font-size:1em}
+  .score-capo{font-size:calc(.74rem * var(--scale,1));color:var(--accent);margin:-.45em 0 .6em .2em;letter-spacing:.05em;font-family:"Noto Sans TC",system-ui,sans-serif}
 
   .score-head{display:flex;gap:1.4em;align-items:baseline;margin:0 0 .55em 0;padding-left:.2em}
   .score-head .kt{font-size:calc(.8rem * var(--scale,1));color:var(--ink-2);font-weight:600;letter-spacing:.06em;font-family:"Noto Sans TC",system-ui,sans-serif}
@@ -436,6 +437,7 @@
   </header>
   <div class="score-head"><span class="kt">1=G</span><span class="kt">6/8</span></div>
   <div class="score-tempo" id="scoreTempo"></div>
+  <div class="score-capo" id="scoreCapo"></div>
   <div class="score-wrap" id="scoreWrap">
     <div class="score" id="score"></div>
     <div class="annot-layer" id="annotLayer"></div>
@@ -696,7 +698,7 @@ const SCORE_PITCHES = (()=>{
 const DEFAULTS = {
   theme:"light", follow:true, tempo:SCORE.tempo, volume:100,
   timbre:"church_organ", parts:{S:true,A:true,T:true,B:true},
-  lyricFont:"hei", bold:true, scale:100, metronome:true, lang:"s", autowrap:true
+  lyricFont:"hei", bold:true, scale:100, metronome:true, lang:"s", autowrap:true, capo:0
 };
 const STORE_KEY = "ys.settings." + SONG_ID + ".v2";
 function loadSettings(){
@@ -714,6 +716,7 @@ let lyricFont = LYRIC_FONTS[settings.lyricFont] ? settings.lyricFont : "hei";
 let bold = true;   /* 字体自定义已移除：歌词固定加粗 */
 let autowrap = settings.autowrap !== false;
 let scale = Math.max(80, Math.min(150, +settings.scale || 100));
+let capo = Math.max(0, Math.min(12, +settings.capo || 0));
 let lang = settings.lang === "s" ? "s" : "t";
 
 /* ============================================================
@@ -1151,6 +1154,44 @@ const ICONS = {
 };
 
 function escHtml(v){ return String(v==null?"":v).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+const SHARP_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+const FLAT_NAMES  = ["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"];
+const ROOT_PC = {"C":0,"C#":1,"Db":1,"D":2,"D#":3,"Eb":3,"E":4,"F":5,"F#":6,"Gb":6,"G":7,"G#":8,"Ab":8,"A":9,"A#":10,"Bb":10,"B":11};
+function transposeRoot(root, semitones, preferFlat){
+  const pc = ROOT_PC[root];
+  if (pc === undefined) return root;
+  const n = ((pc - semitones) % 12 + 12) % 12;
+  return (preferFlat ? FLAT_NAMES : SHARP_NAMES)[n];
+}
+function transposeChord(chord, semitones){
+  if (!semitones) return chord;
+  const parts = String(chord).split('/');
+  const main = parts[0].match(/^([A-G][#b]?)(.*)$/);
+  if (!main) return chord;
+  const preferFlat = /b/.test(SCORE.key || '') || /b/.test(main[1]);
+  let out = transposeRoot(main[1], semitones, preferFlat) + main[2];
+  if (parts[1]){
+    const bass = parts[1].match(/^([A-G][#b]?)(.*)$/);
+    if (bass) out += '/' + transposeRoot(bass[1], semitones, preferFlat) + bass[2];
+    else out += '/' + parts[1];
+  }
+  return out;
+}
+function transposeChordText(text, semitones){
+  if (!semitones) return text;
+  return String(text).split(' · ').map(c=>transposeChord(c, semitones)).join(' · ');
+}
+function applyCapo(){
+  document.querySelectorAll('#score .chordrow span[data-chord]').forEach(el=>{
+    const disp = transposeChordText(el.getAttribute('data-chord'), capo);
+    el.textContent = disp; el.title = disp;
+  });
+  const badge = document.getElementById('scoreCapo');
+  if (badge){
+    badge.textContent = capo ? ('Capo ' + capo) : '';
+    badge.style.display = capo ? '' : 'none';
+  }
+}
 function renderBar(bi){
   const bar = SCORE.bars[bi], n = bar.beats;
   const tripCells = new Set();
@@ -1165,7 +1206,10 @@ function renderBar(bi){
   let h = `<div class="bar${bi===SCORE.bars.length-1?" final repeat-end":""}${bi===(SCORE.repeat?SCORE.repeat.from:-1)?" repeat-start":""}" data-bar="${bi}" style="flex:0.25 1 ${basis.toFixed(2)}em;max-width:${(basis*2.1).toFixed(2)}em">`;
   h += `<div class="bnum">${bi+1}${bar.tag?`<span class="btag">${escHtml(bar.tag)}</span>`:""}</div>`;
   h += `<div class="chordrow" style="grid-template-columns:repeat(${n},minmax(0,1fr))">`;
-  chordCells.forEach(c=>{ h += `<span title="${escHtml(c)}">${escHtml(c)}</span>`; });
+  chordCells.forEach(c=>{
+    const disp = transposeChordText(c, capo);
+    h += `<span data-chord="${escHtml(c)}" title="${escHtml(disp)}">${escHtml(disp)}</span>`;
+  });
   h += `</div>`;
 
   const voiceRow = (v)=>{
@@ -1833,9 +1877,10 @@ function resetAllSettings(){
   document.documentElement.style.setProperty("--lyric-font", LYRIC_FONTS[lyricFont]);
   document.documentElement.style.setProperty("--scale", (scale/100) * 1.2);
   lang = DEFAULTS.lang;
+  capo = DEFAULTS.capo;
   applyTheme(); applyFollowUI(); applyMetroUI(); applyPartUI(); applyBoldUI(); applyWrapUI();
   applyLang();
-  lastSig = ""; render(); applySelectionUI();
+  lastSig = ""; render(); applySelectionUI(); applyCapo();
   toast("已回复预设");
 }
 $("#resetAll").addEventListener("click", ()=>{
@@ -2110,13 +2155,14 @@ function saveSettings(){
     localStorage.setItem(STORE_KEY, JSON.stringify({
       theme, follow, tempo:engine.tempo, volume:Math.round(engine.volume*100),
       timbre:engine.timbre, parts:engine.parts, lyricFont, bold, autowrap, scale,
-      metronome:engine.metronome, lang
+      metronome:engine.metronome, lang, capo
     }));
   }catch(e){}
 }
 
 /* ---------- 启动 ---------- */
 render();
+applyCapo();
 applyFollowUI(); applyTheme(); applyMetroUI(); applyPartUI(); applyBoldUI(); applyWrapUI();
 setPlayUI(false); applySelectionUI();
 requestAnimationFrame(()=>requestAnimationFrame(()=>document.body.classList.add("ready")));
@@ -2156,7 +2202,7 @@ window.__hymn = {
     return {type:'vp2:state', playing:engine.playing, tempo:engine.tempo, parts:engine.parts,
       lang:lang, metronome:engine.metronome, volume:Math.round(engine.volume*100),
       timbre:engine.timbre, lyricFont:lyricFont, bold:bold, scale:scale,
-      autowrap:autowrap, follow:follow, theme:theme};
+      autowrap:autowrap, follow:follow, theme:theme, capo:capo};
   }
   function vp2Send(){ try{ parent.postMessage(vp2State(), location.origin); }catch(e){} }
   /* 任何来源（含点谱上音符 playFrom、隐藏播放键、可见性）改了播放 UI 都同步父页 */
@@ -2263,6 +2309,7 @@ window.__hymn = {
         case 'autowrap': autowrap = !!m.value; applyWrapUI(); saveSettings(); lastSig = ''; render(); break;
         case 'follow': follow = !!m.value; applyFollowUI(); saveSettings(); break;
         case 'theme': theme = m.value === 'dark' ? 'dark' : 'light'; applyTheme(); saveSettings(); break;
+        case 'capo': capo = Math.max(0, Math.min(12, +m.value || 0)); applyCapo(); saveSettings(); break;
         case 'reset': resetAllSettings(); break;
       }
       vp2Send();
@@ -2273,7 +2320,7 @@ window.__hymn = {
       tempo:engine.tempo, parts:engine.parts, lang:lang,
       metronome:engine.metronome, volume:Math.round(engine.volume*100),
       timbre:engine.timbre, lyricFont:lyricFont, bold:bold, scale:scale,
-      autowrap:autowrap, follow:follow, theme:theme,
+      autowrap:autowrap, follow:follow, theme:theme, capo:capo,
       timbres:GM_GROUPS.map(function(g){ return {name:g.name, items:g.items}; })}, location.origin); }catch(e){}
   });
 })();
