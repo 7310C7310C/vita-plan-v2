@@ -98,9 +98,9 @@ body.v2-image-mode .v2-menu{display:none!important}
 }
 /* 窄屏新谱（JSON）：收藏+面包屑同一行，其他按钮换行置左 */
 @media (max-width:600px){
-  body.v2-json-mode .viewer-topbar{flex-wrap:wrap;align-items:center;height:auto;row-gap:6px}
+  body.v2-json-mode .viewer-topbar{left:15px;right:65px;flex-wrap:wrap;align-items:center;height:auto;row-gap:6px}
   body.v2-json-mode .viewer-topbar .viewer-breadcrumb{
-    position:static;top:auto;left:auto;flex:0 1 auto;width:auto;
+    position:static;top:auto;left:auto;flex:0 1 auto;width:auto;margin-left:45px;
     max-width:calc(100vw - 130px);height:35px;justify-content:flex-start
   }
   body.v2-json-mode .v2-head-actions{flex:1 1 100%;justify-content:flex-start}
