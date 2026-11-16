@@ -103,7 +103,8 @@
   header .meta-original{margin-top:3px;color:var(--muted);font-size:12px;letter-spacing:.13em}
   header .meta-credit{margin-top:5px;color:var(--muted);font-size:11px;line-height:1.55;letter-spacing:.08em;text-align:right}
   .score-tempo{font-size:calc(.74rem * var(--scale,1));color:var(--ink-2);margin:-.1em 0 .6em .2em;letter-spacing:.05em;font-family:"Noto Sans TC",system-ui,sans-serif}
-  .score-tempo .tempo-note{font-size:1.5em;line-height:1;vertical-align:-.06em;margin-right:.02em}
+  .score-tempo .tempo-note{display:inline-block;width:.62em;height:.92em;vertical-align:-.06em;margin-right:.12em;fill:currentColor}
+  .score-tempo .tempo-note svg{display:block;width:100%;height:100%}
   .score-tempo .tempo-val{font-size:1em}
 
   .score-head{display:flex;gap:1.4em;align-items:baseline;margin:0 0 .55em 0;padding-left:.2em}
@@ -500,9 +501,29 @@ document.addEventListener("visibilitychange", ()=>{
     const m = label.match(/^\s*([^\d=]+?)\s*=\s*(.+)$/);
     st.textContent = "";
     if (m){
-      const n = document.createElement("span"); n.className = "tempo-note"; n.textContent = m[1];
+      const n = document.createElement("span"); n.className = "tempo-note";
+      const svgNS = "http://www.w3.org/2000/svg";
+      const svg = document.createElementNS(svgNS, "svg");
+      svg.setAttribute("viewBox", "0 0 12 18"); svg.setAttribute("aria-hidden", "true");
+      const eighth = m[1].indexOf("♪") >= 0;
+      const head = document.createElementNS(svgNS, "ellipse");
+      head.setAttribute("cx", "4"); head.setAttribute("cy", "14.2");
+      head.setAttribute("rx", "3.3"); head.setAttribute("ry", "2.6");
+      head.setAttribute("transform", "rotate(-18 4 14.2)");
+      svg.appendChild(head);
+      const stem = document.createElementNS(svgNS, "rect");
+      stem.setAttribute("x", "6.5"); stem.setAttribute("y", "1.2");
+      stem.setAttribute("width", "1.6"); stem.setAttribute("height", "13");
+      svg.appendChild(stem);
+      if (eighth){
+        const flag = document.createElementNS(svgNS, "path");
+        flag.setAttribute("d", "M8.1 1.2c2.1.9 3 2.4 3 4.1 0 .7-.2 1.3-.6 1.8.3-1.3-.5-2.2-1.7-2.7z");
+        svg.appendChild(flag);
+      }
+      n.appendChild(svg);
       const v = document.createElement("span"); v.className = "tempo-val"; v.textContent = "=" + m[2];
       st.appendChild(n); st.appendChild(v);
+      st.setAttribute("aria-label", label);
     } else {
       st.textContent = label;
     }
