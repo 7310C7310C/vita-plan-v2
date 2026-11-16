@@ -28,8 +28,6 @@
     volume: 100,
     timbre: 'church_organ',
     timbres: null,
-    lyricFont: 'hei',
-    bold: true,
     scale: 100,
     autowrap: true,
     follow: true,
@@ -206,11 +204,6 @@
   /* Menu controls */
   function setPlayUI(playing){
     state.playing = !!playing;
-    const b = document.getElementById('v2PlayBtn');
-    if (b){
-      b.textContent = state.uiLang === 'en' ? (playing ? 'Pause' : 'Play') : (playing ? '暂停' : '播放');
-      b.classList.toggle('playing', !!playing);
-    }
     const q = document.getElementById('v2QuickPauseBtn');
     if (q){
       const label = state.uiLang === 'en' ? (playing ? 'Pause' : 'Play') : (playing ? '暂停' : '播放');
@@ -264,14 +257,6 @@
       state.timbre = m.timbre;
       const el = document.getElementById('v2Timbre'); if (el) el.value = m.timbre;
     }
-    if (m.lyricFont){
-      state.lyricFont = m.lyricFont;
-      const el = document.getElementById('v2LyricFont'); if (el) el.value = m.lyricFont;
-    }
-    if (typeof m.bold === 'boolean'){
-      state.bold = m.bold;
-      const b = document.getElementById('v2BoldBtn'); if (b) b.classList.toggle('on', m.bold);
-    }
     if (m.scale != null){
       state.scale = +m.scale || 100;
       const r = document.getElementById('v2Scale'), l = document.getElementById('v2ScaleVal');
@@ -290,7 +275,7 @@
   }
   function setAutowrap(on){
     state.autowrap = !!on;
-    document.querySelectorAll('#v2WrapBtn, #v2WrapBarBtn').forEach(function(b){ b.classList.toggle('on', state.autowrap); });
+    document.querySelectorAll('#v2WrapBarBtn').forEach(function(b){ b.classList.toggle('on', state.autowrap); });
   }
   function updateAnnotTools(m){
     if (m.count != null){
@@ -313,10 +298,8 @@
   function setAnnot(on){
     state.annot = !!on;
     document.body.classList.toggle('v2-annot-mode', state.annot);
-    document.querySelectorAll('#v2AnnotBtn, #v2AnnotBarBtn').forEach(function(b){ b.classList.toggle('on', state.annot); });
-    const pb = document.getElementById('v2PlayBtn');
+    document.querySelectorAll('#v2AnnotBarBtn').forEach(function(b){ b.classList.toggle('on', state.annot); });
     const q = document.getElementById('v2QuickPauseBtn');
-    if (pb) pb.disabled = state.annot;
     if (q) q.disabled = state.annot;
     post('annot', {value: state.annot});
     if (state.annot){
@@ -352,7 +335,6 @@
       if (el){ const t = en ? x[2] : x[1]; el.title = t; el.setAttribute('aria-label', t); }
     });
     if (menuBtn) menuBtn.textContent = en ? 'Menu' : '菜单';
-    const t = document.getElementById('v2MenuTitle'); if (t) t.textContent = en ? 'Player' : '播放器';
     setPlayUI(state.playing);
   }
 
@@ -445,18 +427,11 @@
         menu.classList.remove('open');
       }, true);
     }
-    const play = document.getElementById('v2PlayBtn');
-    if (play) play.addEventListener('click', function(){
-      if (state.playing){ post('pause'); setPlayUI(false); }
-      else { post('play'); setPlayUI(true); }
-    });
     const quickPause = document.getElementById('v2QuickPauseBtn');
     if (quickPause) quickPause.addEventListener('click', function(){
       if (state.playing){ post('pause'); setPlayUI(false); }
       else { post('play'); setPlayUI(true); }
     });
-    const stop = document.getElementById('v2StopBtn');
-    if (stop) stop.addEventListener('click', function(){ post('stop'); setPlayUI(false); });
     document.querySelectorAll('#v2Menu [data-part]').forEach(el=>{
       el.addEventListener('click', function(){
         const p = el.getAttribute('data-part');
@@ -497,10 +472,6 @@
         syncLang(state.lang === 't' ? 's' : 't');
         post('lang', {value: state.lang});
       });
-    }
-    const annot = document.getElementById('v2AnnotBtn');
-    if (annot){
-      annot.addEventListener('click', function(){ setAnnot(!state.annot); });
     }
     const annotBar = document.getElementById('v2AnnotBarBtn');
     if (annotBar) annotBar.addEventListener('click', function(){ setAnnot(!state.annot); });
@@ -545,28 +516,12 @@
       state.timbre = timbre.value;
       post('timbre', {value: state.timbre});
     });
-    const lyricFont = document.getElementById('v2LyricFont');
-    if (lyricFont) lyricFont.addEventListener('change', function(){
-      state.lyricFont = lyricFont.value;
-      post('lyricFont', {value: state.lyricFont});
-    });
-    const boldBtn = document.getElementById('v2BoldBtn');
-    if (boldBtn) boldBtn.addEventListener('click', function(){
-      state.bold = !state.bold;
-      boldBtn.classList.toggle('on', state.bold);
-      post('bold', {value: state.bold});
-    });
     const scale = document.getElementById('v2Scale');
     const scaleVal = document.getElementById('v2ScaleVal');
     if (scale) scale.addEventListener('input', function(){
       state.scale = +scale.value || 100;
       if (scaleVal) scaleVal.textContent = state.scale + '%';
       post('scale', {value: state.scale});
-    });
-    const wrapBtn = document.getElementById('v2WrapBtn');
-    if (wrapBtn) wrapBtn.addEventListener('click', function(){
-      setAutowrap(!state.autowrap);
-      post('autowrap', {value: state.autowrap});
     });
     const wrapBar = document.getElementById('v2WrapBarBtn');
     if (wrapBar) wrapBar.addEventListener('click', function(){

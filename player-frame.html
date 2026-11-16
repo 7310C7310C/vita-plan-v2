@@ -611,24 +611,6 @@ const GM_GROUPS = [
 const TIMBRES = {};
 GM_GROUPS.forEach(g=>g.items.forEach(([id,label])=>{ TIMBRES[id] = {label, group:g.name, gain:g.gain}; }));
 
-/* 人唱谱：以歌词韻母驱动共振峰，S/A 女声、T/B 男声 */
-const VOWELS = {
-  a:{f1:800,f2:1200,f3:2500}, e:{f1:500,f2:1450,f3:2500},
-  i:{f1:300,f2:2300,f3:3000}, o:{f1:500,f2:850,f3:2500},
-  u:{f1:330,f2:800,f3:2400}
-};
-const CHAR_VOWEL = {
-  "耶":"e","稣":"u","圣":"e","体":"i","我":"o","坚":"e","信":"i","你":"i",
-  "切":"e","望":"a","爱":"a","慕":"u","感":"a","谢":"e","敬":"i","拜":"a",
-  "属":"u","于":"u","长":"a","生":"e","之":"i","剂":"i","源":"a","神":"e",
-  "怡":"i","瞻":"a","仰":"a"
-};
-function vowelForSyl(syl){
-  if (syl === null || syl === undefined) return null;
-  const ch = SCORE.lyrics[0][syl] || "";
-  return CHAR_VOWEL[ch] || "a";
-}
-
 const LYRIC_FONTS = {
   serif:'"Noto Serif TC","Noto Serif SC","Noto Serif CJK TC","Noto Serif CJK SC","Songti TC","Songti SC",STSong,SimSun,serif',
   hei:'"Noto Sans TC","Noto Sans SC","PingFang TC","PingFang SC","Microsoft JhengHei","Microsoft YaHei",sans-serif',
@@ -804,32 +786,6 @@ class Engine{
     evs.length = 0;
     playable.forEach(ev=>evs.push(ev));
     evs.sort((a,b)=>(a.beat-b.beat)||(a.voice<b.voice?-1:1));
-    const last = {};
-    evs.forEach(ev=>{
-      if (ev.syl !== null && ev.syl !== undefined) last[ev.voice] = ev.syl;
-      const s = last[ev.voice];
-      ev.vowel = vowelForSyl(s !== undefined ? s : null) || "a";
-    });
-    const sByBeat = new Map();
-    const sylByBeat = new Map();
-    evs.forEach(ev=>{
-      if (ev.voice === "S"){
-        sByBeat.set(Math.round(ev.beat*1000), ev.vowel);
-        if (ev.syl !== null && ev.syl !== undefined) sylByBeat.set(Math.round(ev.beat*1000), ev.syl);
-      }
-    });
-    evs.forEach(ev=>{
-      if (ev.voice !== "S" && (ev.syl === null || ev.syl === undefined)){
-        const s2 = sylByBeat.get(Math.round(ev.beat*1000));
-        if (s2 !== undefined) ev.syl = s2;
-      }
-    });
-    evs.forEach(ev=>{
-      if (ev.voice !== "S"){
-        const v = sByBeat.get(Math.round(ev.beat*1000));
-        if (v) ev.vowel = v;
-      }
-    });
     this.events = evs; this.totalBeats = TOTAL_BEATS;
   }
   ensureCtx(){
@@ -1057,8 +1013,7 @@ class Engine{
       if (this.parts[ev.voice]){
         const durSec = ev.dur * 60 / this.tempo;
         if (isFinite(ev.midi) && isFinite(t) && isFinite(durSec)){
-          this.currentSyl = ev.syl;
-          this.note(ev.midi, Math.max(t,this.ctx.currentTime), durSec, ev.voice, ev.vowel);
+          this.note(ev.midi, Math.max(t,this.ctx.currentTime), durSec, ev.voice);
         }
       }
       i++;
@@ -1104,7 +1059,7 @@ class Engine{
     this.activeClicks.add(o);
     o.onended = ()=>{ this.activeClicks.delete(o); };
   }
-  note(midi,time,durSec,part,vowel){
+  note(midi,time,durSec,part){
     if (this.inst && this.audioReady()){
       try{
         const stopFn = this.inst.start({note:midi,velocity:86,time,duration:Math.max(0.1,durSec*0.96)});

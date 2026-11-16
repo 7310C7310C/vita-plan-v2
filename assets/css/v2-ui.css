@@ -40,8 +40,6 @@ body.v2-image-mode #v2QuickPauseBtn{display:none!important}
 .v2-menu .v2-ctl{display:flex;align-items:center;gap:6px;min-width:0}
 .v2-menu .v2-row.no-label .v2-btn{flex:1 1 0;min-width:0}
 .v2-menu .v2-ctl > .v2-btn{flex:1 1 0;min-width:0;padding:0 4px}
-.v2-menu .v2-ctl-4 > .v2-btn{font-size:.76rem;padding:0 2px}
-@media (max-width:360px){ .v2-menu .v2-ctl-4 > .v2-btn{font-size:.7rem;padding:0 1px} }
 /* 320 窄屏底栏压缩，避免两端裁切 */
 @media (max-width:340px){
   .page-controls-container{padding:0 2px}
@@ -56,7 +54,6 @@ body.v2-image-mode #v2QuickPauseBtn{display:none!important}
 .v2-menu .v2-btn{height:30px;padding:0 10px;border-radius:8px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);color:#f4eee2;cursor:pointer;font-size:.8rem;white-space:nowrap}
 .v2-menu .v2-btn:hover{background:rgba(255,255,255,.16)}
 .v2-menu .v2-btn.on{background:#b8893f;border-color:#d7a85a;color:#fff}
-.v2-menu .v2-btn.playing{background:#b23b35;border-color:#e07a72;color:#fff}
 .v2-menu .v2-btn:disabled{opacity:.45;cursor:not-allowed}
 .v2-menu .v2-chip{height:28px;min-width:30px;padding:0 8px;border-radius:8px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);color:#f4eee2;cursor:pointer;font-size:.78rem}
 .v2-menu .v2-chip.on{background:#b8893f;border-color:#d7a85a;color:#fff}
@@ -109,6 +106,5 @@ body.v2-image-mode .v2-menu{display:none!important}
 }
 
 /* v2 has no manual full-offline card */
-#offlineSection{display:none!important}
 a.song-item{text-decoration:none;color:inherit}
 a.category-card{text-decoration:none;color:inherit;display:block}
