@@ -66,7 +66,7 @@
     if (!validScorePath(path)) throw new Error('invalid score path');
     const url = basePath() + path;
     try{
-      const cache = await caches.open('v2-json-v1');
+      const cache = await caches.open('v2-json-v2');
       const hit = await cache.match(url, {ignoreSearch:true});
       if (hit) return await hit.json();
     }catch(e){}
@@ -74,7 +74,7 @@
     if (!res.ok) throw new Error('score http ' + res.status);
     const data = await res.json();
     try{
-      const cache = await caches.open('v2-json-v1');
+      const cache = await caches.open('v2-json-v2');
       await cache.put(url, new Response(JSON.stringify(data), {headers:{'Content-Type':'application/json'}}));
     }catch(e){}
     return data;

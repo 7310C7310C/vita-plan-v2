@@ -1,14 +1,35 @@
-/* Vita Plan v2 service worker: small shell, SWR assets, cached JSON scores. */
-const SHELL_CACHE = 'v2-shell-2';
-const JSON_CACHE = 'v2-json-v1';
-const SHELL = ['index.html', 'favicon.ico', 'data/v2-scores.js'];
+/* Vita Plan v2 service worker: pre-cache shell + all JSON scores after first paint. */
+const SHELL_CACHE = 'v2-shell-3';
+const JSON_CACHE = 'v2-json-v2';
+const SHELL = [
+  'index.html',
+  'favicon.ico',
+  'player-frame.html',
+  'assets/css/style.css?v=20261115185326',
+  'assets/css/v2-ui.css?v=1',
+  'assets/js/v2-ui.js?v=1',
+  'assets/js/script.js?v=20261115185326',
+  'assets/js/v2-cache.js?v=1',
+  'data/v2-scores.js?v=1'
+];
 
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(SHELL_CACHE)
-      .then(cache => Promise.all(SHELL.map(url => cache.add(url).catch(() => null))))
-      .then(() => self.skipWaiting())
-  );
+  event.waitUntil((async () => {
+    const cache = await caches.open(SHELL_CACHE);
+    await Promise.all(SHELL.map(url => cache.add(url).catch(() => null)));
+    try{
+      const manifestUrl = new URL('data/v2-manifest.json', self.registration.scope).href;
+      const manifest = await (await fetch(manifestUrl, {cache:'no-store'})).json();
+      const jsonCache = await caches.open(JSON_CACHE);
+      if (manifest && Array.isArray(manifest.files)){
+        await Promise.all(manifest.files.map(f => {
+          const url = new URL(f.path, self.registration.scope).href;
+          return jsonCache.add(url).catch(() => null);
+        }));
+      }
+    }catch(e){}
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener('activate', event => {
