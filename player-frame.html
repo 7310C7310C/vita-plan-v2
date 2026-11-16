@@ -218,6 +218,7 @@
   .u1{position:absolute;left:-.04em;right:-.04em;bottom:-.16em;border-bottom:1.3px solid currentColor}
   .u1.beam{left:0;right:0;bottom:-.16em}
   .u1.beam.last{right:.14em}
+  .group-beam{position:absolute;height:0;border-bottom:1.3px solid currentColor;pointer-events:none;z-index:2}
   .rdot{position:absolute;left:100%;top:50%;width:.14em;height:.14em;margin-left:.05em;margin-top:-.07em;
     border-radius:50%;background:currentColor}
   .dash{display:inline-flex;align-items:center;gap:.16em;margin-left:.2em;vertical-align:middle}
@@ -1234,6 +1235,26 @@ function applyCapo(){
   }
   fixChordOverlaps();
 }
+function fixBeams(){
+  document.querySelectorAll('#score .cell.sub').forEach(cell=>{
+    Array.prototype.slice.call(cell.querySelectorAll('.group-beam')).forEach(e=>e.remove());
+    const notes = Array.prototype.slice.call(cell.querySelectorAll('.note')).filter(n=>n.querySelector('.num'));
+    if (notes.length < 2) return;
+    const nums = notes.map(n=>n.querySelector('.num'));
+    const cr = cell.getBoundingClientRect();
+    const first = nums[0].getBoundingClientRect();
+    const last = nums[nums.length-1].getBoundingClientRect();
+    const u = notes[0].querySelector('.u1');
+    const y = u ? u.getBoundingClientRect().bottom - cr.top : (first.bottom - cr.top + 2);
+    const line = document.createElement('i');
+    line.className = 'group-beam';
+    line.style.left = (first.left - cr.left) + 'px';
+    line.style.width = Math.max(6, last.right - first.left) + 'px';
+    line.style.top = y + 'px';
+    cell.appendChild(line);
+    notes.forEach(n=>{ const uu=n.querySelector('.u1'); if (uu) uu.style.display='none'; });
+  });
+}
 function fixChordOverlaps(){
   document.querySelectorAll('#score .chordrow').forEach(row=>{
     const spans = Array.prototype.slice.call(row.children).filter(s=>s.textContent.trim());
@@ -1438,6 +1459,7 @@ function render(){
   applyPartUI();
   drawSlurs();
   fixChordOverlaps();
+  fixBeams();
   if (lang === "t") convertTree(scoreEl);
 }
 
