@@ -1,163 +1,67 @@
-# 复活计划乐队 · v2
+# 复活计划乐队 · 在线歌谱
 
-> 本仓库是 **v2**。v1 的 README 与说明已全部废弃，不再沿用。
+> 复活计划乐队的在线歌谱库。打开网页即可查看本周歌曲、分类歌谱与不同版本，适合排练前查谱、排练中翻谱和演出前复习。
 >
-> v2 以 v1 的站点外观、分类、搜索、收藏与后台为基础，播放器改为读取 JSON 乐谱；v1 保留在独立仓库与 `v1.kcan.cc`，v2 不改动 v1。
+> 生产站：<https://kcan.cc/>
 
-## 地址
+## 三步开始
 
-| 环境 | 地址 |
-| --- | --- |
-| Staging | <https://v2.kcan.cc/> |
-| 生产（待切换） | <https://kcan.cc/> |
-| v1（保留） | <https://v1.kcan.cc/> |
-| GitHub Pages 备份 | 仓库 Pages（不对外链接，仅灾备） |
+1. 打开主站，进入歌谱首页。
+2. 点「本周歌曲」，或从分类中选歌；也可以直接搜索歌名、编号或分类。
+3. 点开歌曲查看乐谱；默认显示可播放的 JSON 乐谱，点「图片谱」可看对应图片版本。
 
-## 当前状态
+## 浏览与查找
 
-- 已完成 v2 基础站、播放器、标注、离线 JSON、admin 登录/读取。
-- 已数字化 4 首：`jt/017`、`lz/008`、`lz/019`、`lz/020`。
-- 其余歌曲仍只有 v1 图片谱；全站数字化是后续主線。
-- 正式上线前：`v2.kcan.cc` 验收 → 切 `kcan.cc` root → v1 留 `v1.kcan.cc` → 清理 v1 的 `/001`、`/tmp`。
+- **本周歌曲**：显示本周排练或礼仪使用的歌曲，并标注适用日期。
+- **分类浏览**：进堂咏、垂怜曲、光荣颂、答唱咏（朱健仁）、福音前欢呼、奉献咏、天主经、领主咏、礼成咏、圣诞、圣神、备用、其他。
+- **答唱咏**：按通用、甲年、乙年、丙年分组，方便按礼仪年查找。
+- **搜索**：支持歌名、歌曲编号和分类；英文界面下也可用英文分类名搜索。
+- **收藏与最近查看**：右上角面板可查看；最近最多 10 条，收藏不限。记录只保存在当前浏览器。
 
-## 与 v1 的边界
+## 乐谱阅读器
 
-- v2 任何页面**不链接** v1，也不链接 GitHub Pages；对外只走 `kcan.cc`。
-- v1 是独立仓库/独立站点；v2 的更新不得影响 v1。
-- v2 复用 v1 的 `assets/css/style.css`、`assets/js/script.js` 作为站点外壳，但播放器为 `player-frame.html`。
+- **JSON 乐谱 / 图片谱**：默认看 JSON 乐谱；顶栏「图片谱」切到对应图片版本，「返回」回到 JSON。没有 JSON 的歌曲自动显示图片谱。
+- **版本**：原谱、贝司、吉他、备选（只显示已上传的版本）。切换版本会更新链接，可直接分享。
+- **播放**：点谱上任意音符从该处开始播放；顶栏播放/暂停图标控制播放。菜单内可调声部、节拍器、速度、音量、音色、字号、跟随播放、夜间显示与简繁。
+- **音色**：128 种乐器、16 组；首次使用某音色需要联网加载采样，之后会缓存在本机。
+- **默认速度**：显示在调性与节拍下方，如 `♩=100`、`♪=176`。
+- **反覆与选段**：支持谱面反覆记号；拖动选择一段可循环播放。反覆第二遍时点区间内其他位置会继续当前遍，不会重新反覆；停止或自然播完后再点区间内，则从第一遍重新开始。
+- **标注**：点音符或拖框选择，红圈/圆角矩形标出，可加半透文字；支持保存、清空、橡皮擦、撤销、重做。标注只保存在当前浏览器，按歌曲隔离。
+- **底栏**：上一首、版本、标注、自动换行、下一首。
+- **键盘**：`Space` 播放/暂停，`Esc` 停止，`Ctrl/Cmd + A` 选中整首循环。
+- **手机**：点谱播放；上下滚动看谱；顶栏按钮在窄屏会自动换行，不挡谱面。
 
-## 功能
+## 中英文界面
 
-- 首页、搜索、分类、本周歌曲、最近查看、收藏。
-- 默认显示 JSON 乐谱；顶栏「图片谱」按钮切到对应图片版本，再点「返回」回 JSON。
-- 版本：原谱 / 贝司 / 吉他 / 备选；URL 使用 `?v=o|b|g|a`。
-- 顶栏：收藏、面包屑、图片谱、菜单、播放/暂停图标、关闭；窄屏新谱下收藏+面包屑一行，其余按钮换行靠左。
-- 播放器菜单：声部（含全选）、节拍器、速度、音量、音色（128 种/16 组）、字号、跟随播放、夜间、简繁、重置。
-- 标注：点击或拖框选择音符，红圈/圆角矩形包住；可加半透文字；支持保存、清空、橡皮擦、撤销、重做；标记存本机。
-- 底栏：上一首、版本、标注（原涂改位置）、自动换行、下一首。
-- 离线：壳与全部 JSON 谱可离线；图片、OpenCC、字体不保证离线。
-- 中英界面：只翻 UI/分类，不翻曲名与歌词。
+- 右上角「中/En」可切换界面语言，选择会被记住。
+- 英文界面下标题显示为 **Vita Plan**，分类名也会翻译。
+- 歌曲标题、歌词与标注文字以录入内容为准，不随界面语言自动翻译。
 
-## 路由
+## 离线使用
 
-| 路径 | 说明 |
-| --- | --- |
-| `/` | 首页 |
-| `/weekly` | 本周歌曲 |
-| `/{code}` | 分类 |
-| `/{code}/{id}` | 歌曲 |
-| `?v=o/b/g/a` | 原谱/贝司/吉他/备选 |
+- 首次进入后，应用壳与全部 JSON 乐谱会在后台缓存；之后断网也能打开已缓存的 JSON 乐谱与合成音。
+- **图片谱不保证离线**；图片只在浏览时按浏览器缓存策略保存。
+- **采样音源**会按使用过的音色缓存在本机；未缓存过的音色离线时可能退回合成音。
+- 简繁转换需要联网加载转换库；离线时无法切换简繁。
+- 字体使用设备系统字体，不额外下载。
+- 离线缓存只保存在当前浏览器、当前网址；清理网站数据、无痕模式或更换设备后会失效。
 
-分类码：
+## 隐私
 
-```text
-jt 进堂咏   cl 垂怜曲   gr 光荣颂   dc 答唱咏（朱健仁）
-fy 福音前欢呼 fx 奉献咏  tz 天主经   lz 领主咏
-lc 礼成咏   sd 圣诞     ss 圣神     by 备用
-qt 其他
-```
+- 本站无需注册或登录。
+- 收藏、最近查看、标注、播放设置与语言偏好只保存在本机浏览器，不会上传服务器。
+- 乐谱与图片为公开内容，请勿在标注中填写敏感信息。
 
-编号沿用 v1，永不重排；删歌留空号。
+## 兼容与限制
 
-## 乐谱数据
+- 建议使用较新的 Chrome、Edge、Safari 或 Firefox。
+- 极窄屏（约 320px）下，图片谱底部的涂改工具较多，可能略显拥挤。
+- 部分歌曲只有图片谱；没有 JSON 的歌曲不能使用 JSON 播放器与标注。
 
-- 乐谱：`data/scores/{code}/{id}.json`
-- 运行时映射：`data/v2-scores.json` → 构建时生成 `data/v2-scores.js`
-- 离线清单：`data/v2-manifest.json`（脚本生成）
-- 歌曲目录：`data/songs.json`
-- 生成脚本：`scripts/generate_v2_manifest.py`
+## 维护者说明
 
-JSON 主要字段：
-
-```text
-id title credit original credits key keyBase meter beatUnit tempo tempoLabel
-compound clickStep lyricsMode voiceOct phrases bars lyrics slurs ties dc repeat
-```
-
-- `original`：原文歌名，居中显示在标题下（可省略）。
-- `credits`：作词/作曲/说明，多行右对齐（可省略）。
-- `tempoLabel`：默认速度，如 `♩=100`、`♪=176`，显示在调性/节拍下方。
-- `repeat`：`{from,to}` 小节索引；`dc`：`{from,to}`。
-
-新增一首 JSON 谱：
-
-1. 放入 `data/scores/{code}/{id}.json`。
-2. 在 `data/v2-scores.json` 的 `scores` 增加 `"{code}/{id}": {"file":"data/scores/{code}/{id}.json","label":"四声部"}`。
-3. 运行 `python3 scripts/generate_v2_manifest.py`。
-4. 若改了 `player-frame.html` 或前端资源，按下方「版本规则」升级缓存版本。
-
-## 目录
-
-```text
-index.html / 404.html      站点外壳（404.html 与 index 同步）
-player-frame.html          JSON 乐谱播放器（iframe）
-assets/css/v2-ui.css       v2 顶栏/菜单/底栏/标注工具样式
-assets/js/v2-ui.js         父页与播放器桥接、菜单、路由、标注状态
-assets/js/v2-cache.js      Service Worker 注册与 manifest 同步
-assets/js/script.js        v1 站点外壳逻辑（v2 复用）
-assets/js/offline.js       v1 离线逻辑（v2 页面不加载，admin/旧逻辑仍引用）
-sw-v2.js                   v2 Service Worker
-sw.js                      v1 Service Worker（v2 页面不注册）
-data/                      歌曲目录、乐谱 JSON、映射与 manifest
-img/                       图片谱（按分类）
-admin/                     管理后台（GitHub API）
-scripts/                   manifest 生成脚本
-key/ random/ tools/        v1 小工具页
-```
-
-## 本地运行
-
-无构建步骤。仓库根目录启动静态服务器即可：
-
-```bash
-python3 -m http.server 8080
-# 打开 http://localhost:8080/
-```
-
-`index.html`/`404.html` 开头的 `document.write('<base ...>')` 用于兼容 GitHub Pages 子路径；本地根路径与 `v2.kcan.cc` 都走 `/`。
-
-## 部署
-
-- 推送 `main` 后 GitHub Actions（`.github/workflows/deploy.yml`）SSH 到服务器：
-  `/var/www/vita-plan-v2` → `git pull` → `chown www-data`。
-- Nginx：`v1.kcan.cc` / `v2.kcan.cc` 独立 server block；gzip、CSP `frame-ancestors 'self'`、XFO 已配置。
-- GitHub Pages：仓库设置中从分支发布，`.nojekyll` + `404.html` 保证深链可用；仅灾备，不对外宣传。
-
-## 缓存与离线
-
-| 内容 | 缓存方式 |
-| --- | --- |
-| 壳（HTML/CSS/JS/favicon） | SW `v2-shell-*`，stale-while-revalidate |
-| `songs.json` | network-first，失败回缓存 |
-| JSON 乐谱 | SW install 预缓存 + `v2-manifest` 版本同步，cache-first |
-| 图片谱 | **不进 SW**；nginx 无长缓存头，仅浏览器启发式缓存 + 首页 10 秒预载本周图片 |
-| 采样音源 | smplr 自带 Cache Storage（`smplr`），按乐器缓存 |
-| 简繁 OpenCC | jsDelivr 外部脚本，仅浏览器 HTTP 缓存 |
-| 字体 | **无 webfont**，使用系统字体；无字体缓存 |
-
-### 版本规则
-
-改动前端资源或 `player-frame.html` 后，必须同时：
-
-1. 更新引用处的 `?v=`（`v2-ui.js` / `v2-ui.css` / `v2-cache.js` 等）。
-2. 升级 `sw-v2.js` 的 `SHELL_CACHE`（如 `v2-shell-44`）。
-3. 若 `index.html` 有改动，同步复制为 `404.html`。
-
-只改 `data/scores/*.json` 时，运行 manifest 脚本即可；SW install / 运行期同步会更新乐谱缓存。
-
-## 管理后台
-
-- 地址：`/admin/`，用 GitHub fine-grained PAT 登录。
-- Token 只需 `7310C7310C/vita-plan-v2` 的 **Contents: Read/Write**。
-- Token 仅存本机；后台可编辑本周歌曲、歌曲与图片、提交历史、发布。
-- 已知限制：v2 发布流程尚未自动生成 `v2-manifest.json`；发布后需手动运行脚本或确认 manifest。
-- 后台「重整编号」已停用（v2 编号永不重排）。
-
-## 开发约定
-
-- 提交说明用中文。
-- 编号沿用 v1，永不重排；删歌留空号。
-- v2 不新增指向 v1 / GitHub Pages 的对外链接。
-- 标注只存本机（`v2.annot.<songId>`）；设置按曲存在 `ys.settings.<songId>.v2`。
-- 播放/标注改动需回归：顶部播放图标、B1 早暂停、背景暂停、repeat 第二遍、区间内重点、标注红圈/删除、图片谱返回、离线。
-- 已知遗留：320 图片谱底栏偏宽；admin 发布不生成 v2 manifest；图片不保证离线；字体依赖系统。
+- 本站为静态站点，推送 `main` 后自动部署到生产服务器。
+- 乐谱 JSON 位于 `data/scores/{分类码}/{曲号}.json`；运行时映射为 `data/v2-scores.json`，离线清单由 `python3 scripts/generate_v2_manifest.py` 生成。
+- 新增或修改乐谱后运行清单脚本；修改前端资源或 `player-frame.html` 后，需同步升级引用处的 `?v=` 与 `sw-v2.js` 的 `SHELL_CACHE`，并把 `index.html` 复制为 `404.html`。
+- 管理后台位于 `/admin/`，使用 GitHub Token 登录；曲号沿用既有编号，永不重排，删歌留空号。
+- 提交说明使用中文。
