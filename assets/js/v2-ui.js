@@ -194,7 +194,14 @@
     const b = document.getElementById('v2PlayBtn');
     if (b) b.textContent = state.uiLang === 'en' ? (playing ? 'Pause' : 'Play') : (playing ? '暂停' : '播放');
     const q = document.getElementById('v2QuickPauseBtn');
-    if (q) q.style.display = playing ? 'flex' : 'none';
+    if (q){
+      const label = state.uiLang === 'en' ? (playing ? 'Pause' : 'Play') : (playing ? '暂停' : '播放');
+      const span = q.querySelector('span');
+      if (span) span.textContent = label;
+      q.title = label; q.setAttribute('aria-label', label);
+      q.classList.toggle('playing', !!playing);
+      q.style.display = 'flex';
+    }
   }
   function syncParts(parts){
     if (!parts) return;
@@ -304,7 +311,10 @@
       else { post('play'); setPlayUI(true); }
     });
     const quickPause = document.getElementById('v2QuickPauseBtn');
-    if (quickPause) quickPause.addEventListener('click', function(){ post('pause'); setPlayUI(false); });
+    if (quickPause) quickPause.addEventListener('click', function(){
+      if (state.playing){ post('pause'); setPlayUI(false); }
+      else { post('play'); setPlayUI(true); }
+    });
     const stop = document.getElementById('v2StopBtn');
     if (stop) stop.addEventListener('click', function(){ post('stop'); setPlayUI(false); });
     document.querySelectorAll('#v2Menu [data-part]').forEach(el=>{
