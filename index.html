@@ -7,7 +7,7 @@
     <title>复活计划乐队</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="assets/css/style.css?v=20261115185326">
-    <link rel="stylesheet" href="assets/css/v2-ui.css?v=9">
+    <link rel="stylesheet" href="assets/css/v2-ui.css?v=10">
     <style>
         #loadingOverlay {
             display: block;
@@ -165,67 +165,73 @@
                 <button class="v2-head-btn" id="v2MenuBtn" type="button">菜单</button>
                 <button class="v2-head-btn v2-quick-pause" id="v2QuickPauseBtn" type="button" aria-label="播放" title="播放"><svg class="ico-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.14v13.72a1 1 0 0 0 1.52.85l10.5-6.86a1 1 0 0 0 0-1.7L9.52 4.29A1 1 0 0 0 8 5.14z"/></svg><svg class="ico-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4.5" width="4" height="15" rx="1.2"/><rect x="14" y="4.5" width="4" height="15" rx="1.2"/></svg></button>
         <div class="v2-menu" id="v2Menu">
-            <div class="v2-row"><strong id="v2MenuTitle">播放器</strong></div>
-            <div class="v2-row">
-                <button class="v2-btn" id="v2PlayBtn" type="button" data-zh="播放" data-en="Play">播放</button>
+            <div class="v2-menu-head"><strong id="v2MenuTitle">播放器</strong><button class="v2-menu-x" id="v2MenuClose" type="button" aria-label="关闭">×</button></div>
+            <div class="v2-row no-label">
+                <button class="v2-btn v2-play" id="v2PlayBtn" type="button" data-zh="播放" data-en="Play">播放</button>
                 <button class="v2-btn" id="v2StopBtn" type="button" data-zh="停止" data-en="Stop">停止</button>
             </div>
+            <div class="v2-sep"></div>
             <div class="v2-row">
                 <label data-zh="声部" data-en="Parts">声部</label>
-                <button class="v2-chip on" data-part="S" type="button">S</button>
-                <button class="v2-chip on" data-part="A" type="button">A</button>
-                <button class="v2-chip on" data-part="T" type="button">T</button>
-                <button class="v2-chip on" data-part="B" type="button">B</button>
-                <button class="v2-chip" id="v2PartsAll" type="button" data-zh="全" data-en="All" title="全部声部">全</button>
+                <div class="v2-ctl v2-ctl-5">
+                    <button class="v2-chip on" data-part="S" type="button">S</button>
+                    <button class="v2-chip on" data-part="A" type="button">A</button>
+                    <button class="v2-chip on" data-part="T" type="button">T</button>
+                    <button class="v2-chip on" data-part="B" type="button">B</button>
+                    <button class="v2-chip" id="v2PartsAll" type="button" data-zh="全" data-en="All" title="全部声部">全</button>
+                </div>
             </div>
             <div class="v2-row">
                 <label data-zh="速度" data-en="Tempo">速度</label>
-                <input id="v2Tempo" type="range" min="30" max="220" value="100">
-                <span class="v2-val" id="v2TempoVal">100</span>
-            </div>
-            <div class="v2-row">
-                <button class="v2-btn" id="v2Metro" type="button" data-zh="节拍器" data-en="Click">节拍器</button>
-                <button class="v2-btn" id="v2LangBtn" type="button">简</button>
-                <button class="v2-btn" id="v2AnnotBtn" type="button" data-zh="标注" data-en="Mark">标注</button>
+                <div class="v2-ctl"><input id="v2Tempo" type="range" min="30" max="220" value="100"><span class="v2-val" id="v2TempoVal">100</span></div>
             </div>
             <div class="v2-row">
                 <label data-zh="音量" data-en="Volume">音量</label>
-                <input id="v2Vol" type="range" min="0" max="100" value="100">
-                <span class="v2-val" id="v2VolVal">100</span>
+                <div class="v2-ctl"><input id="v2Vol" type="range" min="0" max="100" value="100"><span class="v2-val" id="v2VolVal">100</span></div>
             </div>
             <div class="v2-row">
                 <label data-zh="音色" data-en="Timbre">音色</label>
-                <select id="v2Timbre" class="v2-select" aria-label="音色"></select>
+                <div class="v2-ctl"><select id="v2Timbre" class="v2-select" aria-label="音色"></select></div>
+            </div>
+            <div class="v2-sep"></div>
+            <div class="v2-row">
+                <label data-zh="工具" data-en="Tools">工具</label>
+                <div class="v2-ctl v2-ctl-3">
+                    <button class="v2-btn" id="v2Metro" type="button" data-zh="节拍器" data-en="Click">节拍器</button>
+                    <button class="v2-btn" id="v2LangBtn" type="button">简</button>
+                    <button class="v2-btn" id="v2AnnotBtn" type="button" data-zh="标注" data-en="Mark">标注</button>
+                </div>
             </div>
             <div class="v2-row">
                 <label data-zh="歌词" data-en="Lyrics">歌词</label>
-                <select id="v2LyricFont" class="v2-select" aria-label="歌词字体">
+                <div class="v2-ctl"><select id="v2LyricFont" class="v2-select" aria-label="歌词字体">
                     <option value="serif" data-zh="宋体" data-en="Song">宋体</option>
                     <option value="hei" data-zh="正黑" data-en="Hei">正黑</option>
                     <option value="yahei" data-zh="雅黑" data-en="YaHei">雅黑</option>
                     <option value="kai" data-zh="楷体" data-en="Kai">楷体</option>
                     <option value="round" data-zh="圆体" data-en="Round">圆体</option>
-                </select>
-                <button class="v2-btn" id="v2BoldBtn" type="button" data-zh="加粗" data-en="Bold">加粗</button>
+                </select><button class="v2-btn" id="v2BoldBtn" type="button" data-zh="加粗" data-en="Bold">加粗</button></div>
             </div>
             <div class="v2-row">
                 <label data-zh="字号" data-en="Size">字号</label>
-                <input id="v2Scale" type="range" min="80" max="150" step="5" value="100">
-                <span class="v2-val" id="v2ScaleVal">100%</span>
+                <div class="v2-ctl"><input id="v2Scale" type="range" min="80" max="150" step="5" value="100"><span class="v2-val" id="v2ScaleVal">100%</span></div>
             </div>
             <div class="v2-row">
-                <label data-zh="检视" data-en="View">检视</label>
-                <button class="v2-btn on" id="v2WrapBtn" type="button" data-zh="自动换行" data-en="Wrap">自动换行</button>
-                <button class="v2-btn on" id="v2FollowBtn" type="button" data-zh="跟随播放" data-en="Follow">跟随播放</button>
-                <button class="v2-btn" id="v2ThemeBtn" type="button" data-zh="夜间" data-en="Night">夜间</button>
+                <label data-zh="显示" data-en="View">显示</label>
+                <div class="v2-ctl v2-ctl-3">
+                    <button class="v2-btn on" id="v2WrapBtn" type="button" data-zh="自动换行" data-en="Wrap">自动换行</button>
+                    <button class="v2-btn on" id="v2FollowBtn" type="button" data-zh="跟随播放" data-en="Follow">跟随播放</button>
+                    <button class="v2-btn" id="v2ThemeBtn" type="button" data-zh="夜间" data-en="Night">夜间</button>
+                </div>
             </div>
-            <div class="v2-row">
+            <div class="v2-sep"></div>
+            <div class="v2-row no-label">
                 <button class="v2-btn" id="v2ResetBtn" type="button" data-zh="重置" data-en="Reset">重置</button>
             </div>
-            </div>
         </div>
         </div>
-        <div class="viewer-content" id="viewerContent">
+        </div>
+                <div class="viewer-content" id="viewerContent">
             <div class="sheet-container">
                 <img id="sheet-image" class="sheet-image" src="" alt="乐谱">
                 <canvas id="doodle-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;display:none;z-index:10;"></canvas>
@@ -252,7 +258,8 @@
                 <!-- 版本切换按钮将通过JS动态加载 -->
             </div>
             
-            <!-- 涂改相关按钮 -->
+            <!-- 标注（JSON 谱）/ 涂改（图片谱） -->
+            <button class="doodle-btn v2-bar-btn" id="v2AnnotBarBtn" style="margin-left:10px;">标注</button>
             <button class="doodle-btn" id="doodleEnterBtn" style="margin-left:10px;">涂改</button>
             <button class="doodle-btn" id="doodleExitBtn" style="display:none;margin-left:10px;opacity:0.9;">保存涂改</button>
             <button class="doodle-btn" id="doodleClearBtn" style="display:none;margin-left:5px;opacity:0.9;">清空涂改</button>
@@ -284,6 +291,9 @@
                 <svg id="fitModeIconCollapse" width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="white" stroke-width="2" style="opacity:0.8;display:none;"><polyline points="9,3 3,3 3,9"/><line x1="3" y1="3" x2="9" y2="9"/><polyline points="13,19 19,19 19,13"/><line x1="19" y1="19" x2="13" y2="13"/><polyline points="19,9 19,3 13,3"/><line x1="19" y1="3" x2="13" y2="9"/><polyline points="3,13 3,19 9,19"/><line x1="3" y1="19" x2="9" y2="13"/></svg>
             </button>
             
+            <!-- 自动换行 -->
+            <button class="doodle-btn v2-bar-btn on" id="v2WrapBarBtn" style="margin:0 6px;">自动换行</button>
+
             <!-- 下一首按钮 -->
             <div class="song-nav" id="next-song">
                 <span class="song-nav-text">下一首</span>
@@ -304,7 +314,7 @@
       </div>
     </div>
     <script src="data/v2-scores.js?v=3"></script>
-    <script src="assets/js/v2-ui.js?v=9"></script>
+    <script src="assets/js/v2-ui.js?v=10"></script>
     <script src="assets/js/script.js?v=2026111603"></script>
     <script src="assets/js/v2-cache.js?v=4"></script>
 </body>

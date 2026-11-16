@@ -295,12 +295,19 @@
 
   body.embed .toolbar, body.embed .back {display:none!important}
   body.embed .wrap{max-width:none;padding:64px 16px 92px}
+  @media (max-width:600px){ body.embed .wrap{padding-top:102px} }
   body.embed .score-head{margin-top:0}
   body.embed .global-loading{position:fixed}
 
-  /* v2 annotations */
-  #score .note.annot{background:rgba(255,211,0,.38);box-shadow:0 0 0 1px rgba(230,180,0,.55);border-radius:.3em}
-  #score .note.annot[title]::after{content:"";position:absolute;top:-.12em;right:-.12em;width:.32em;height:.32em;border-radius:50%;background:#c98a00;box-shadow:0 0 0 1px #fff8e1}
+  /* v2 annotations: red circle; text floats above with a light chip background */
+  #score .note.annot{background:transparent;box-shadow:0 0 0 2px #d93025;border-radius:50%}
+  #score .note.annot[data-annot]::after{
+    content:attr(data-annot);position:absolute;left:50%;bottom:calc(100% + 5px);transform:translateX(-50%);
+    max-width:11em;padding:1px 5px;border-radius:5px;background:#fff4f2;color:#b3261e;
+    border:1px solid rgba(217,48,37,.45);font-size:.62em;line-height:1.35;font-weight:600;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 1px 4px rgba(0,0,0,.18);
+    pointer-events:none;z-index:4
+  }
   body.annot-mode #score .note[data-id]{cursor:crosshair}
   .annot-pop{position:fixed;z-index:9999;background:#fffdf5;border:1px solid #d8c9ae;border-radius:10px;box-shadow:0 10px 28px rgba(0,0,0,.22);padding:8px}
   .annot-pop-in{display:flex;gap:6px;align-items:center}
@@ -443,7 +450,7 @@ document.addEventListener("visibilitychange", ()=>{
     if (engine && engine.playing){ resumeOnVisible = true; engine.pause(); setPlayUI(false); }
   } else if (resumeOnVisible){
     resumeOnVisible = false;
-    engine.play(engine.anchorBeat).then(()=>setPlayUI(engine.playing));
+    if (!annotMode) engine.play(engine.anchorBeat).then(()=>setPlayUI(engine.playing));
   }
 });
 {
@@ -1541,11 +1548,13 @@ function setPlayUI(playing){
   if (stop) stop.style.display = playing ? "" : "none";
 }
 async function playFrom(beat){
+  if (annotMode) return;
   await engine.play(beat);
   setPlayUI(engine.playing);
 }
 async function togglePlay(){
   if (engine.playing){ engine.pause(); setPlayUI(false); return; }
+  if (annotMode) return;
   let from;
   if (sel){
     from = (engine.anchorBeat >= engine.rangeEnd-1e-6 || engine.anchorBeat < engine.rangeStart)
@@ -2085,6 +2094,7 @@ window.__hymn = {
 /* v2 parent <-> frame API */
 (function(){
   let playSeq = 0;
+  window.vp2CancelPlay = function(){ playSeq++; };
   function vp2State(){
     return {type:'vp2:state', playing:engine.playing, tempo:engine.tempo, parts:engine.parts,
       lang:lang, metronome:engine.metronome, volume:Math.round(engine.volume*100),
@@ -2119,6 +2129,7 @@ window.__hymn = {
       switch(m.cmd){
         case 'warmup': preload(); break;
         case 'play':
+          if (annotMode) break;
           preload();
           if (!engine.playing){
             const seq = ++playSeq;
@@ -2211,7 +2222,8 @@ function annotApply(){
   document.querySelectorAll('#score .note[data-id]').forEach(el=>{
     const a = annots[annotId(el)];
     el.classList.toggle('annot', !!a);
-    if (a && a.text) el.title = a.text; else el.removeAttribute('title');
+    if (a && a.text){ el.setAttribute('data-annot', a.text); el.title = a.text; }
+    else { el.removeAttribute('data-annot'); el.removeAttribute('title'); }
   });
 }
 function annotHidePop(){ if (annotPop){ annotPop.remove(); annotPop = null; } }
@@ -2243,9 +2255,11 @@ function annotHighlight(list){
   annotSave(); annotApply(); annotShowPop(list);
 }
 function annotSetMode(on){
+  const was = annotMode;
   annotMode = !!on;
   document.body.classList.toggle('annot-mode', annotMode);
-  if (!annotMode) annotHidePop();
+  if (!annotMode){ annotHidePop(); return; }
+  if (!was){ try{ window.vp2CancelPlay && window.vp2CancelPlay(); }catch(e){} try{ engine.stop(); }catch(e){} setPlayUI(false); }
 }
 document.addEventListener('pointerdown', function(e){
   if (!annotMode) return;

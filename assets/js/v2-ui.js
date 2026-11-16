@@ -34,6 +34,7 @@
     autowrap: true,
     follow: true,
     theme: 'light',
+    annot: false,
     loadToken: 0
   };
 
@@ -99,7 +100,7 @@
     if (menuBtn) menuBtn.style.display = '';
     if (imageBtn){ imageBtn.style.display = ''; imageBtn.textContent = state.uiLang === 'en' ? 'Image' : '图片谱'; }
     if (menu) menu.classList.remove('open');
-    const annot = document.getElementById('v2AnnotBtn'); if (annot) annot.classList.remove('on');
+    setAnnot(false);
     const vc = document.getElementById('viewerContent');
     if (vc) vc.classList.add('v2-mode');
     setLoading(true);
@@ -116,6 +117,7 @@
     state.loadToken++;
     state.active = false; state.image = false; state.ready = false;
     setPlayUI(false);
+    setAnnot(false);
     document.body.classList.remove('v2-active', 'v2-json-mode', 'v2-image-mode');
     if (headActions) headActions.style.display = 'none';
     if (menu) menu.classList.remove('open');
@@ -200,7 +202,10 @@
   function setPlayUI(playing){
     state.playing = !!playing;
     const b = document.getElementById('v2PlayBtn');
-    if (b) b.textContent = state.uiLang === 'en' ? (playing ? 'Pause' : 'Play') : (playing ? '暂停' : '播放');
+    if (b){
+      b.textContent = state.uiLang === 'en' ? (playing ? 'Pause' : 'Play') : (playing ? '暂停' : '播放');
+      b.classList.toggle('playing', !!playing);
+    }
     const q = document.getElementById('v2QuickPauseBtn');
     if (q){
       const label = state.uiLang === 'en' ? (playing ? 'Pause' : 'Play') : (playing ? '暂停' : '播放');
@@ -268,10 +273,7 @@
       if (r) r.value = state.scale;
       if (l) l.textContent = state.scale + '%';
     }
-    if (typeof m.autowrap === 'boolean'){
-      state.autowrap = m.autowrap;
-      const b = document.getElementById('v2WrapBtn'); if (b) b.classList.toggle('on', m.autowrap);
-    }
+    if (typeof m.autowrap === 'boolean') setAutowrap(m.autowrap);
     if (typeof m.follow === 'boolean'){
       state.follow = m.follow;
       const b = document.getElementById('v2FollowBtn'); if (b) b.classList.toggle('on', m.follow);
@@ -279,6 +281,23 @@
     if (m.theme){
       state.theme = m.theme;
       const b = document.getElementById('v2ThemeBtn'); if (b) b.classList.toggle('on', m.theme === 'dark');
+    }
+  }
+  function setAutowrap(on){
+    state.autowrap = !!on;
+    document.querySelectorAll('#v2WrapBtn, #v2WrapBarBtn').forEach(function(b){ b.classList.toggle('on', state.autowrap); });
+  }
+  function setAnnot(on){
+    state.annot = !!on;
+    document.querySelectorAll('#v2AnnotBtn, #v2AnnotBarBtn').forEach(function(b){ b.classList.toggle('on', state.annot); });
+    const pb = document.getElementById('v2PlayBtn');
+    const q = document.getElementById('v2QuickPauseBtn');
+    if (pb) pb.disabled = state.annot;
+    if (q) q.disabled = state.annot;
+    post('annot', {value: state.annot});
+    if (state.annot){
+      post('stop');
+      setPlayUI(false);
     }
   }
   function applyUILang(lang){
@@ -291,6 +310,10 @@
       else { const span = el.querySelector('span'); if (span) span.textContent = t; }
     });
     if (imageBtn && state.active) imageBtn.textContent = state.image ? (en?'Back':'返回') : (en?'Image':'图片谱');
+    const annotBar = document.getElementById('v2AnnotBarBtn');
+    if (annotBar) annotBar.textContent = en ? 'Mark' : '标注';
+    const wrapBar = document.getElementById('v2WrapBarBtn');
+    if (wrapBar) wrapBar.textContent = en ? 'Wrap' : '自动换行';
     if (menuBtn) menuBtn.textContent = en ? 'Menu' : '菜单';
     const t = document.getElementById('v2MenuTitle'); if (t) t.textContent = en ? 'Player' : '播放器';
     setPlayUI(state.playing);
@@ -366,6 +389,8 @@
         menu.classList.toggle('open');
       });
       menu.addEventListener('click', function(e){ e.stopPropagation(); });
+      const menuClose = document.getElementById('v2MenuClose');
+      if (menuClose) menuClose.addEventListener('click', function(){ menu.classList.remove('open'); });
       /* capture：即使目标元素 stopPropagation（例如收藏按钮），点菜单外也关闭 */
       document.addEventListener('click', function(e){
         if (menu.contains(e.target)) return;
@@ -428,12 +453,10 @@
     }
     const annot = document.getElementById('v2AnnotBtn');
     if (annot){
-      annot.addEventListener('click', function(){
-        const on = !annot.classList.contains('on');
-        annot.classList.toggle('on', on);
-        post('annot', {value: on});
-      });
+      annot.addEventListener('click', function(){ setAnnot(!state.annot); });
     }
+    const annotBar = document.getElementById('v2AnnotBarBtn');
+    if (annotBar) annotBar.addEventListener('click', function(){ setAnnot(!state.annot); });
     const partsAll = document.getElementById('v2PartsAll');
     if (partsAll) partsAll.addEventListener('click', function(){
       ['S','A','T','B'].forEach(function(p){ state.parts[p] = true; });
@@ -465,8 +488,12 @@
     });
     const wrapBtn = document.getElementById('v2WrapBtn');
     if (wrapBtn) wrapBtn.addEventListener('click', function(){
-      state.autowrap = !state.autowrap;
-      wrapBtn.classList.toggle('on', state.autowrap);
+      setAutowrap(!state.autowrap);
+      post('autowrap', {value: state.autowrap});
+    });
+    const wrapBar = document.getElementById('v2WrapBarBtn');
+    if (wrapBar) wrapBar.addEventListener('click', function(){
+      setAutowrap(!state.autowrap);
       post('autowrap', {value: state.autowrap});
     });
     const followBtn = document.getElementById('v2FollowBtn');
