@@ -35,6 +35,10 @@ window.VP2_DATA = {
     "cl/001": {
       "file": "data/scores/cl/001.json",
       "label": "旋律"
+    },
+    "cl/002": {
+      "file": "data/scores/cl/002.json",
+      "label": "旋律"
     }
   }
 };
