@@ -2405,6 +2405,7 @@ function annotSetMode(on){
   if (!was){
     try{ window.vp2CancelPlay && window.vp2CancelPlay(); }catch(e){}
     try{ engine.stop(); }catch(e){}
+    try{ clearSelection(true); }catch(e){}
     setPlayUI(false);
     annotHistoryReset();
   }
