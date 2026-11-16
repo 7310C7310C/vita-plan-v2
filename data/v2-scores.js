@@ -31,6 +31,10 @@ window.VP2_DATA = {
     "lz/008": {
       "file": "data/scores/lz/008.json",
       "label": "四声部"
+    },
+    "cl/001": {
+      "file": "data/scores/cl/001.json",
+      "label": "旋律"
     }
   }
 };

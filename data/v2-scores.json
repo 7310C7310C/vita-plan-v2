@@ -16,9 +16,25 @@
     "其他": "qt"
   },
   "scores": {
-    "jt/017": {"file": "data/scores/jt/017.json", "label": "四声部"},
-    "lz/020": {"file": "data/scores/lz/020.json", "label": "四声部"},
-    "lz/019": {"file": "data/scores/lz/019.json", "label": "四声部"},
-    "lz/008": {"file": "data/scores/lz/008.json", "label": "四声部"}
+    "jt/017": {
+      "file": "data/scores/jt/017.json",
+      "label": "四声部"
+    },
+    "lz/020": {
+      "file": "data/scores/lz/020.json",
+      "label": "四声部"
+    },
+    "lz/019": {
+      "file": "data/scores/lz/019.json",
+      "label": "四声部"
+    },
+    "lz/008": {
+      "file": "data/scores/lz/008.json",
+      "label": "四声部"
+    },
+    "cl/001": {
+      "file": "data/scores/cl/001.json",
+      "label": "旋律"
+    }
   }
 }

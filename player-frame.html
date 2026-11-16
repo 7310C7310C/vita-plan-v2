@@ -546,6 +546,8 @@ const SLURS = SCORE.slurs || [];
 const TIES  = SCORE.ties  || [];   /* 跨小节同音延音：[[小节,声部,事件],[小节,声部,事件]] */
 const VOICE_OCT = SCORE.voiceOct || {};   /* 记谱八度：T/B 可按原谱记谱，发声仍用真实音高 */
 const VOICES = ["S","A","T","B"];
+const SHOW_VOICES = (Array.isArray(SCORE.voices) && SCORE.voices.length ? SCORE.voices : VOICES)
+  .filter(v=>VOICES.indexOf(v)>=0);
 const VERSE_LABELS = (SCORE.lyrics||[]).map((_,i)=>String(i+1)+".");
 
 /* ---------- General MIDI 128 音色 ---------- */
@@ -1266,7 +1268,8 @@ function renderBar(bi){
     return r + `</div>`;
   };
 
-  h += voiceRow("S") + voiceRow("A");
+  if (SHOW_VOICES.indexOf("S")>=0) h += voiceRow("S");
+  if (SHOW_VOICES.indexOf("A")>=0) h += voiceRow("A");
   const sCells = layoutVoice(bar,"S");
   SCORE.lyrics.forEach((verse,vi)=>{
     let r = `<div class="lrow" style="grid-template-columns:repeat(${n},minmax(0,1fr))">`;
@@ -1294,7 +1297,8 @@ function renderBar(bi){
     });
     h += r + `</div>`;
   });
-  h += voiceRow("T") + voiceRow("B");
+  if (SHOW_VOICES.indexOf("T")>=0) h += voiceRow("T");
+  if (SHOW_VOICES.indexOf("B")>=0) h += voiceRow("B");
   return h + `</div>`;
 }
 
@@ -2212,7 +2216,7 @@ window.__hymn = {
     return {type:'vp2:state', playing:engine.playing, tempo:engine.tempo, parts:engine.parts,
       lang:lang, metronome:engine.metronome, volume:Math.round(engine.volume*100),
       timbre:engine.timbre, lyricFont:lyricFont, bold:bold, scale:scale,
-      autowrap:autowrap, follow:follow, theme:theme, capo:capo};
+      autowrap:autowrap, follow:follow, theme:theme, capo:capo, voices:SHOW_VOICES};
   }
   function vp2Send(){ try{ parent.postMessage(vp2State(), location.origin); }catch(e){} }
   /* 任何来源（含点谱上音符 playFrom、隐藏播放键、可见性）改了播放 UI 都同步父页 */
@@ -2330,7 +2334,7 @@ window.__hymn = {
       tempo:engine.tempo, parts:engine.parts, lang:lang,
       metronome:engine.metronome, volume:Math.round(engine.volume*100),
       timbre:engine.timbre, lyricFont:lyricFont, bold:bold, scale:scale,
-      autowrap:autowrap, follow:follow, theme:theme, capo:capo,
+      autowrap:autowrap, follow:follow, theme:theme, capo:capo, voices:SHOW_VOICES,
       timbres:GM_GROUPS.map(function(g){ return {name:g.name, items:g.items}; })}, location.origin); }catch(e){}
   });
 })();

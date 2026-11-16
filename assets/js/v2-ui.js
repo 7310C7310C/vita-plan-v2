@@ -213,6 +213,15 @@
       q.style.display = state.active ? 'flex' : 'none';
     }
   }
+  function syncVoices(list){
+    if (!Array.isArray(list) || !list.length) return;
+    document.querySelectorAll('#v2Menu [data-part]').forEach(function(el){
+      const p = el.getAttribute('data-part');
+      el.style.display = list.indexOf(p) >= 0 ? '' : 'none';
+    });
+    const all = document.getElementById('v2PartsAll');
+    if (all) all.style.display = list.length > 1 ? '' : 'none';
+  }
   function syncParts(parts){
     if (!parts) return;
     state.parts = Object.assign({}, state.parts, parts);
@@ -347,6 +356,7 @@
     state.ready = true;
     setLoading(false);
     buildTimbres(m.timbres);
+    if (m.voices) syncVoices(m.voices);
     syncSettings(m);
     if (m.tempo) syncTempo(m.tempo);
     if (m.parts) syncParts(m.parts);
@@ -385,6 +395,7 @@
     } else if (m.type === 'vp2:state'){
       setPlayUI(!!m.playing);
       syncSettings(m);
+      if (m.voices) syncVoices(m.voices);
       if (m.tempo) syncTempo(m.tempo);
       if (m.parts) syncParts(m.parts);
       if (m.lang) syncLang(m.lang);
