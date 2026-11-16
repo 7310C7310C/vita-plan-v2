@@ -67,11 +67,14 @@ body.v2-image-mode .v2-menu{display:none!important}
   .v2-quick-pause svg{width:14px;height:14px}
   .v2-menu{position:fixed;top:58px;right:10px;left:10px;width:auto;max-height:70vh}
 }
-/* 窄屏新谱（JSON）：面包屑独占一行靠左，按钮另起一行靠右 */
+/* 窄屏新谱（JSON）：面包屑像收藏键一样独立换行置左；其他按钮保持原行 */
 @media (max-width:600px){
-  body.v2-json-mode .viewer-topbar{flex-wrap:wrap;align-items:flex-start;height:auto;row-gap:6px}
-  body.v2-json-mode .viewer-topbar .viewer-breadcrumb{flex:1 1 100%;width:100%;justify-content:flex-start}
-  body.v2-json-mode .v2-head-actions{flex:1 1 100%;justify-content:flex-end}
+  body.v2-json-mode .viewer-topbar{flex-wrap:nowrap;align-items:center;height:35px}
+  body.v2-json-mode .viewer-topbar .viewer-breadcrumb{
+    position:fixed;top:56px;left:15px;right:auto;width:auto;max-width:calc(100vw - 30px);
+    height:35px;flex:0 0 auto;z-index:111;justify-content:flex-start
+  }
+  body.v2-json-mode .v2-head-actions{flex:1 1 auto;justify-content:flex-end}
   body.v2-json-mode .v2-menu{position:fixed;top:102px;left:10px;right:10px;width:auto;max-height:calc(100vh - 150px)}
   .v2-bar-btn{font-size:.72rem;padding:0 8px}
 }
