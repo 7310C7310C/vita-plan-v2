@@ -1158,7 +1158,7 @@ let press = null, pressTimer = 0;
 document.documentElement.dataset.theme = theme;
 document.documentElement.style.setProperty("--lyric-font", LYRIC_FONTS[lyricFont]);
 document.documentElement.style.setProperty("--lyric-weight", bold ? 600 : 400);
-document.documentElement.style.setProperty("--scale", scale/100);
+document.documentElement.style.setProperty("--scale", (scale/100) * 1.2);
 
 const evId = (bi,v,i)=>`${bi}:${v}:${i}`;
 const ICONS = {
@@ -1740,7 +1740,7 @@ scaleEl.value = scale; scaleVal.textContent = scale+"%";
 scaleEl.addEventListener("input", ()=>{
   scale = +scaleEl.value;
   scaleVal.textContent = scale+"%";
-  document.documentElement.style.setProperty("--scale", scale/100);
+  document.documentElement.style.setProperty("--scale", (scale/100) * 1.2);
   saveSettings();
   lastSig = "";
   scheduleRender();
@@ -1846,7 +1846,7 @@ function resetAllSettings(){
   $("#lyricFont").value = lyricFont;
   scaleEl.value = scale; scaleVal.textContent = scale+"%";
   document.documentElement.style.setProperty("--lyric-font", LYRIC_FONTS[lyricFont]);
-  document.documentElement.style.setProperty("--scale", scale/100);
+  document.documentElement.style.setProperty("--scale", (scale/100) * 1.2);
   lang = DEFAULTS.lang;
   applyTheme(); applyFollowUI(); applyMetroUI(); applyPartUI(); applyBoldUI(); applyWrapUI();
   applyLang();
@@ -2260,7 +2260,7 @@ window.__hymn = {
           const v = Math.max(80, Math.min(150, +m.value || 100));
           scale = v;
           if (scaleEl){ scaleEl.value = v; scaleVal.textContent = v + '%'; }
-          document.documentElement.style.setProperty('--scale', v/100);
+          document.documentElement.style.setProperty('--scale', (v/100) * 1.2);
           saveSettings(); lastSig = ''; scheduleRender();
           break;
         }
