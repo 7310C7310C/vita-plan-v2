@@ -1163,12 +1163,17 @@ function transposeRoot(root, semitones, preferFlat){
   const n = ((pc - semitones) % 12 + 12) % 12;
   return (preferFlat ? FLAT_NAMES : SHARP_NAMES)[n];
 }
-function transposeChord(chord, semitones){
+function capoPreferFlat(){
+  const m = String(SCORE.key || 'C').match(/^([A-G][#b]?)/);
+  if (!m) return false;
+  const shapeKey = transposeRoot(m[1], capo, /b/.test(m[1]));
+  return /b/.test(shapeKey);
+}
+function transposeChord(chord, semitones, preferFlat){
   if (!semitones) return chord;
   const parts = String(chord).split('/');
   const main = parts[0].match(/^([A-G][#b]?)(.*)$/);
   if (!main) return chord;
-  const preferFlat = /b/.test(SCORE.key || '') || /b/.test(main[1]);
   let out = transposeRoot(main[1], semitones, preferFlat) + main[2];
   if (parts[1]){
     const bass = parts[1].match(/^([A-G][#b]?)(.*)$/);
@@ -1179,7 +1184,8 @@ function transposeChord(chord, semitones){
 }
 function transposeChordText(text, semitones){
   if (!semitones) return text;
-  return String(text).split(' · ').map(c=>transposeChord(c, semitones)).join(' · ');
+  const flat = capoPreferFlat();
+  return String(text).split(' · ').map(c=>transposeChord(c, semitones, flat)).join(' · ');
 }
 function applyCapo(){
   document.querySelectorAll('#score .chordrow span[data-chord]').forEach(el=>{
