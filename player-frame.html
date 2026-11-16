@@ -179,8 +179,7 @@
 
   .btag{margin-left:.4em;color:var(--accent);font-size:.9em;letter-spacing:.04em}
   .bnum{font-size:calc(.6 * var(--em));color:var(--muted);height:calc(1.1 * var(--em));line-height:calc(1.1 * var(--em));font-variant-numeric:tabular-nums}
-  .bar-meter{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;font-size:.92em;line-height:.8;margin-right:.45em;vertical-align:middle;color:var(--ink-2);font-family:"Times New Roman",Georgia,serif}
-  .bar-meter b,.bar-meter i{font-style:normal;font-weight:600}
+  .bar-meter{font-size:1.35em;line-height:1;margin-right:.5em;color:var(--ink-2);font-family:"Times New Roman",Georgia,serif;font-weight:600;letter-spacing:.02em}
   .chordrow,.vrow,.lrow{display:grid;align-items:center}
   .chordrow{height:calc(1.45 * var(--em));font-family:"Noto Sans TC",system-ui,sans-serif;font-size:calc(.64 * var(--em));font-weight:700;color:var(--accent);line-height:1.05}
   .chordrow span{text-align:left;padding-left:.08em;white-space:nowrap;overflow:visible}
@@ -1223,7 +1222,7 @@ function renderBar(bi){
     const prevMeter = bi>0 ? (SCORE.bars[bi-1].meter || SCORE.meter) : null;
     if (bi===0 || bar.meter !== prevMeter){
       const mm = String(bar.meter).split("/");
-      meterHTML = `<span class="bar-meter"><b>${escHtml(mm[0]||"")}</b><i>${escHtml(mm[1]||"")}</i></span>`;
+      meterHTML = `<span class="bar-meter">${escHtml(mm[0]||"")}/${escHtml(mm[1]||"")}</span>`;
     }
   }
   h += `<div class="bnum">${meterHTML}${bi+1}${bar.tag?`<span class="btag">${escHtml(bar.tag)}</span>`:""}</div>`;
