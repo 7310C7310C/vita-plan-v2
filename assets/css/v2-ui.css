@@ -34,6 +34,9 @@ body.v2-image-mode #v2QuickPauseBtn{display:none!important}
 .v2-menu input[type=range]{flex:1;min-width:100px;accent-color:#d7a85a}
 .v2-menu .v2-val{min-width:34px;text-align:right;color:#cfc3b2;font-variant-numeric:tabular-nums}
 .v2-menu .v2-sep{height:1px;background:rgba(255,255,255,.12);margin:10px 0}
+.v2-menu .v2-select{flex:1;min-width:0;height:30px;border-radius:8px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);color:#f4eee2;font-size:.8rem;padding:0 6px}
+.v2-menu .v2-select option,.v2-menu .v2-select optgroup{background:#26211a;color:#f4eee2}
+.v2-menu .v2-select optgroup{font-weight:700}
 
 body.v2-json-mode #prev-page,body.v2-json-mode #next-page,body.v2-json-mode .page-indicator-container,body.v2-json-mode #doodleEnterBtn,body.v2-json-mode #doodleExitBtn,body.v2-json-mode #doodleClearBtn,body.v2-json-mode #doodleEraserBtn,body.v2-json-mode #doodleUndoBtn,body.v2-json-mode #doodleRedoBtn,body.v2-json-mode #fitModeBtn{display:none!important}
 body.v2-image-mode .v2-menu{display:none!important}

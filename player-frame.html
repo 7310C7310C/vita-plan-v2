@@ -1747,8 +1747,7 @@ $("#langBtn").addEventListener("click", async ()=>{
 });
 
 /* ---------- 重置 ---------- */
-$("#resetAll").addEventListener("click", ()=>{
-  if (!confirm(tr("确定回复所有预设设定？（版面、音色、速度、显示等）"))) return;
+function resetAllSettings(){
   try{ localStorage.removeItem(STORE_KEY); }catch(e){}
   engine.stop(); setPlayUI(false); highlight(-1);
   sel = null;
@@ -1770,6 +1769,10 @@ $("#resetAll").addEventListener("click", ()=>{
   applyTheme(); applyFollowUI(); applyMetroUI(); applyPartUI(); applyBoldUI(); applyWrapUI();
   lastSig = ""; render(); applySelectionUI();
   toast("已回复预设");
+}
+$("#resetAll").addEventListener("click", ()=>{
+  if (!confirm(tr("确定回复所有预设设定？（版面、音色、速度、显示等）"))) return;
+  resetAllSettings();
 });
 
 /* ---------- 高亮与跟随 ---------- */
@@ -2082,7 +2085,9 @@ window.__hymn = {
   let playSeq = 0;
   function vp2State(){
     return {type:'vp2:state', playing:engine.playing, tempo:engine.tempo, parts:engine.parts,
-      lang:lang, metronome:engine.metronome, volume:Math.round(engine.volume*100)};
+      lang:lang, metronome:engine.metronome, volume:Math.round(engine.volume*100),
+      timbre:engine.timbre, lyricFont:lyricFont, bold:bold, scale:scale,
+      autowrap:autowrap, follow:follow, theme:theme};
   }
   function vp2Send(){ try{ parent.postMessage(vp2State(), location.origin); }catch(e){} }
   /* 任何来源（含点谱上音符 playFrom、隐藏播放键、可见性）改了播放 UI 都同步父页 */
@@ -2137,6 +2142,39 @@ window.__hymn = {
           break;
         }
         case 'annot': annotSetMode(!!m.value); break;
+        case 'timbre': {
+          const id = String(m.value || '');
+          if (TIMBRES[id]){
+            engine.timbre = id;
+            if (timbreEl) timbreEl.value = id;
+            saveSettings();
+            engine.loadTimbre(id).then(function(inst){ if (inst && engine.playing && engine.onReady) engine.onReady(id); });
+          }
+          break;
+        }
+        case 'lyricFont': {
+          const v = String(m.value || '');
+          if (LYRIC_FONTS[v]){
+            lyricFont = v;
+            document.documentElement.style.setProperty('--lyric-font', LYRIC_FONTS[lyricFont]);
+            const el = $('#lyricFont'); if (el) el.value = v;
+            saveSettings();
+          }
+          break;
+        }
+        case 'bold': bold = !!m.value; applyBoldUI(); saveSettings(); break;
+        case 'scale': {
+          const v = Math.max(80, Math.min(150, +m.value || 100));
+          scale = v;
+          if (scaleEl){ scaleEl.value = v; scaleVal.textContent = v + '%'; }
+          document.documentElement.style.setProperty('--scale', v/100);
+          saveSettings(); lastSig = ''; scheduleRender();
+          break;
+        }
+        case 'autowrap': autowrap = !!m.value; applyWrapUI(); saveSettings(); lastSig = ''; render(); break;
+        case 'follow': follow = !!m.value; applyFollowUI(); saveSettings(); break;
+        case 'theme': theme = m.value === 'dark' ? 'dark' : 'light'; applyTheme(); saveSettings(); break;
+        case 'reset': resetAllSettings(); break;
       }
       vp2Send();
     }catch(err){}
@@ -2144,7 +2182,10 @@ window.__hymn = {
   window.addEventListener('load', function(){
     try{ parent.postMessage({type:'vp2:ready', title:SCORE.title, id:SONG_ID,
       tempo:engine.tempo, parts:engine.parts, lang:lang,
-      metronome:engine.metronome, volume:Math.round(engine.volume*100)}, location.origin); }catch(e){}
+      metronome:engine.metronome, volume:Math.round(engine.volume*100),
+      timbre:engine.timbre, lyricFont:lyricFont, bold:bold, scale:scale,
+      autowrap:autowrap, follow:follow, theme:theme,
+      timbres:GM_GROUPS.map(function(g){ return {name:g.name, items:g.items}; })}, location.origin); }catch(e){}
   });
 })();
 

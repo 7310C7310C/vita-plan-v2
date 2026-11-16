@@ -26,6 +26,14 @@
     uiLang: 'zh',
     metro: false,
     volume: 100,
+    timbre: 'church_organ',
+    timbres: null,
+    lyricFont: 'hei',
+    bold: true,
+    scale: 100,
+    autowrap: true,
+    follow: true,
+    theme: 'light',
     loadToken: 0
   };
 
@@ -126,7 +134,7 @@
     const vc = document.getElementById('viewerContent');
     if (vc) vc.classList.toggle('v2-mode', !on);
     if (on){ post('stop'); }
-    if (imageBtn) imageBtn.textContent = on ? (state.uiLang === 'en' ? 'Score' : '简谱') : (state.uiLang === 'en' ? 'Image' : '图片谱');
+    if (imageBtn) imageBtn.textContent = on ? (state.uiLang === 'en' ? 'Back' : '返回') : (state.uiLang === 'en' ? 'Image' : '图片谱');
     if (menuBtn) menuBtn.style.display = on ? 'none' : '';
     if (on && menu) menu.classList.remove('open');
   }
@@ -221,6 +229,58 @@
     const b = document.getElementById('v2LangBtn');
     if (b) b.textContent = state.lang === 't' ? '繁' : '简';
   }
+  function buildTimbres(list){
+    if (!Array.isArray(list) || !list.length) return;
+    state.timbres = list;
+    const sel = document.getElementById('v2Timbre');
+    if (!sel) return;
+    sel.textContent = '';
+    list.forEach(function(g){
+      const og = document.createElement('optgroup');
+      og.label = g.name || '';
+      (g.items || []).forEach(function(it){
+        if (!Array.isArray(it) || it.length < 2) return;
+        const o = document.createElement('option');
+        o.value = it[0]; o.textContent = it[1];
+        og.appendChild(o);
+      });
+      sel.appendChild(og);
+    });
+    if (state.timbre) sel.value = state.timbre;
+  }
+  function syncSettings(m){
+    if (!m) return;
+    if (m.timbre){
+      state.timbre = m.timbre;
+      const el = document.getElementById('v2Timbre'); if (el) el.value = m.timbre;
+    }
+    if (m.lyricFont){
+      state.lyricFont = m.lyricFont;
+      const el = document.getElementById('v2LyricFont'); if (el) el.value = m.lyricFont;
+    }
+    if (typeof m.bold === 'boolean'){
+      state.bold = m.bold;
+      const b = document.getElementById('v2BoldBtn'); if (b) b.classList.toggle('on', m.bold);
+    }
+    if (m.scale != null){
+      state.scale = +m.scale || 100;
+      const r = document.getElementById('v2Scale'), l = document.getElementById('v2ScaleVal');
+      if (r) r.value = state.scale;
+      if (l) l.textContent = state.scale + '%';
+    }
+    if (typeof m.autowrap === 'boolean'){
+      state.autowrap = m.autowrap;
+      const b = document.getElementById('v2WrapBtn'); if (b) b.classList.toggle('on', m.autowrap);
+    }
+    if (typeof m.follow === 'boolean'){
+      state.follow = m.follow;
+      const b = document.getElementById('v2FollowBtn'); if (b) b.classList.toggle('on', m.follow);
+    }
+    if (m.theme){
+      state.theme = m.theme;
+      const b = document.getElementById('v2ThemeBtn'); if (b) b.classList.toggle('on', m.theme === 'dark');
+    }
+  }
   function applyUILang(lang){
     const en = lang === 'en';
     state.uiLang = en ? 'en' : 'zh';
@@ -230,7 +290,7 @@
       if (el.children.length === 0) el.textContent = t;
       else { const span = el.querySelector('span'); if (span) span.textContent = t; }
     });
-    if (imageBtn && state.active) imageBtn.textContent = state.image ? (en?'Score':'简谱') : (en?'Image':'图片谱');
+    if (imageBtn && state.active) imageBtn.textContent = state.image ? (en?'Back':'返回') : (en?'Image':'图片谱');
     if (menuBtn) menuBtn.textContent = en ? 'Menu' : '菜单';
     const t = document.getElementById('v2MenuTitle'); if (t) t.textContent = en ? 'Player' : '播放器';
     setPlayUI(state.playing);
@@ -239,6 +299,8 @@
   function ready(m){
     state.ready = true;
     setLoading(false);
+    buildTimbres(m.timbres);
+    syncSettings(m);
     if (m.tempo) syncTempo(m.tempo);
     if (m.parts) syncParts(m.parts);
     if (m.lang) syncLang(m.lang);
@@ -263,6 +325,7 @@
       ready(m);
     } else if (m.type === 'vp2:state'){
       setPlayUI(!!m.playing);
+      syncSettings(m);
       if (m.tempo) syncTempo(m.tempo);
       if (m.parts) syncParts(m.parts);
       if (m.lang) syncLang(m.lang);
@@ -364,6 +427,59 @@
         post('annot', {value: on});
       });
     }
+    const partsAll = document.getElementById('v2PartsAll');
+    if (partsAll) partsAll.addEventListener('click', function(){
+      ['S','A','T','B'].forEach(function(p){ state.parts[p] = true; });
+      document.querySelectorAll('#v2Menu [data-part]').forEach(function(el){ el.classList.add('on'); });
+      post('parts', {parts: state.parts});
+    });
+    const timbre = document.getElementById('v2Timbre');
+    if (timbre) timbre.addEventListener('change', function(){
+      state.timbre = timbre.value;
+      post('timbre', {value: state.timbre});
+    });
+    const lyricFont = document.getElementById('v2LyricFont');
+    if (lyricFont) lyricFont.addEventListener('change', function(){
+      state.lyricFont = lyricFont.value;
+      post('lyricFont', {value: state.lyricFont});
+    });
+    const boldBtn = document.getElementById('v2BoldBtn');
+    if (boldBtn) boldBtn.addEventListener('click', function(){
+      state.bold = !state.bold;
+      boldBtn.classList.toggle('on', state.bold);
+      post('bold', {value: state.bold});
+    });
+    const scale = document.getElementById('v2Scale');
+    const scaleVal = document.getElementById('v2ScaleVal');
+    if (scale) scale.addEventListener('input', function(){
+      state.scale = +scale.value || 100;
+      if (scaleVal) scaleVal.textContent = state.scale + '%';
+      post('scale', {value: state.scale});
+    });
+    const wrapBtn = document.getElementById('v2WrapBtn');
+    if (wrapBtn) wrapBtn.addEventListener('click', function(){
+      state.autowrap = !state.autowrap;
+      wrapBtn.classList.toggle('on', state.autowrap);
+      post('autowrap', {value: state.autowrap});
+    });
+    const followBtn = document.getElementById('v2FollowBtn');
+    if (followBtn) followBtn.addEventListener('click', function(){
+      state.follow = !state.follow;
+      followBtn.classList.toggle('on', state.follow);
+      post('follow', {value: state.follow});
+    });
+    const themeBtn = document.getElementById('v2ThemeBtn');
+    if (themeBtn) themeBtn.addEventListener('click', function(){
+      state.theme = state.theme === 'dark' ? 'light' : 'dark';
+      themeBtn.classList.toggle('on', state.theme === 'dark');
+      post('theme', {value: state.theme});
+    });
+    const resetBtn = document.getElementById('v2ResetBtn');
+    if (resetBtn) resetBtn.addEventListener('click', function(){
+      const ask = state.uiLang === 'en' ? 'Reset all settings to defaults?' : '确定回复所有预设设定？';
+      if (!confirm(ask)) return;
+      post('reset');
+    });
     applyUILang(localStorage.getItem('fhj_language') || 'zh');
     document.addEventListener('languagechange', function(){
       applyUILang(localStorage.getItem('fhj_language') || 'zh');

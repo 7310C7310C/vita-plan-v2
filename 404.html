@@ -7,7 +7,7 @@
     <title>复活计划乐队</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="assets/css/style.css?v=20261115185326">
-    <link rel="stylesheet" href="assets/css/v2-ui.css?v=8">
+    <link rel="stylesheet" href="assets/css/v2-ui.css?v=9">
     <style>
         #loadingOverlay {
             display: block;
@@ -176,6 +176,7 @@
                 <button class="v2-chip on" data-part="A" type="button">A</button>
                 <button class="v2-chip on" data-part="T" type="button">T</button>
                 <button class="v2-chip on" data-part="B" type="button">B</button>
+                <button class="v2-chip" id="v2PartsAll" type="button" data-zh="全" data-en="All" title="全部声部">全</button>
             </div>
             <div class="v2-row">
                 <label data-zh="速度" data-en="Tempo">速度</label>
@@ -191,6 +192,35 @@
                 <label data-zh="音量" data-en="Volume">音量</label>
                 <input id="v2Vol" type="range" min="0" max="100" value="100">
                 <span class="v2-val" id="v2VolVal">100</span>
+            </div>
+            <div class="v2-row">
+                <label data-zh="音色" data-en="Timbre">音色</label>
+                <select id="v2Timbre" class="v2-select" aria-label="音色"></select>
+            </div>
+            <div class="v2-row">
+                <label data-zh="歌词" data-en="Lyrics">歌词</label>
+                <select id="v2LyricFont" class="v2-select" aria-label="歌词字体">
+                    <option value="serif" data-zh="宋体" data-en="Song">宋体</option>
+                    <option value="hei" data-zh="正黑" data-en="Hei">正黑</option>
+                    <option value="yahei" data-zh="雅黑" data-en="YaHei">雅黑</option>
+                    <option value="kai" data-zh="楷体" data-en="Kai">楷体</option>
+                    <option value="round" data-zh="圆体" data-en="Round">圆体</option>
+                </select>
+                <button class="v2-btn" id="v2BoldBtn" type="button" data-zh="加粗" data-en="Bold">加粗</button>
+            </div>
+            <div class="v2-row">
+                <label data-zh="字号" data-en="Size">字号</label>
+                <input id="v2Scale" type="range" min="80" max="150" step="5" value="100">
+                <span class="v2-val" id="v2ScaleVal">100%</span>
+            </div>
+            <div class="v2-row">
+                <label data-zh="检视" data-en="View">检视</label>
+                <button class="v2-btn on" id="v2WrapBtn" type="button" data-zh="自动换行" data-en="Wrap">自动换行</button>
+                <button class="v2-btn on" id="v2FollowBtn" type="button" data-zh="跟随播放" data-en="Follow">跟随播放</button>
+                <button class="v2-btn" id="v2ThemeBtn" type="button" data-zh="夜间" data-en="Night">夜间</button>
+            </div>
+            <div class="v2-row">
+                <button class="v2-btn" id="v2ResetBtn" type="button" data-zh="重置" data-en="Reset">重置</button>
             </div>
             </div>
         </div>
@@ -274,7 +304,7 @@
       </div>
     </div>
     <script src="data/v2-scores.js?v=3"></script>
-    <script src="assets/js/v2-ui.js?v=7"></script>
+    <script src="assets/js/v2-ui.js?v=8"></script>
     <script src="assets/js/script.js?v=2026111603"></script>
     <script src="assets/js/v2-cache.js?v=4"></script>
 </body>
