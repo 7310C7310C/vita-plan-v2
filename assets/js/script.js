@@ -1034,13 +1034,10 @@ function showCategory(categoryName) {
     }));
     Object.keys(category.songs).forEach(id => {
         const song = category.songs[id];
-        const songElement = document.createElement('div');
-        songElement.className = 'song-item';
-        songElement.innerHTML = `
+        const songElement = makeSongLink(categoryName, {...song, id}, `
             <div class="song-number">${id}</div>
             <div class="song-title">${song.title}</div>
-        `;
-        songElement.addEventListener('click', () => showSong(categoryName, {...song, id}));
+        `);
         songsContainer.appendChild(songElement);
     });
     mainView.style.display = 'none';
@@ -1063,13 +1060,10 @@ function showCategory(categoryName) {
         }));
 
         songs.forEach((song) => {
-            const songElement = document.createElement('div');
-            songElement.className = 'song-item';
-            songElement.innerHTML = `
+            const songElement = makeSongLink(categoryName, song, `
                 <div class="song-number">${song.id}</div>
                 <div class="song-title">${song.title}</div>
-            `;
-            songElement.addEventListener('click', () => showSong(categoryName, song));
+            `);
             songsContainer.appendChild(songElement);
         });
         
@@ -1105,13 +1099,10 @@ function showWeeklySongs() {
         if (!category) return;
         const fullSong = category.songs[song.id];
         if (!fullSong) return;
-        const songElement = document.createElement('div');
-        songElement.className = 'song-item';
-        songElement.innerHTML = `
+        const songElement = makeSongLink(song.category, {...fullSong, id: song.id}, `
             <div class="song-category">${t(song.category, 'categories')} ${song.id}</div>
             <div class="song-title">${fullSong.title}</div>
-        `;
-        songElement.addEventListener('click', () => showSong(song.category, {...fullSong, id: song.id}));
+        `);
         weeklySongsContainer.appendChild(songElement);
     });
     mainView.style.display = 'none';
@@ -1124,6 +1115,23 @@ function showWeeklySongs() {
 }
 
 // 显示乐谱
+
+// 生成可分享的歌曲链接（v2 路由），同时保留原来的点击打开行为
+function makeSongLink(category, song, html) {
+    const a = document.createElement('a');
+    a.className = 'song-item';
+    let href = null;
+    try { href = window.VP2UI && VP2UI.routeFor ? VP2UI.routeFor(category, song.id) : null; } catch (e) {}
+    if (href) a.href = href;
+    a.innerHTML = html;
+    a.addEventListener('click', (e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+        e.preventDefault();
+        showSong(category, song);
+    });
+    return a;
+}
+
 function showSong(categoryName, song) {
     loadingOverlay.style.display = 'none';
     loadingIndicator.style.display = 'none';

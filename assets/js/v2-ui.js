@@ -97,10 +97,14 @@
     if (menuBtn) menuBtn.style.display = on ? 'none' : '';
     if (on && menu) menu.classList.remove('open');
   }
-  function pushRoute(cat, id){
+  function routeFor(cat, id){
     const code = codeFor(cat);
-    if (!code) return;
-    try{ history.pushState({v2song:true}, '', basePath() + code + '/' + id); }catch(e){}
+    return code ? (basePath() + code + '/' + id) : null;
+  }
+  function pushRoute(cat, id){
+    const href = routeFor(cat, id);
+    if (!href) return;
+    try{ history.pushState({v2song:true}, '', href); }catch(e){}
   }
   function handleRoute(songsData){
     try{
@@ -273,7 +277,7 @@
 
   window.VP2UI = {
     has, scoreFor, enter, leave, setImageMode, isActive:()=>state.active, isImage:()=>state.image,
-    pushRoute, handleRoute, basePath, post, setUILang: applyUILang,
+    pushRoute, routeFor, handleRoute, basePath, post, setUILang: applyUILang,
     get state(){ return state; }
   };
 
