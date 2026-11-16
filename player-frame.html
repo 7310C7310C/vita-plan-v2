@@ -1359,13 +1359,13 @@ function render(){
     body.className = "line-body";
     const gutter = document.createElement("div");
     gutter.className = "gutter";
-    gutter.innerHTML =
-      `<div class="g-cell g-bnum"></div><div class="g-cell g-chord"></div>`+
-      `<div class="g-cell g-voice" data-gv="S">S</div>`+
-      `<div class="g-cell g-voice" data-gv="A">A</div>`+
-      VERSE_LABELS.map(v=>`<div class="g-cell g-lyr">${v}</div>`).join("")+
-      `<div class="g-cell g-voice" data-gv="T">T</div>`+
-      `<div class="g-cell g-voice" data-gv="B">B</div>`;
+    let gh = `<div class="g-cell g-bnum"></div><div class="g-cell g-chord"></div>`;
+    if (SHOW_VOICES.indexOf("S")>=0) gh += `<div class="g-cell g-voice" data-gv="S">S</div>`;
+    if (SHOW_VOICES.indexOf("A")>=0) gh += `<div class="g-cell g-voice" data-gv="A">A</div>`;
+    gh += VERSE_LABELS.map(v=>`<div class="g-cell g-lyr">${v}</div>`).join("");
+    if (SHOW_VOICES.indexOf("T")>=0) gh += `<div class="g-cell g-voice" data-gv="T">T</div>`;
+    if (SHOW_VOICES.indexOf("B")>=0) gh += `<div class="g-cell g-voice" data-gv="B">B</div>`;
+    gutter.innerHTML = gh;
     const barsWrap = document.createElement("div");
     barsWrap.className = "bars";
     bars.forEach(bi=>{
