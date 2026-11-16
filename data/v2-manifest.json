@@ -1,25 +1,25 @@
 {
-  "version": "47c6e43a2b9ed214",
+  "version": "165820582753c651",
   "files": [
     {
       "path": "data/scores/jt/017.json",
-      "hash": "a3f1ac2437ac4b762deb00b23876dff17572ac576054db01cfdc28ab2735d1df",
-      "size": 22302
+      "hash": "9f5e2403b5363c2c4e8360a79d76a316c19ffc77a476f0af041c242efda191c4",
+      "size": 22425
     },
     {
       "path": "data/scores/lz/008.json",
-      "hash": "8624afa387dad0926eb6d1b3f8b8be34a4988f7edd96ad582596110e22df2cd6",
-      "size": 7219
+      "hash": "e2889307404e72834a2dc5906c7db532cef9bcb423a25b4e4b6861e790ab938a",
+      "size": 7277
     },
     {
       "path": "data/scores/lz/019.json",
-      "hash": "7206628438bf8b82aa5dc78281378829e734815a7cb81ad7d23a10efb690faa6",
-      "size": 11150
+      "hash": "e4a3c43516dae43f95e457136f73ba511deb996d35817755c7d0ce64fdba398d",
+      "size": 11217
     },
     {
       "path": "data/scores/lz/020.json",
-      "hash": "5f16fb26d854978f88a52bed1bfd2f0a30776a2d3993d1b167bc8dd06842e424",
-      "size": 9329
+      "hash": "37cb06a391b5a4f9f4aca8c64ca310994f648c6c3a796f9de3cd230d925e2fcb",
+      "size": 9365
     }
   ]
 }
