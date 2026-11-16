@@ -769,6 +769,7 @@ class Engine{
     this.loading = null; this.sampleFailed = false; this.progress = null;
     this.activeSynth = new Set();
     this.activeClicks = new Set();
+    this.activeSampleStops = new Set();
     this.playToken = 0;
     this.onEnd = null; this.onAudioBlocked = null; this.onProgress = null;
     this.onReady = null; this.onUnavailable = null;
@@ -1110,7 +1111,11 @@ class Engine{
   }
   note(midi,time,durSec,part,vowel){
     if (this.inst && this.audioReady()){
-      try{ this.inst.start({note:midi,velocity:86,time,duration:Math.max(0.1,durSec*0.96)}); return; }catch(e){}
+      try{
+        const stopFn = this.inst.start({note:midi,velocity:86,time,duration:Math.max(0.1,durSec*0.96)});
+        if (typeof stopFn === "function") this.activeSampleStops.add(stopFn);
+        return;
+      }catch(e){}
     }
     this.synth(midi,time,durSec);
   }
@@ -1136,6 +1141,10 @@ class Engine{
     });
   }
   stopAll(){
+    if (this.activeSampleStops){
+      this.activeSampleStops.forEach(fn=>{ try{ fn(); }catch(e){} });
+      this.activeSampleStops.clear();
+    }
     if (this.inst && this.inst.stop){ try{ this.inst.stop(); }catch(e){} }
     const now = this.ctx ? this.ctx.currentTime : 0;
     this.activeSynth.forEach(n=>{ try{ n.stop(now+0.03); }catch(e){} });
@@ -1631,7 +1640,9 @@ function playNoteEl(el){
   const bi = +el.dataset.bar, v = el.dataset.voice, idx = +el.dataset.idx;
   const beat = BAR_START[bi] + SCORE.bars[bi].V[v][idx][0];
   if (sel && (bi < sel.a || bi > sel.b)){ sel = null; applySelectionUI(); }
-  playFrom(beat);
+  const keep = !!(engine.repeatDone && engine.repeat &&
+    beat >= engine.repeat.start-1e-6 && beat < engine.repeat.end-1e-6);
+  playFrom(beat, keep);
 }
 
 /* ---------- 播放 ---------- */
