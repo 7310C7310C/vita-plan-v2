@@ -5,6 +5,7 @@ const SHELL = [
   'index.html',
   'favicon.ico',
   'player-frame.html',
+  'data/songs.json?v=20261115185326',
   'assets/css/style.css?v=20261115185326',
   'assets/css/v2-ui.css?v=1',
   'assets/js/v2-ui.js?v=1',
