@@ -1273,6 +1273,7 @@ if (weeklyView.style.display === 'block') {
         if (window.VP2UI) VP2UI.leave();
         loadImage(currentState.currentPage);
     }
+    document.title = song.title || '复活计划乐队';
     updatePageIndicator();
     renderVersionButtons();
     updateSongNavButtons();
