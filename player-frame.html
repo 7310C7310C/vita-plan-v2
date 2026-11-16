@@ -2079,6 +2079,7 @@ window.__hymn = {
 <script>
 /* v2 parent <-> frame API */
 (function(){
+  let playSeq = 0;
   function vp2State(){
     return {type:'vp2:state', playing:engine.playing, tempo:engine.tempo, parts:engine.parts,
       lang:lang, metronome:engine.metronome, volume:Math.round(engine.volume*100)};
@@ -2088,7 +2089,10 @@ window.__hymn = {
     const prevEnd = engine.onEnd;
     engine.onEnd = function(){ try{ if (prevEnd) prevEnd(); }catch(e){} vp2Send(); };
   }catch(e){}
-  document.addEventListener('visibilitychange', function(){ setTimeout(vp2Send, 120); });
+  document.addEventListener('visibilitychange', function(){
+    if (document.visibilityState === 'hidden') playSeq++;
+    setTimeout(vp2Send, 120);
+  });
   window.addEventListener('message', function(e){
     if (e.origin !== location.origin) return;
     const m = e.data || {};
@@ -2099,14 +2103,22 @@ window.__hymn = {
         case 'play':
           preload();
           if (!engine.playing){
+            const seq = ++playSeq;
             const p = engine.play(engine.anchorBeat >= engine.totalBeats-1e-6 ? 0 : engine.anchorBeat);
-            if (p && p.then) p.then(vp2Send).catch(vp2Send);
-            setTimeout(vp2Send, 520);
+            const done = function(){
+              if (seq !== playSeq){
+                try{ engine.stop(); }catch(e){}
+                setPlayUI(false);
+              }
+              vp2Send();
+            };
+            if (p && p.then) p.then(done).catch(done);
+            setTimeout(function(){ if (seq === playSeq) vp2Send(); }, 520);
             return;
           }
           break;
-        case 'pause': engine.pause(); setPlayUI(false); break;
-        case 'stop': engine.stop(); setPlayUI(false); break;
+        case 'pause': playSeq++; engine.pause(); setPlayUI(false); break;
+        case 'stop': playSeq++; engine.stop(); setPlayUI(false); break;
         case 'tempo': engine.setTempo(+m.value); break;
         case 'metronome': engine.metronome = !!m.value; break;
         case 'volume': engine.setVolume((+m.value)/100); break;
