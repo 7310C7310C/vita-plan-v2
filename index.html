@@ -2,10 +2,12 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
+    <script>(function(){var b=location.pathname.indexOf('/vita-plan-v2/')===0?'/vita-plan-v2/':'/';document.write('<base href="'+b+'">');})();</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>复活计划乐队</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="assets/css/style.css?v=20261115185326">
+    <link rel="stylesheet" href="assets/css/v2-ui.css?v=1">
     <style>
         #loadingOverlay {
             display: block;
@@ -157,12 +159,46 @@
             </svg>
         </button>
         <div id="viewer-breadcrumb" class="viewer-breadcrumb"></div>
+        <div class="v2-head-actions" id="v2HeadActions">
+            <button class="v2-head-btn" id="v2ImageBtn" type="button">图片谱</button>
+            <button class="v2-head-btn" id="v2MenuBtn" type="button">菜单</button>
+        </div>
+        <div class="v2-menu" id="v2Menu">
+            <div class="v2-row"><strong id="v2MenuTitle">播放器</strong></div>
+            <div class="v2-row">
+                <button class="v2-btn" id="v2PlayBtn" type="button">播放</button>
+                <button class="v2-btn" id="v2StopBtn" type="button" data-zh="停止" data-en="Stop">停止</button>
+            </div>
+            <div class="v2-row">
+                <label data-zh="声部" data-en="Parts">声部</label>
+                <button class="v2-chip on" data-part="S" type="button">S</button>
+                <button class="v2-chip on" data-part="A" type="button">A</button>
+                <button class="v2-chip on" data-part="T" type="button">T</button>
+                <button class="v2-chip on" data-part="B" type="button">B</button>
+            </div>
+            <div class="v2-row">
+                <label data-zh="速度" data-en="Tempo">速度</label>
+                <input id="v2Tempo" type="range" min="30" max="220" value="100">
+                <span class="v2-val" id="v2TempoVal">100</span>
+            </div>
+            <div class="v2-row">
+                <button class="v2-btn" id="v2Metro" type="button" data-zh="节拍器" data-en="Click">节拍器</button>
+                <button class="v2-btn" id="v2LangBtn" type="button">简</button>
+                <button class="v2-btn" id="v2AnnotBtn" type="button" data-zh="标注" data-en="Mark">标注</button>
+            </div>
+            <div class="v2-row">
+                <label data-zh="音量" data-en="Volume">音量</label>
+                <input id="v2Vol" type="range" min="0" max="100" value="100">
+                <span class="v2-val" id="v2VolVal">100</span>
+            </div>
+        </div>
         <div class="viewer-content" id="viewerContent">
             <div class="sheet-container">
                 <img id="sheet-image" class="sheet-image" src="" alt="乐谱">
                 <canvas id="doodle-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;display:none;z-index:10;"></canvas>
                 <canvas id="doodle-preview-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:11;"></canvas>
             </div>
+            <iframe id="v2Frame" class="v2-frame" title="v2 score"></iframe>
         </div>
         
         <!-- 底部控制栏，包含歌曲导航、版本切换和页码控制 -->
@@ -234,6 +270,7 @@
         <div id="modalVersionBtnList" style="display:flex;flex-direction:column;gap:14px;margin-bottom:10px;"></div>
       </div>
     </div>
+    <script src="assets/js/v2-ui.js?v=1"></script>
     <script src="assets/js/script.js?v=20261115185326"></script>
     <script src="assets/js/offline.js?v=20261115185326"></script>
 </body>

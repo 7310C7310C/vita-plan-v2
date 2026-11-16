@@ -11,7 +11,7 @@ function versionedImageUrl(path) {
 
 // 加载数据的函数
 function loadSongsData() {
-    fetch(`data/songs.json?v=${jsonVersion}`)
+    fetch(`data/songs.json?v=${jsonVersion}`, {cache:'no-store'})
         .then(response => {
             if (!response.ok) {
                 throw new Error('网络响应错误');
@@ -22,6 +22,7 @@ function loadSongsData() {
             songsData = data;
             // 数据加载完成后，调用所有初始化函数
             initApp();
+            if (window.VP2UI) VP2UI.handleRoute(data);
         })
         .catch(error => {
             console.error('加载歌曲数据失败:', error);
@@ -205,7 +206,9 @@ let currentState = {
     currentSongList: [], // 用于存储当前显示的歌曲列表
     isSubCategoryView: false, // 标记是否在子分类视图
     parentCategory: null, // 存储父分类名称
-    currentSubCategory: null // 存储当前子分类名称
+    currentSubCategory: null, // 存储当前子分类名称
+    v2Score: null,
+    v2ImageMode: false
 };
 
 // 预加载相关变量
@@ -1218,7 +1221,16 @@ if (weeklyView.style.display === 'block') {
         currentState.currentVersion = '原谱';
     }
 
-    loadImage(currentState.currentPage);
+    const v2Score = (window.VP2UI && VP2UI.has(categoryName, song.id))
+        ? VP2UI.scoreFor(categoryName, song.id) : null;
+    currentState.v2Score = v2Score;
+    currentState.v2ImageMode = false;
+    if (v2Score) {
+        VP2UI.enter(categoryName, song, v2Score);
+    } else {
+        if (window.VP2UI) VP2UI.leave();
+        loadImage(currentState.currentPage);
+    }
     updatePageIndicator();
     renderVersionButtons();
     updateSongNavButtons();
@@ -1246,8 +1258,9 @@ if (weeklyView.style.display === 'block') {
     // 滚动到顶部
     document.querySelector('.viewer-content').scrollTop = 0;
     
-    // 添加历史记录
-    history.pushState({viewingSheet: true}, null);
+    // 添加历史记录（v2 用可分享路由）
+    if (window.VP2UI) VP2UI.pushRoute(categoryName, song.id);
+    else history.pushState({viewingSheet: true}, null);
 }
 
 // 加载乐谱图片
@@ -1320,8 +1333,10 @@ function renderVersionButtons() {
             if (version !== currentState.currentVersion) {
                 currentState.currentVersion = version;
                 currentState.currentPage = 1;
-                loadImage(currentState.currentPage);
-                updatePageIndicator();
+                if (!(currentState.v2Score && !currentState.v2ImageMode)) {
+                    loadImage(currentState.currentPage);
+                    updatePageIndicator();
+                }
                 renderVersionButtons();
                 // 关闭折叠菜单
                 versionButtonsContainer.classList.remove('show');
@@ -1526,6 +1541,7 @@ function goToNextSong() {
 
 // 关闭查看器
 function closeViewer() {
+    if (window.VP2UI) VP2UI.leave();
     loadingOverlay.style.display = 'none';
     loadingIndicator.style.display = 'none';
     viewerView.style.display = 'none';
@@ -1581,7 +1597,7 @@ function closeViewer() {
     
     // 清除打开来源标记
     currentState.openedFrom = null;
-    history.replaceState(null, null);
+    history.replaceState(null, null, (window.VP2UI ? VP2UI.basePath() : '/'));
     // 退出时恢复图片适应模式为宽度适应
     isFitHeight = false;
     updateSheetFitMode();
@@ -2930,3 +2946,4 @@ function updateSheetFitMode() {
 }
 // 每次图片加载后自动同步适应模式
 sheetImage.addEventListener('load', updateSheetFitMode);
+window.__vpLoadImage = loadImage;
