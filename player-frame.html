@@ -300,6 +300,16 @@
   body.embed .wrap{max-width:none;padding:10px 16px 92px}
   body.embed .score-head{margin-top:0}
   body.embed .global-loading{position:fixed}
+
+  /* v2 annotations */
+  #score .note.annot{background:rgba(255,211,0,.38);box-shadow:0 0 0 1px rgba(230,180,0,.55);border-radius:.3em}
+  #score .note.annot[title]::after{content:"";position:absolute;top:-.12em;right:-.12em;width:.32em;height:.32em;border-radius:50%;background:#c98a00;box-shadow:0 0 0 1px #fff8e1}
+  body.annot-mode #score .note[data-id]{cursor:crosshair}
+  .annot-pop{position:fixed;z-index:9999;background:#fffdf5;border:1px solid #d8c9ae;border-radius:10px;box-shadow:0 10px 28px rgba(0,0,0,.22);padding:8px}
+  .annot-pop-in{display:flex;gap:6px;align-items:center}
+  .annot-pop input{width:210px;height:30px;border:1px solid #d8c9ae;border-radius:7px;padding:0 8px;font-size:13px;background:#fff;color:#3f3327;user-select:text;-webkit-user-select:text}
+  .annot-pop button{height:30px;padding:0 9px;border-radius:7px;border:1px solid #d8c9ae;background:#f3ead8;color:#5a4a3a;font-size:12px;cursor:pointer}
+  .annot-pop button[data-act=save]{background:#b8893f;border-color:#a17634;color:#fff}
 </style>
 </head>
 <body>
@@ -2094,6 +2104,7 @@ window.__hymn = {
           if (v !== lang){ lang = v; applyLang(); saveSettings(); }
           break;
         }
+        case 'annot': annotSetMode(!!m.value); break;
       }
       parent.postMessage({type:'vp2:state', playing:engine.playing, tempo:engine.tempo, parts:engine.parts, lang:lang}, '*');
     }catch(err){}
@@ -2104,6 +2115,84 @@ window.__hymn = {
       metronome:engine.metronome, volume:Math.round(engine.volume*100)}, '*'); }catch(e){}
   });
 })();
+
+/* ============================================================
+   v2 annotations: click/drag note or range -> yellow highlight;
+   optional text; stored locally per score.
+   ============================================================ */
+let annotMode = false;
+let annotStart = null;
+let annotPop = null;
+const ANNOT_KEY = 'v2.annot.' + SONG_ID;
+let annots = {};
+try{ annots = JSON.parse(localStorage.getItem(ANNOT_KEY) || '{}') || {}; }catch(e){ annots = {}; }
+
+function annotSave(){ try{ localStorage.setItem(ANNOT_KEY, JSON.stringify(annots)); }catch(e){} }
+function annotId(el){ return el && el.getAttribute ? el.getAttribute('data-id') : null; }
+function annotApply(){
+  document.querySelectorAll('#score .note[data-id]').forEach(el=>{
+    const a = annots[annotId(el)];
+    el.classList.toggle('annot', !!a);
+    if (a && a.text) el.title = a.text; else el.removeAttribute('title');
+  });
+}
+function annotHidePop(){ if (annotPop){ annotPop.remove(); annotPop = null; } }
+function annotShowPop(list){
+  annotHidePop();
+  const r = list[list.length-1].getBoundingClientRect();
+  const d = document.createElement('div');
+  d.className = 'annot-pop';
+  d.innerHTML = '<div class="annot-pop-in"><input type="text" placeholder="标注文字（可留空）"><button data-act="save">保存</button><button data-act="cancel">取消</button></div>';
+  d.style.left = Math.max(8, Math.min(window.innerWidth - 330, r.left)) + 'px';
+  d.style.top = Math.max(8, Math.min(window.innerHeight - 70, r.bottom + 8)) + 'px';
+  document.body.appendChild(d); annotPop = d;
+  const inp = d.querySelector('input'); inp.focus();
+  const save = ()=>{ const t = inp.value.trim(); list.forEach(el=>{ const id=annotId(el); annots[id]=annots[id]||{color:'yellow'}; annots[id].text=t; }); annotSave(); annotHidePop(); annotApply(); };
+  d.querySelector('[data-act=save]').onclick = save;
+  d.querySelector('[data-act=cancel]').onclick = ()=>annotHidePop();
+  inp.addEventListener('keydown', e=>{ if(e.key==='Enter') save(); else if(e.key==='Escape') annotHidePop(); });
+}
+function annotCollect(a,b){
+  const all = [...document.querySelectorAll('#score .note[data-id]')];
+  let i = all.indexOf(a), j = all.indexOf(b);
+  if (i < 0) return a ? [a] : [];
+  if (j < 0) j = i;
+  if (i > j){ const t=i; i=j; j=t; }
+  return all.slice(i, j+1);
+}
+function annotHighlight(list){
+  list.forEach(el=>{ const id=annotId(el); if(!annots[id]) annots[id]={color:'yellow'}; el.classList.add('annot'); });
+  annotSave(); annotApply(); annotShowPop(list);
+}
+function annotSetMode(on){
+  annotMode = !!on;
+  document.body.classList.toggle('annot-mode', annotMode);
+  if (!annotMode) annotHidePop();
+}
+document.addEventListener('pointerdown', function(e){
+  if (!annotMode) return;
+  const n = e.target.closest('#score .note[data-id]');
+  if (!n) return;
+  e.preventDefault(); e.stopPropagation();
+  annotStart = n;
+}, true);
+document.addEventListener('pointerup', function(e){
+  if (!annotMode || !annotStart) return;
+  const n = e.target.closest('#score .note[data-id]');
+  if (!n) return;
+  e.preventDefault(); e.stopPropagation();
+  const start = annotStart; annotStart = null;
+  annotHighlight(annotCollect(start, n));
+}, true);
+document.addEventListener('click', function(e){
+  if (annotMode && e.target.closest('#score .note[data-id]')){ e.preventDefault(); e.stopPropagation(); }
+}, true);
+
+/* Re-apply after every render */
+const _vp2Render = render;
+render = function(){ _vp2Render(); annotApply(); };
+setTimeout(annotApply, 0);
+
 </script>
 </body>
 </html>
