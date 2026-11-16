@@ -1,5 +1,5 @@
 /* Vita Plan v2 service worker: pre-cache shell + all JSON scores after first paint. */
-const SHELL_CACHE = 'v2-shell-17';
+const SHELL_CACHE = 'v2-shell-18';
 const JSON_CACHE = 'v2-json-v2';
 const SHELL = [
   'index.html',
@@ -8,7 +8,7 @@ const SHELL = [
   'data/songs.json?v=20261115185326',
   'assets/css/style.css?v=20261115185326',
   'assets/css/v2-ui.css?v=9',
-  'assets/js/v2-ui.js?v=8',
+  'assets/js/v2-ui.js?v=9',
   'assets/js/script.js?v=2026111603',
   'assets/js/v2-cache.js?v=4',
   'data/v2-scores.js?v=3'

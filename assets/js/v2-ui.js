@@ -321,7 +321,9 @@
   window.addEventListener('message', function(e){
     if (e.origin !== location.origin) return;
     const m = e.data || {};
-    if (m.type === 'vp2:ready'){
+    if (m.type === 'vp2:menu-close'){
+      if (menu) menu.classList.remove('open');
+    } else if (m.type === 'vp2:ready'){
       ready(m);
     } else if (m.type === 'vp2:state'){
       setPlayUI(!!m.playing);
@@ -364,7 +366,12 @@
         menu.classList.toggle('open');
       });
       menu.addEventListener('click', function(e){ e.stopPropagation(); });
-      document.addEventListener('click', function(){ menu.classList.remove('open'); });
+      /* capture：即使目标元素 stopPropagation（例如收藏按钮），点菜单外也关闭 */
+      document.addEventListener('click', function(e){
+        if (menu.contains(e.target)) return;
+        if (menuBtn && menuBtn.contains(e.target)) return;
+        menu.classList.remove('open');
+      }, true);
     }
     const play = document.getElementById('v2PlayBtn');
     if (play) play.addEventListener('click', function(){

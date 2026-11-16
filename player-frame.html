@@ -1766,7 +1766,9 @@ function resetAllSettings(){
   scaleEl.value = scale; scaleVal.textContent = scale+"%";
   document.documentElement.style.setProperty("--lyric-font", LYRIC_FONTS[lyricFont]);
   document.documentElement.style.setProperty("--scale", scale/100);
+  lang = DEFAULTS.lang;
   applyTheme(); applyFollowUI(); applyMetroUI(); applyPartUI(); applyBoldUI(); applyWrapUI();
+  applyLang();
   lastSig = ""; render(); applySelectionUI();
   toast("已回复预设");
 }
@@ -2106,6 +2108,9 @@ window.__hymn = {
     if (document.visibilityState === 'hidden') playSeq++;
     setTimeout(vp2Send, 120);
   });
+  document.addEventListener('pointerdown', function(){
+    try{ parent.postMessage({type:'vp2:menu-close'}, location.origin); }catch(e){}
+  }, true);
   window.addEventListener('message', function(e){
     if (e.origin !== location.origin) return;
     const m = e.data || {};
