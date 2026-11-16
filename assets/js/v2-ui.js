@@ -107,6 +107,7 @@
   function leave(){
     state.loadToken++;
     state.active = false; state.image = false; state.ready = false;
+    setPlayUI(false);
     document.body.classList.remove('v2-active', 'v2-json-mode', 'v2-image-mode');
     if (headActions) headActions.style.display = 'none';
     if (menu) menu.classList.remove('open');
@@ -360,7 +361,7 @@
 
   window.VP2UI = {
     has, scoreFor, enter, leave, setImageMode, isActive:()=>state.active, isImage:()=>state.image,
-    pushRoute, routeFor, routeForCategory, pushPath, handleRoute, basePath, post, setUILang: applyUILang,
+    pushRoute, setVersionQuery, routeFor, routeForCategory, pushPath, handleRoute, basePath, post, setUILang: applyUILang,
     get state(){ return state; }
   };
 
