@@ -38,6 +38,8 @@
     annotEraser: false,
     annotUndo: false,
     annotRedo: false,
+    langPending: false,
+    langLoading: false,
     loadToken: 0
   };
 
@@ -380,6 +382,22 @@
     const m = e.data || {};
     if (m.type === 'vp2:menu-close'){
       if (menu) menu.classList.remove('open');
+    } else if (m.type === 'vp2:lang'){
+      if (m.lang) syncLang(m.lang);
+      const btn = document.getElementById('v2LangBtn');
+      if (m.state === 'loading'){
+        state.langLoading = true;
+        if (btn) btn.disabled = true;
+        if (state.langPending && window.showToast) window.showToast('繁體轉換載入中…');
+      } else {
+        state.langLoading = false;
+        if (btn) btn.disabled = false;
+        if (state.langPending && window.showToast){
+          if (m.state === 'ready') window.showToast(m.lang === 't' ? '已切換繁體' : '已切換簡體');
+          else if (m.state === 'failed') window.showToast('繁體轉換需要連網，已保持簡體');
+        }
+        state.langPending = false;
+      }
     } else if (m.type === 'vp2:timbre'){
       if (window.showToast){
         const label = m.label || (state.uiLang === 'en' ? 'Timbre' : '音色');
@@ -499,6 +517,8 @@
     const langBtn = document.getElementById('v2LangBtn');
     if (langBtn){
       langBtn.addEventListener('click', function(){
+        if (state.langLoading) return;
+        state.langPending = true;
         syncLang(state.lang === 't' ? 's' : 't');
         post('lang', {value: state.lang});
       });

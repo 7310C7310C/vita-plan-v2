@@ -1890,19 +1890,25 @@ function convertTree(root){
     el.setAttribute("title", (lang === "t" && conv) ? conv(src) : src);
   });
 }
+function vp2LangState(state){
+  try{ parent.postMessage({type:'vp2:lang', state:state, lang:lang}, location.origin); }catch(e){}
+}
 async function applyLang(){
+  vp2LangState('loading');
   if (lang === "t"){
     try{
       const OC = await ensureOpenCC();
       if (!conv) conv = OC.Converter({from:"cn", to:"tw"});
     }catch(e){
       lang = "s"; saveSettings(); toast("简繁转换需要连网，已暂停");
+      vp2LangState('failed');
       return;
     }
   }
   convertTree(document.body);
   document.title = (lang === "t" && conv) ? conv(SCORE.title) : SCORE.title;
   $("#langBtn").textContent = lang === "s" ? "简" : "繁";
+  vp2LangState('ready');
 }
 const globalLoading = $("#globalLoading");
 $("#langBtn").addEventListener("click", async ()=>{
