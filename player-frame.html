@@ -216,6 +216,7 @@
   .acc{font-size:.66em;vertical-align:.14em;margin-right:.02em;color:var(--accent)}
   .dot{position:absolute;left:50%;margin-left:-.085em;width:.17em;height:.17em;border-radius:50%;background:currentColor}
   .u1{position:absolute;left:-.04em;right:-.04em;bottom:-.16em;border-bottom:1.3px solid currentColor}
+  .u1.beam{left:0;right:0;bottom:-.16em}
   .rdot{position:absolute;left:100%;top:50%;width:.14em;height:.14em;margin-left:.05em;margin-top:-.07em;
     border-radius:50%;background:currentColor}
   .dash{display:inline-flex;align-items:center;gap:.16em;margin-left:.2em;vertical-align:middle}
@@ -662,7 +663,7 @@ function midiToJianpu(m){
   }
   return {deg:idx||1, acc, oct};
 }
-function noteHTML(jp,{underline=0,dot=0}={}){
+function noteHTML(jp,{underline=0,dot=0,beam=false}={}){
   let dots = "";
   const n = Math.min(Math.abs(jp.oct),2);
   for (let k=0;k<n;k++){
@@ -671,10 +672,11 @@ function noteHTML(jp,{underline=0,dot=0}={}){
       : `<i class="dot below" style="top:calc(100% + ${0.19 + k*0.26}em)"></i>`;
   }
   const acc = jp.acc ? `<span class="acc">${jp.acc}</span>` : "";
-  const u = underline ? '<i class="u1"></i>' : "";
+  const u = underline ? `<i class="u1${beam?' beam':''}"></i>` : "";
   const rd = dot ? '<i class="rdot"></i>' : "";
   const cls = jp.oct>1?"up2":jp.oct===1?"up1":jp.oct===-1?"dn1":jp.oct<-1?"dn2":"";
-  return {html:`<span class="num">${acc}${jp.deg}${rd}${dots}${u}</span>`, cls};
+  const inner = `<span class="num">${acc}${jp.deg}${rd}${dots}${beam?'':u}</span>`;
+  return {html: inner + (beam?u:''), cls};
 }
 function layoutVoice(bar,v){
   const n = bar.beats;
@@ -1301,7 +1303,7 @@ function renderBar(bi){
           let underline=0, dot=0;
           if (SCORE.compound){ underline = d===1?1:0; dot = (d===3||d===5)?1:0; }
           else { underline = d<0.75?1:0; dot = Math.abs(d-1.5)<1e-6?1:0; }
-          const nh = noteHTML(midiToJianpu(ev[2] + 12*(VOICE_OCT[v]||0)), {underline, dot});
+          const nh = noteHTML(midiToJianpu(ev[2] + 12*(VOICE_OCT[v]||0)), {underline, dot, beam: cell.list.length>1});
           const left = (ev[0]-ci)*100, width = Math.max(22, d*100);
           r += `<span class="note ${nh.cls}" style="left:${left}%;width:${width}%" data-id="${evId(bi,v,idx)}" data-bs="${ev[0]}" data-bd="${d}" data-bar="${bi}" data-voice="${v}" data-idx="${idx}">${nh.html}</span>`;
         });
