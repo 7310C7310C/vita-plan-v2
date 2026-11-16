@@ -341,11 +341,15 @@
     if (annotBar) annotBar.textContent = en ? 'Mark' : '标注';
     const wrapBar = document.getElementById('v2WrapBarBtn');
     if (wrapBar) wrapBar.textContent = en ? 'Wrap' : '自动换行';
-    const toolMap = {v2AnnotSaveBtn:'保存', v2AnnotClearBtn:'清空', v2AnnotEraserBtn:'橡皮擦', v2AnnotUndoBtn:'撤销', v2AnnotRedoBtn:'重做'};
-    const toolEn = {v2AnnotSaveBtn:'Save', v2AnnotClearBtn:'Clear', v2AnnotEraserBtn:'Eraser', v2AnnotUndoBtn:'Undo', v2AnnotRedoBtn:'Redo'};
+    const toolMap = {v2AnnotSaveBtn:'保存', v2AnnotClearBtn:'清空', v2AnnotEraserBtn:'橡皮擦'};
+    const toolEn = {v2AnnotSaveBtn:'Save', v2AnnotClearBtn:'Clear', v2AnnotEraserBtn:'Eraser'};
     Object.keys(toolMap).forEach(function(id){
       const el = document.getElementById(id);
       if (el) el.textContent = en ? toolEn[id] : toolMap[id];
+    });
+    [['v2AnnotUndoBtn','撤销','Undo'], ['v2AnnotRedoBtn','重做','Redo']].forEach(function(x){
+      const el = document.getElementById(x[0]);
+      if (el){ const t = en ? x[2] : x[1]; el.title = t; el.setAttribute('aria-label', t); }
     });
     if (menuBtn) menuBtn.textContent = en ? 'Menu' : '菜单';
     const t = document.getElementById('v2MenuTitle'); if (t) t.textContent = en ? 'Player' : '播放器';
@@ -496,6 +500,7 @@
     if (annotSave) annotSave.addEventListener('click', function(){
       post('annotSave');
       if (window.showToast) window.showToast('标记已保存到本机');
+      setAnnot(false);
     });
     const annotClear = document.getElementById('v2AnnotClearBtn');
     if (annotClear) annotClear.addEventListener('click', function(){

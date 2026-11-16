@@ -2332,7 +2332,7 @@ function annotShowPop(group){
                        : {left: 20, bottom: 120, right: 20};
   const d = document.createElement('div');
   d.className = 'annot-pop';
-  d.innerHTML = '<div class="annot-pop-in"><input type="text" placeholder="标注文字（可留空）"><button data-act="save">保存</button><button data-act="cancel">取消</button></div>';
+  d.innerHTML = '<div class="annot-pop-in"><input type="text" placeholder="标注文字（可留空）"><button data-act="save">确定</button></div>';
   d.style.left = Math.max(8, Math.min(window.innerWidth - 330, r.left)) + 'px';
   d.style.top = Math.max(8, Math.min(window.innerHeight - 70, r.bottom + 8)) + 'px';
   document.body.appendChild(d); annotPop = d;
@@ -2342,7 +2342,6 @@ function annotShowPop(group){
     annotCommit(); annotHidePop();
   };
   d.querySelector('[data-act=save]').onclick = save;
-  d.querySelector('[data-act=cancel]').onclick = function(){ annotHidePop(); };
   inp.addEventListener('keydown', function(e){ if (e.key === 'Enter') save(); else if (e.key === 'Escape') annotHidePop(); });
 }
 function annotMarqueeShow(x1, y1, x2, y2){

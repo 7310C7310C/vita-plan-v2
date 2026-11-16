@@ -67,6 +67,8 @@ body.v2-image-mode #v2AnnotBarBtn,body.v2-image-mode #v2WrapBarBtn{display:none!
 .v2-annot-tools{position:fixed;left:50%;bottom:64px;transform:translateX(-50%);z-index:112;display:none;gap:6px;padding:6px 8px;background:rgba(30,26,20,.92);border:1px solid rgba(255,255,255,.25);border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.25)}
 body.v2-annot-mode .v2-annot-tools{display:flex}
 .v2-annot-tools .v2-bar-btn{height:26px}
+.v2-annot-tools .v2-annot-icon{width:30px;padding:0;display:inline-flex;align-items:center;justify-content:center}
+.v2-annot-tools .v2-annot-icon svg{width:16px;height:16px}
 .v2-annot-tools .v2-bar-btn:disabled{opacity:.4;cursor:default}
 .v2-annot-tools .v2-bar-btn.on{background:rgba(178,59,53,.9);border-color:#e07a72}
 @media (max-width:340px){
