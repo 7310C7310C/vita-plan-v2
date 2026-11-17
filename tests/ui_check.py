@@ -426,8 +426,8 @@ def main() -> int:
                       bar.classList.remove('playing');
                       return out;
                     }""")
-                    if pf["d"] != "block" or pf["l"] < 1 or pf["r"] < 1:
-                        fail(f"playing frame must be inset from barlines: {pf}")
+                    if pf["d"] != "block" or pf["l"] < 1 or pf["r"] > 0.5:
+                        fail(f"playing frame left must be inset, right at bar edge: {pf}")
                     capo_val = page.locator("#v2Capo").input_value() if page.locator("#v2Capo").count() else "0"
                     if capo_val != "0":
                         fail(f"jt017: capo must default to 0, got {capo_val}")
