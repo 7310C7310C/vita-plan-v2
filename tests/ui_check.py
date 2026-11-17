@@ -149,6 +149,7 @@ def main() -> int:
             fail(f"jt017: D.C. mark leaked into score head ({head_dc})")
         if errs:
             fail("jt017 page errors: " + " | ".join(errs[:4]))
+
         tail = frame.locator("body").evaluate("""() => {
           const bar = document.querySelector('.bar[data-bar="2"]');
           const t = bar.querySelector('.vrow[data-vrow="T"] .cell:last-child .num');
@@ -170,6 +171,54 @@ def main() -> int:
         if errs:
             fail("jt017 page errors: " + " | ".join(errs[:4]))
         ctx.close()
+
+        # every score: last bar = final double barline; repeat dots only when a repeat ends there;
+        # single-voice (one staff) must not draw the system bracket line in the gutter
+        import json as _json
+        import urllib.request as _url
+
+        def _get_json(rel):
+            with _url.urlopen(BASE + rel, timeout=20) as r:
+                return _json.load(r)
+
+        mapping = _get_json("data/v2-scores.json")
+        for key, ent in mapping.get("scores", {}).items():
+            score = _get_json(ent["file"])
+            last = len(score["bars"]) - 1
+            rep = score.get("repeat")
+            expect_repeat = bool(rep and rep.get("to") == last)
+            ctx, page, frame, errs = open_score(browser, key)
+            bar = frame.locator(f'.bar[data-bar="{last}"]')
+            cls = (bar.get_attribute("class") or "").split()
+            if ("repeat-end" in cls) != expect_repeat:
+                fail(f"{key}: last bar repeat-end={('repeat-end' in cls)}, expected {expect_repeat}")
+            dots = bar.evaluate("el=>getComputedStyle(el,'::before').backgroundImage")
+            if expect_repeat and dots == "none":
+                fail(f"{key}: repeat end has no repeat dots")
+            if not expect_repeat and dots != "none":
+                fail(f"{key}: last bar shows repeat dots but no repeat ends there")
+            endline = bar.evaluate("el=>getComputedStyle(el,'::after').backgroundImage")
+            if endline == "none":
+                fail(f"{key}: last bar has no final double barline")
+            single = score.get("voices") == ["S"]
+            root_cls = (frame.locator("#score").get_attribute("class") or "").split()
+            if ("single-voice" in root_cls) != single:
+                fail(f"{key}: single-voice class {('single-voice' in root_cls)}, expected {single}")
+            if single:
+                bw = frame.locator(".gutter").first.evaluate("el=>getComputedStyle(el).borderRightWidth")
+                if bw not in ("0px", "0"):
+                    fail(f"{key}: single-voice gutter still draws bracket line ({bw})")
+                n_lines = frame.locator(".line").count()
+                n_first = frame.locator(".bar.line-first").count()
+                if n_first != n_lines:
+                    fail(f"{key}: line-first bars {n_first}, lines {n_lines}")
+                fl = frame.locator(".bar.line-first").first.evaluate("el=>getComputedStyle(el).borderLeftWidth")
+                if fl not in ("0px", "0"):
+                    fail(f"{key}: single-voice line start still draws a left line ({fl})")
+            if errs:
+                fail(f"{key} page errors: " + " | ".join(errs[:3]))
+            ctx.close()
+
         browser.close()
 
     if errors:

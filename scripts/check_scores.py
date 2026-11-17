@@ -175,6 +175,13 @@ def check_score(path: Path, score: dict, ids: set[str]) -> None:
         if len(notes) == 2 and notes[0] != notes[1]:
             err(f"{rel}: tie pitches differ {pair!r} ({notes})")
 
+    repeat = score.get("repeat")
+    if repeat is not None:
+        if not isinstance(repeat, dict) or not isinstance(repeat.get("from"), int) or not isinstance(repeat.get("to"), int):
+            err(f"{rel}: repeat must be null or {{from:int,to:int}} (got {repeat!r})")
+        elif not (0 <= repeat["from"] <= repeat["to"] < len(bars)):
+            err(f"{rel}: repeat from/to invalid: {repeat!r} (bars={len(bars)})")
+
     dc = score.get("dc")
     if dc is not None:
         if not isinstance(dc, dict) or not isinstance(dc.get("from"), int) or not isinstance(dc.get("to"), int):

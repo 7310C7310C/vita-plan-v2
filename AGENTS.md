@@ -22,7 +22,7 @@
 ## 强制检查（CI 不过则不能部署）
 ```bash
 python3 scripts/check_scores.py
-python3 -m http.server 8080 &          # 新终端或后台
+python3 tests/serve.py 8080 &          # 新终端或后台（支持 /cl/001 这类路由）
 python3 tests/ui_check.py http://127.0.0.1:8080/
 ```
 `.github/workflows/deploy.yml` 的 `validate` job 会跑同一组检查；`deploy` 依赖 `validate`，失败不会上服务器。
@@ -36,6 +36,7 @@ python3 tests/ui_check.py http://127.0.0.1:8080/
 5. beam 分组按拍处理：同一拍内连成一条、拍与拍之间留缺口；不要把整小节八分音符连成一条。
 6. 单声部谱必须 `voices:["S"]`；菜单隐藏「声部」整行，谱面隐藏 S/A/T/B 标记。
 7. 升降号绝对定位，不得挤动音符数字；延音 dash 用置中线（与数字同宽、约 3px 厚），音符/dash/歌词中心对齐。
+7b. 曲末必须是结束符（细线+粗线）；仅当原谱该处有右反复记号时才画反复点。单声部谱不画每行左侧系统连谱括号线，多声部才保留。
 8. 任何新增/修改分数后运行 `python3 scripts/generate_v2_manifest.py`；`check_scores.py` 会校验 manifest 与 mapping。
 9. 曲号沿用既有编号，永不重排；删歌留空号。
 
