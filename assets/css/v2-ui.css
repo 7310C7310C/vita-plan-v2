@@ -10,7 +10,9 @@ body.v2-image-mode #v2MenuBtn{display:none}
 .viewer-topbar .viewer-breadcrumb{position:static;top:auto;left:auto;height:40px;max-width:none;flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
 .v2-head-actions{display:none;align-items:center;gap:8px;position:relative;flex:0 0 auto;pointer-events:auto}
 body.v2-active .v2-head-actions{display:flex}
-body.v2-active{overscroll-behavior:none}
+body.v2-active{overscroll-behavior:none;overflow:hidden}
+html:has(body.v2-active){overflow:hidden}
+html.v2-lock{overflow:hidden}
 /* no browser tap flash / bright focus frame on controls */
 *{-webkit-tap-highlight-color:transparent}
 button,.v2-head-btn,.v2-bar-btn,.v2-btn,.v2-chip,.v2-menu-x,.song-nav,.version-toggle-button,.doodle-btn,a{-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}

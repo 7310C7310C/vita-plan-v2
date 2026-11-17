@@ -172,6 +172,24 @@ def main() -> int:
             fail("jt017 page errors: " + " | ".join(errs[:4]))
         ctx.close()
 
+        # page-side cache must not override network JSON (stale score bug)
+        ctx = browser.new_context(viewport={"width": 1280, "height": 900}, service_workers="block")
+        page = ctx.new_page()
+        page.goto(BASE, wait_until="load", timeout=60000)
+        stale = ('{"id":"STALE","title":"STALE","key":"C","keyBase":60,"meter":"4/4","beatUnit":1,'
+                 '"tempo":80,"compound":false,"clickStep":1,"lyricsMode":"note","phrases":[[0]],'
+                 '"bars":[{"beats":4,"chords":[],"V":{"S":[]}}],"lyrics":[["x"]],"slurs":[],"ties":[],"repeat":null}')
+        page.evaluate("""async ([url, body]) => {
+          const c = await caches.open('v2-json-v2');
+          await c.put(url, new Response(body, {headers:{'Content-Type':'application/json'}}));
+        }""", [BASE + "data/scores/jt/017.json", stale])
+        page.goto(BASE + "jt/017", wait_until="load", timeout=60000)
+        page.wait_for_timeout(3500)
+        nbars = page.frame_locator("#v2Frame").locator(".bar").count()
+        if nbars != 32:
+            fail(f"page-side stale score used: {nbars} bars, expected 32")
+        ctx.close()
+
         # mid-line repeat-start (narrow viewport wraps bar 9 inside a line)
         ctx, page, frame, errs = open_score(browser, "lz/019", width=900)
         mb = frame.locator('.bar[data-bar="8"]')
@@ -296,12 +314,19 @@ def main() -> int:
                 needed = [[2,'A',2,3],[2,'A',2,4],[2,'B',2,3],[2,'S',2,3],[2,'S',2,4],
                           [2,'T',2,3],[2,'T',2,4],[6,'A',2,3],[6,'B',2,3],[6,'S',2,3],[6,'T',2,3],
                           [10,'A',2,3],[10,'B',2,3],[10,'S',2,3],[10,'T',2,3],
-                          [12,'S',1,2],[14,'S',0,1],[14,'S',0,2],[17,'S',0,18,'S',0],[21,'S',0,22,'S',0],[25,'S',0,26,'S',0],[29,'S',0,30,'S',0],[15,'T',0,16,'T',0]]
+                          [12,'S',1,2],[14,'S',0,1],[14,'S',0,2],[15,'T',0,16,'T',0],[23,'T',0,24,'T',0],[31,'T',0,0,'T',0]]
                 missing = [x for x in needed if x not in score.get("slurs", [])]
                 if missing:
                     fail(f"jt/017: missing slurs {missing}")
-                if [[15,'B',0],[16,'B',0]] not in score.get("ties", []):
-                    fail("jt/017: missing tie 16B->17B")
+                needed_ties = [[[15,'B',0],[16,'B',0]],
+                               [[17,'T',0],[18,'T',0]],[[19,'T',0],[20,'T',0]],[[21,'T',0],[22,'T',0]],
+                               [[25,'T',0],[26,'T',0]],[[27,'T',0],[28,'T',0]],[[29,'T',0],[30,'T',0]],
+                               [[17,'B',0],[18,'B',0]],[[19,'B',0],[20,'B',0]],[[21,'B',0],[22,'B',0]],
+                               [[23,'B',0],[24,'B',0]],[[25,'B',0],[26,'B',0]],[[27,'B',0],[28,'B',0]],
+                               [[29,'B',0],[30,'B',0]],[[31,'B',0],[0,'B',0]]]
+                mt = [t for t in needed_ties if t not in score.get("ties", [])]
+                if mt:
+                    fail(f"jt/017: missing ties {mt}")
                 bn = frame.locator("body").evaluate("""() => {
                   const bar = document.querySelector('.bar[data-bar="1"]');
                   const num = bar.querySelector('.bnum');
@@ -357,8 +382,16 @@ def main() -> int:
                 if h18 != "呜" or h19:
                     fail(f"jt017 hum bars: bar18={h18!r}, bar19={h19!r} (expected 呜 then blank)")
                 n_hum = frame.locator('.hum-row').evaluate_all("els=>els.filter(e=>e.textContent.trim()==='呜').length")
-                if n_hum != 7:
-                    fail(f"jt017: hum count {n_hum}, expected 7 (bars 18,20,22,24,26,28,30)")
+                if n_hum != 8:
+                    fail(f"jt017: hum count {n_hum}, expected 8 (bars 18,20,22,24,26,28,30,32)")
+                hum_bars = frame.locator(".bar").evaluate_all("""bars=>bars.filter(b=>{
+                  const h=b.querySelector('.hum-row'); return h && h.textContent.trim()==='呜';
+                }).map(b=>+b.dataset.bar+1)""")
+                if hum_bars != [18,20,22,24,26,28,30,32]:
+                    fail(f"jt017 hum bars {hum_bars}, expected even 18..32")
+                bad_s = [x for x in score.get("slurs", []) if len(x) == 6 and x[1] == "S" and x[0] != x[3]]
+                if bad_s:
+                    fail(f"jt017: unexpected S cross-bar slurs {bad_s}")
                 cross = frame.locator("body").evaluate("""() => {
                   const lines = [...document.querySelectorAll('.line')];
                   const l1 = lines.findIndex(l=>l.querySelector('.bar[data-bar="25"]'));
@@ -398,6 +431,30 @@ def main() -> int:
                 y2 = frame.locator("body").evaluate("()=>window.scrollY")
                 if y2 >= y1:
                     fail(f"PageUp did not scroll back (y={y2}, was {y1})")
+                page.keyboard.press("End"); page.wait_for_timeout(500)
+                yEnd = frame.locator("body").evaluate("()=>window.scrollY")
+                if yEnd <= y2:
+                    fail(f"End did not jump to the score bottom (y={yEnd}, was {y2})")
+                page.keyboard.press("Home"); page.wait_for_timeout(500)
+                yHome = frame.locator("body").evaluate("()=>window.scrollY")
+                if yHome > 2:
+                    fail(f"Home did not jump to the score top (y={yHome})")
+                frame.locator("body").evaluate("""()=>{
+                  let i=document.getElementById('__testInp');
+                  if(!i){ i=document.createElement('input'); i.id='__testInp'; i.style.position='fixed'; i.style.top='-50px'; document.body.appendChild(i); }
+                  i.focus();
+                }""")
+                yi = frame.locator("body").evaluate("()=>window.scrollY")
+                for k in ("End", "Home", "PageDown"):
+                    page.keyboard.press(k); page.wait_for_timeout(150)
+                    if frame.locator("body").evaluate("()=>window.scrollY") != yi:
+                        fail(f"{k} hijacked a focused input and scrolled the score")
+                        break
+                frame.locator("body").evaluate("""()=>{
+                  const i=document.getElementById('__testInp'); if(i) i.remove();
+                  if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
+                }""")
+
             if key == "lz/019":
                 row = frame.locator('.bar[data-bar="0"] .vrow[data-vrow="S"]')
                 nb = row.locator('.group-beam').count()

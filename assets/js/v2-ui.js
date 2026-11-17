@@ -79,19 +79,24 @@
     const path = String(score && score.file || '');
     if (!validScorePath(path)) throw new Error('invalid score path');
     const url = basePath() + path;
+    /* network-first: a page-side cache-first read bypasses the SW and serves stale scores */
+    try{
+      const res = await fetch(url, {cache:'no-store'});
+      if (res.ok){
+        const data = await res.json();
+        try{
+          const cache = await caches.open('v2-json-v2');
+          await cache.put(url, new Response(JSON.stringify(data), {headers:{'Content-Type':'application/json'}}));
+        }catch(e){}
+        return data;
+      }
+    }catch(e){}
     try{
       const cache = await caches.open('v2-json-v2');
       const hit = await cache.match(url, {ignoreSearch:true});
       if (hit) return await hit.json();
     }catch(e){}
-    const res = await fetch(url, {cache:'no-cache'});
-    if (!res.ok) throw new Error('score http ' + res.status);
-    const data = await res.json();
-    try{
-      const cache = await caches.open('v2-json-v2');
-      await cache.put(url, new Response(JSON.stringify(data), {headers:{'Content-Type':'application/json'}}));
-    }catch(e){}
-    return data;
+    throw new Error('score unavailable');
   }
   async function enter(cat, song, score){
     const token = ++state.loadToken;
@@ -100,6 +105,7 @@
     state.playing = false;
     setPlayUI(false);
     document.body.classList.add('v2-active', 'v2-json-mode');
+    document.documentElement.classList.add('v2-lock');
     document.body.classList.remove('v2-image-mode');
     if (headActions) headActions.style.display = 'flex';
     if (menuBtn) menuBtn.style.display = '';
@@ -124,6 +130,7 @@
     setPlayUI(false);
     setAnnot(false);
     document.body.classList.remove('v2-active', 'v2-json-mode', 'v2-image-mode');
+    document.documentElement.classList.remove('v2-lock');
     if (headActions) headActions.style.display = 'none';
     if (menu) menu.classList.remove('open');
     const vc = document.getElementById('viewerContent');
@@ -618,15 +625,21 @@
 
   /* PageUp/PageDown: forward to the score iframe when v2 mode is active */
   document.addEventListener('keydown', function(e){
-    if (e.key !== 'PageUp' && e.key !== 'PageDown') return;
+    const k = e.key;
+    if (k !== 'PageUp' && k !== 'PageDown' && k !== 'Home' && k !== 'End') return;
     if (!frame || getComputedStyle(frame).display === 'none') return;
     const t = e.target;
     if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
     e.preventDefault();
-    const dir = e.key === 'PageDown' ? 1 : -1;
     try {
-      if (frame.contentWindow && typeof frame.contentWindow.vp2Page === 'function') frame.contentWindow.vp2Page(dir);
-      else frame.focus();
+      const w = frame.contentWindow;
+      if (k === 'Home' || k === 'End') {
+        if (w && typeof w.vp2Home === 'function') w.vp2Home(k === 'End' ? 1 : -1);
+        else frame.focus();
+      } else {
+        if (w && typeof w.vp2Page === 'function') w.vp2Page(k === 'PageDown' ? 1 : -1);
+        else frame.focus();
+      }
     } catch (err) {
       try { frame.focus(); } catch (_) {}
     }
