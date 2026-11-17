@@ -329,8 +329,10 @@ def main() -> int:
                   const line = [...document.querySelectorAll('.line')].find(l=>l.querySelector('.bar[data-bar="8"]'));
                   const bar = line && line.querySelector('.bar[data-bar="8"]');
                   if (!bar) return null;
+                  const ps = getComputedStyle(bar,'::before');
                   return {brackets: line.querySelectorAll('.sys-bracket').length,
-                          bg: getComputedStyle(bar,'::before').backgroundImage};
+                          bg: ps.backgroundImage, pw: parseFloat(ps.width),
+                          fs: parseFloat(getComputedStyle(document.querySelector('#score')).fontSize)};
                 }""")
                 if not rgeo:
                     fail("lz019 bar9: repeat-start bar missing")
@@ -339,6 +341,8 @@ def main() -> int:
                         fail("lz019 bar9: system bracket still drawn outside the repeat sign")
                     if rgeo["bg"].count("linear-gradient") != 2:
                         fail("lz019 bar9: repeat sign needs a thick + thin line inside the bar")
+                    if rgeo["pw"] < rgeo["fs"]*0.75:
+                        fail(f"lz019 bar9: repeat dot area too narrow ({rgeo['pw']:.1f}px), dots clipped")
             if errs:
                 fail(f"{key} page errors: " + " | ".join(errs[:3]))
             ctx.close()

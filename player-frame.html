@@ -162,6 +162,7 @@
   }
   /* 行首反复：系统括号已提供粗线，小节左边线为细线，只画点 */
   .bar.repeat-start.line-first::before{
+    width:1.2em;   /* 留出右侧双点的空间，避免被伪元素宽度裁掉 */
     background:
       radial-gradient(circle at .613em 34%, var(--ink-2) 0 1.5px, transparent 1.7px),
       radial-gradient(circle at .613em 54%, var(--ink-2) 0 1.5px, transparent 1.7px),
