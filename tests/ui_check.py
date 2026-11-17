@@ -330,10 +330,12 @@ def main() -> int:
                 needed = [[2,'A',2,3],[2,'A',2,4],[2,'B',2,3],[2,'S',2,3],[2,'S',2,4],
                           [2,'T',2,3],[2,'T',2,4],[6,'A',2,3],[6,'B',2,3],[6,'S',2,3],[6,'T',2,3],
                           [10,'A',2,3],[10,'B',2,3],[10,'S',2,3],[10,'T',2,3],
-                          [12,'B',1,2],[12,'S',1,2],[14,'S',0,1],[14,'S',0,2],[15,'T',0,16,'T',0],[23,'T',0,24,'T',0],[31,'T',0,0,'T',0]]
+                          [12,'B',1,2],[12,'S',1,2],[14,'S',0,2],[15,'T',0,16,'T',0],[23,'T',0,24,'T',0],[31,'T',0,0,'T',0]]
                 missing = [x for x in needed if x not in score.get("slurs", [])]
                 if missing:
                     fail(f"jt/017: missing slurs {missing}")
+                if [14,'S',0,1] in score.get("slurs", []):
+                    fail("jt/017 bar15: 3→first-beat-2 slur must be removed")
                 bad7 = [x for x in score.get("slurs", []) if x[:3] in ([6,'S',1],[6,'A',1],[6,'T',1],[6,'B',1]) and x[3]==2]
                 if bad7:
                     fail(f"jt/017: bar7 first pair is a beam, not a slur: {bad7}")
