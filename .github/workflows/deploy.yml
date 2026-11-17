@@ -27,7 +27,7 @@ jobs:
           python3 -m playwright install --with-deps chromium
       - name: Browser UI checks
         run: |
-          python3 -m http.server 8080 &
+          python3 tests/serve.py 8080 &
           sleep 1
           python3 tests/ui_check.py http://127.0.0.1:8080/
 
