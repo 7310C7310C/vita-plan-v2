@@ -345,6 +345,25 @@ def main() -> int:
                 }""")
                 if not tie_play["a"] or abs(tie_play["a"]["dur"] - 1.5) > 1e-6 or tie_play["b"]:
                     fail(f"jt017 bar15: tied 2 must sustain 1.5 beats without re-attack, got {tie_play}")
+                order = frame.locator("body").evaluate("""() => {
+                  const line=[...document.querySelectorAll('.line')].find(l=>l.querySelector('.bar[data-bar="14"]'));
+                  const bar=line && line.querySelector('.bar[data-bar="14"]');
+                  if(!line || !bar) return null;
+                  const base=line.getBoundingClientRect();
+                  const notes=[...bar.querySelectorAll('.vrow[data-vrow="S"] .note .num')].slice(0,3).map(n=>{
+                    const r=n.getBoundingClientRect(); return r.left+r.width/2-base.left;
+                  });
+                  const paths=[...line.querySelectorAll('.slur-layer path')].map(p=>{
+                    const a=p.getAttribute('d').match(/-?[0-9]+(?:[.][0-9]+)?/g).map(Number);
+                    return {x1:a[0],y1:a[1],x2:a[a.length-2],y2:a[a.length-1]};
+                  });
+                  const find=(x1,x2)=>paths.find(p=>Math.abs(p.x1-x1)<2 && Math.abs(p.x2-x2)<2);
+                  return {long:find(notes[0],notes[2]), short:find(notes[1],notes[2]), notes};
+                }""")
+                if not order or not order["long"] or not order["short"]:
+                    fail(f"jt017 bar15: long/short slur paths not found: {order}")
+                elif order["long"]["y1"] >= order["short"]["y1"]:
+                    fail(f"jt017 bar15: long slur must be above short tie: {order}")
                 bad7 = [x for x in score.get("slurs", []) if x[:3] in ([6,'S',1],[6,'A',1],[6,'T',1],[6,'B',1]) and x[3]==2]
                 if bad7:
                     fail(f"jt/017: bar7 first pair is a beam, not a slur: {bad7}")
