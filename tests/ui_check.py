@@ -269,6 +269,9 @@ def main() -> int:
                     fail(f"{key}: multi-voice first bar lost its thin barline")
 
             if key == "cl/001":
+                mc = frame.locator(".bar-meter").first.evaluate("el=>getComputedStyle(el).color")
+                if mc != "rgb(0, 0, 0)":
+                    fail(f"cl001: bar meter must be pure black, got {mc}")
                 bn = frame.locator(".bar .bnum").count()
                 bars = frame.locator(".bar").count()
                 if bn != bars:
@@ -293,7 +296,7 @@ def main() -> int:
                 needed = [[2,'A',2,3],[2,'A',2,4],[2,'B',2,3],[2,'S',2,3],[2,'S',2,4],
                           [2,'T',2,3],[2,'T',2,4],[6,'A',2,3],[6,'B',2,3],[6,'S',2,3],[6,'T',2,3],
                           [10,'A',2,3],[10,'B',2,3],[10,'S',2,3],[10,'T',2,3],
-                          [12,'S',1,2],[14,'S',0,1]]
+                          [12,'S',1,2],[14,'S',0,2]]
                 missing = [x for x in needed if x not in score.get("slurs", [])]
                 if missing:
                     fail(f"jt/017: missing slurs {missing}")
@@ -316,6 +319,12 @@ def main() -> int:
                         fail(f"jt017 bar2: bar number not vertically aligned with chord row ({bn['ncy']:.1f} vs {bn['ccy']:.1f})")
                     if bn["pos"] != "absolute":
                         fail(f"jt017 bar2: bar number is not absolutely positioned ({bn['pos']})")
+                    colors = frame.locator("body").evaluate("""() => {
+                      const els = [...document.querySelectorAll('.score-head .kt'), document.querySelector('.score-tempo')].filter(Boolean);
+                      return els.map(e => getComputedStyle(e).color);
+                    }""")
+                    if any(c != "rgb(0, 0, 0)" for c in colors):
+                        fail(f"jt017: score key/meter/tempo must be pure black, got {colors}")
                     first_s = frame.locator('.bar[data-bar="0"] .vrow[data-vrow="S"] .cell').first.inner_text().strip()
                     first_a = frame.locator('.bar[data-bar="0"] .vrow[data-vrow="A"] .cell').first.inner_text().strip()
                     if first_s != "0" or first_a != "0":
@@ -341,6 +350,15 @@ def main() -> int:
                     fail(f"jt017 bar15 lyrics {l15!r}, expected '耶 路 撒' with 路 on beat 3")
                 if l16 != "冷":
                     fail(f"jt017 bar16 lyrics {l16!r}, expected '冷'")
+                y0 = frame.locator("body").evaluate("()=>window.scrollY")
+                page.keyboard.press("PageDown"); page.wait_for_timeout(700)
+                y1 = frame.locator("body").evaluate("()=>window.scrollY")
+                if y1 <= y0:
+                    fail("PageDown did not scroll the score iframe")
+                page.keyboard.press("PageUp"); page.wait_for_timeout(700)
+                y2 = frame.locator("body").evaluate("()=>window.scrollY")
+                if y2 >= y1:
+                    fail(f"PageUp did not scroll back (y={y2}, was {y1})")
             if key == "lz/019":
                 row = frame.locator('.bar[data-bar="0"] .vrow[data-vrow="S"]')
                 nb = row.locator('.group-beam').count()

@@ -615,4 +615,20 @@
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wire);
   else wire();
+
+  /* PageUp/PageDown: forward to the score iframe when v2 mode is active */
+  document.addEventListener('keydown', function(e){
+    if (e.key !== 'PageUp' && e.key !== 'PageDown') return;
+    if (!frame || getComputedStyle(frame).display === 'none') return;
+    const t = e.target;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
+    e.preventDefault();
+    const dir = e.key === 'PageDown' ? 1 : -1;
+    try {
+      if (frame.contentWindow && typeof frame.contentWindow.vp2Page === 'function') frame.contentWindow.vp2Page(dir);
+      else frame.focus();
+    } catch (err) {
+      try { frame.focus(); } catch (_) {}
+    }
+  });
 })();
