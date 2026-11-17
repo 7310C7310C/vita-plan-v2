@@ -290,6 +290,12 @@ def main() -> int:
                     if "linear-gradient" not in g["bg"]:
                         fail("cl002 bar2: barline background missing")
             if key == "jt/017":
+                needed = [[2,'A',2,3],[2,'A',3,4],[2,'B',2,3],[2,'S',2,3],[2,'S',3,4],
+                          [2,'T',2,3],[2,'T',3,4],[6,'A',2,3],[6,'B',2,3],[6,'S',2,3],[6,'T',2,3],
+                          [14,'S',0,1]]
+                missing = [x for x in needed if x not in score.get("slurs", [])]
+                if missing:
+                    fail(f"jt/017: missing slurs {missing}")
                 bn = frame.locator("body").evaluate("""() => {
                   const bar = document.querySelector('.bar[data-bar="1"]');
                   const num = bar.querySelector('.bnum');
