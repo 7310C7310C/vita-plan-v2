@@ -51,6 +51,22 @@ def main() -> int:
             fail(f"cl001 bar7 lyrics: {b7!r} != '你 垂'")
         if b8 != "怜":
             fail(f"cl001 bar8 lyrics: {b8!r} != '怜'")
+        chords = frame.locator("body").evaluate("""() => {
+          const out = {};
+          [6,7].forEach(i=>{
+            const bar = document.querySelector('.bar[data-bar="'+i+'"]');
+            const cs = [...bar.querySelectorAll('.chordrow span')].filter(s=>s.textContent.trim());
+            const ts = [...bar.querySelectorAll('.tail')].map(t=>t.getBoundingClientRect().x + t.getBoundingClientRect().width/2);
+            out[i] = cs.map(s=>({name:s.textContent, c:s.getBoundingClientRect().x + s.getBoundingClientRect().width/2, tails:ts}));
+          });
+          return out;
+        }""")
+        for i, name in ((6,'A'), (7,'D')):
+            hit = next((x for x in chords[str(i)] if x['name']==name), None)
+            if not hit:
+                fail(f"cl001 bar{i+1}: {name} chord missing"); continue
+            if not any(abs(hit['c']-t) <= 1.5 for t in hit['tails']):
+                fail(f"cl001 bar{i+1}: {name} chord center {hit['c']} not aligned to tail {hit['tails']}")
         page.click("#v2MenuBtn")
         page.wait_for_timeout(250)
         display = page.evaluate("""() => {
