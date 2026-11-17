@@ -157,6 +157,25 @@ def main() -> int:
                 continue
             if x["bg"].count("linear-gradient") != 1 or not x["pos"].startswith("100%"):
                 fail(f"cl002@360: line {i+1} must have exactly one right barline: {x}")
+        frame_geo = frame.locator("body").evaluate("""() => {
+          const sc=document.querySelector('#score'), fs=parseFloat(getComputedStyle(sc).fontSize);
+          return [...document.querySelectorAll('.line')].map((l,i)=>{
+            const bar=l.querySelector('.bar'); bar.classList.add('playing');
+            const f=bar.querySelector('.play-frame');
+            const br=bar.getBoundingClientRect(), fr=f.getBoundingClientRect();
+            const out={line:i+1, cls:bar.className, inset:+(br.right-fr.right).toFixed(2), fs,
+                       display:getComputedStyle(f).display};
+            bar.classList.remove('playing'); return out;
+          });
+        }""")
+        for x in frame_geo:
+            if x["display"] != "block":
+                fail(f"cl002@360: line {x['line']} play frame not displayed")
+            elif "final" in x["cls"]:
+                if x["inset"] < x["fs"]*0.42 - 0.6:
+                    fail(f"cl002@360: line {x['line']} frame covers final double barline: {x}")
+            elif not (1.2 <= x["inset"] <= 1.6):
+                fail(f"cl002@360: line {x['line']} frame covers its right barline: {x}")
         if errs:
             fail("cl002@360 page errors: " + " | ".join(errs[:4]))
         ctx.close()
@@ -352,6 +371,37 @@ def main() -> int:
                 fl = frame.locator(".bar.line-first").first.evaluate("el=>getComputedStyle(el).backgroundImage")
                 if "linear-gradient" not in fl:
                     fail(f"{key}: multi-voice first bar lost its thin barline")
+
+            # playing frame must not cover the bar's own right barline (line-end / final / repeat / endbar)
+            frames = frame.locator("body").evaluate("""() => {
+              const sc=document.querySelector('#score'), fs=parseFloat(getComputedStyle(sc).fontSize);
+              return [...document.querySelectorAll('#score .bar')].map(bar=>{
+                bar.classList.add('playing');
+                const f=bar.querySelector('.play-frame');
+                const br=bar.getBoundingClientRect(), fr=f.getBoundingClientRect();
+                const special=bar.matches('.final,.endbar-thin-thick,.endbar-double-thin,.repeat-end');
+                const last=bar.matches(':last-child');
+                const out={bi:+bar.dataset.bar, display:getComputedStyle(f).display,
+                           inset:+(br.right-fr.right).toFixed(2), fs,
+                           special, last,
+                           ownLine:getComputedStyle(bar).backgroundImage.includes('linear-gradient'),
+                           pos:getComputedStyle(bar).backgroundPosition,
+                           after:getComputedStyle(bar,'::after').backgroundImage.includes('linear-gradient')};
+                bar.classList.remove('playing');
+                return out;
+              });
+            }""")
+            for fr_ in frames:
+                if fr_["display"] != "block":
+                    fail(f"{key}: bar {fr_['bi']} play frame not displayed")
+                if fr_["special"]:
+                    if fr_["inset"] < fr_["fs"]*0.42 - 0.6:
+                        fail(f"{key}: bar {fr_['bi']} play frame covers its end barline (inset {fr_['inset']})")
+                elif fr_["last"]:
+                    if not (1.2 <= fr_["inset"] <= 1.6) or not fr_["ownLine"] or "100%" not in fr_["pos"]:
+                        fail(f"{key}: bar {fr_['bi']} play frame covers the line-end barline ({fr_})")
+                elif abs(fr_["inset"]) > 0.5:
+                    fail(f"{key}: bar {fr_['bi']} play frame right edge must sit on the bar edge ({fr_})")
 
             if key == "cl/001":
                 mc = frame.locator(".bar-meter").first.evaluate("el=>getComputedStyle(el).color")

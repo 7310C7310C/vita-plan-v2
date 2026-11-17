@@ -226,6 +226,10 @@
     border-radius:3px;
   }
   .play-frame{display:none;position:absolute;top:0;bottom:0;left:1.3px;right:0;border:1.5px solid var(--hl);pointer-events:none;z-index:2}
+  /* 行末小节的右侧小节线画在本小节内（background 100%），黄框右侧需内缩 1.3px 才不遮住它 */
+  .bar:last-child .play-frame{right:1.3px}
+  /* 本小节自带结束线（细+粗/双细/反复终止）时，整组线留给框外 */
+  .bar.final .play-frame,.bar.endbar-thin-thick .play-frame,.bar.endbar-double-thin .play-frame,.bar.repeat-end .play-frame{right:.42em}
   .bar.playing .play-frame{display:block}
 
   .btag{margin-left:.4em;color:var(--accent);font-size:.9em;letter-spacing:.04em}
