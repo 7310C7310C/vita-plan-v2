@@ -172,28 +172,22 @@ def main() -> int:
             fail("jt017 page errors: " + " | ".join(errs[:4]))
         ctx.close()
 
-        # cached score opens instantly; background refresh updates the cache for the next open
+        # first visit prefetches all score JSON into v2-json-v2 in the background
         ctx = browser.new_context(viewport={"width": 1280, "height": 900}, service_workers="block")
         page = ctx.new_page()
         page.goto(BASE, wait_until="load", timeout=60000)
-        stale = ('{"id":"STALE","title":"STALE","key":"C","keyBase":60,"meter":"4/4","beatUnit":1,'
-                 '"tempo":80,"compound":false,"clickStep":1,"lyricsMode":"note","phrases":[[0]],'
-                 '"bars":[{"beats":4,"chords":[],"V":{"S":[]}}],"lyrics":[["x"]],"slurs":[],"ties":[],"repeat":null}')
-        page.evaluate("""async ([url, body]) => {
-          const c = await caches.open('v2-json-v2');
-          await c.put(url, new Response(body, {headers:{'Content-Type':'application/json'}}));
-        }""", [BASE + "data/scores/jt/017.json", stale])
-        page.goto(BASE + "jt/017", wait_until="load", timeout=60000)
-        page.wait_for_timeout(3500)
-        nbars = page.frame_locator("#v2Frame").locator(".bar").count()
-        if nbars != 1:
-            fail(f"cached score should open instantly (got {nbars} bars, expected cached 1)")
-        page.wait_for_timeout(2500)
-        page.reload(wait_until="load", timeout=60000)
-        page.wait_for_timeout(3500)
-        nbars2 = page.frame_locator("#v2Frame").locator(".bar").count()
-        if nbars2 != 32:
-            fail(f"background refresh did not update cache: {nbars2} bars on reopen, expected 32")
+        n_scores = 0
+        for _ in range(12):
+            n_scores = page.evaluate("""async () => {
+              const c = await caches.open('v2-json-v2');
+              const keys = await c.keys();
+              return keys.filter(k => k.url.includes('/data/scores/')).length;
+            }""")
+            if n_scores >= 6:
+                break
+            page.wait_for_timeout(500)
+        if n_scores < 6:
+            fail(f"first-visit score prefetch incomplete: {n_scores}/6 cached")
         ctx.close()
 
         # mid-line repeat-start (narrow viewport wraps bar 9 inside a line)

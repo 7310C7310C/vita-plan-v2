@@ -9,14 +9,13 @@
 
   function register(){
     if (!('serviceWorker' in navigator)) return;
-    navigator.serviceWorker.register(base + 'sw-v2.js', {scope: base, updateViaCache: 'none'})
-      .then(function(){
-        if (navigator.serviceWorker.ready) navigator.serviceWorker.ready.then(function(){ setTimeout(syncScores, 1500); });
-      })
-      .catch(function(){});
+    navigator.serviceWorker.register(base + 'sw-v2.js', {scope: base, updateViaCache: 'none'}).catch(function(){});
   }
 
+  let syncing = false;
   async function syncScores(){
+    if (syncing) return;
+    syncing = true;
     try{
       const res = await fetch(base + 'data/v2-manifest.json', {cache:'no-store'});
       if (!res.ok) return;
@@ -34,7 +33,8 @@
       }));
       localStorage.setItem(key, manifest.version);
     }catch(e){}
+    finally{ syncing = false; }
   }
-  if (document.readyState === 'complete') setTimeout(register, 2500);
-  else window.addEventListener('load', function(){ setTimeout(register, 2500); }, {once:true});
+  if (document.readyState === 'complete'){ setTimeout(register, 0); setTimeout(syncScores, 0); }
+  else window.addEventListener('load', function(){ setTimeout(register, 0); setTimeout(syncScores, 0); }, {once:true});
 })();

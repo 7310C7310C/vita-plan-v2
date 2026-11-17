@@ -294,8 +294,8 @@ def main() -> int:
     sw = (ROOT / "sw-v2.js").read_text(encoding="utf-8")
     if "staleWhileRevalidateJson(req, event)" not in sw or "/data/scores/" not in sw:
         err("sw-v2.js: score JSON must use staleWhileRevalidateJson (instant cached open + background update)")
-    if "networkFirstShell(req)" not in sw:
-        err("sw-v2.js: shell assets must use networkFirstShell (stale UI bug)")
+    if "staleWhileRevalidate(req, event)" not in sw:
+        err("sw-v2.js: shell/list assets must use staleWhileRevalidate")
     shell_block = re.search(r"const SHELL = \[(.*?)\];", sw, re.S)
     if not shell_block:
         err("sw-v2.js: SHELL array not found")

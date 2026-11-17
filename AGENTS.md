@@ -42,7 +42,7 @@ python3 tests/ui_check.py http://127.0.0.1:8080/
 7e. 空拍（无音符、无延音）必须显示 `0`，与原谱一致。若原谱某音符不带八度点而按音高本应带（如 jt017 首节 T 的 7），在事件第 6 项写 `"nodot"` 抑制该点的显示，不得改动音高。
 7f. 歌词正文用纯黑 #000（不得用灰色）；夜间模式用主题色 `--score-ink`，不得硬编码黑导致不可见。反复记号双点须以反复竖线的实际跨度为基准垂直居中（不是整小节高度的 50%）。
 7g. `bar.hum` 在小节 T/B 之间加哼唱歌词（如“呜”）；同一条线只要有一小节有 hum，整行所有小节都保留空 hum 行以对齐。跨行 slur/tie 必须自动拆成上行半条、下行半条（按 `LINE_OF_BAR` 判断）。
-8. 任何新增/修改分数后运行 `python3 scripts/generate_v2_manifest.py`；`check_scores.py` 会校验 manifest 与 mapping。乐谱 JSON 用缓存优先 + 后台 revalidate（`staleWhileRevalidateJson`）：已缓存秒开，后台更新缓存；壳/列表/清单用网络优先 + `no-store`。
+8. 任何新增/修改分数后运行 `python3 scripts/generate_v2_manifest.py`；`check_scores.py` 会校验 manifest 与 mapping。乐谱 JSON 用缓存优先 + 后台 revalidate（`staleWhileRevalidateJson`）：已缓存秒开，后台更新缓存；壳/列表用 SWR（缓存优先，后台更新）；manifest 用网络优先 `no-store` 供同步。
 9. 曲号沿用既有编号，永不重排；删歌留空号。
 10. slur/tie 必须逐条对照原图；修改者与 Reviewer 都必须抽查原图，不得只依据 JSON/测试断言。
 

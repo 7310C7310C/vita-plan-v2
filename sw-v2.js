@@ -1,5 +1,5 @@
 /* Vita Plan v2 service worker: pre-cache shell + all JSON scores after first paint. */
-const SHELL_CACHE = 'v2-shell-119';
+const SHELL_CACHE = 'v2-shell-120';
 const JSON_CACHE = 'v2-json-v2';
 const SHELL = [
   'index.html',
@@ -10,7 +10,7 @@ const SHELL = [
   'assets/css/v2-ui.css?v=22',
   'assets/js/v2-ui.js?v=23',
   'assets/js/script.js?v=2026111603',
-  'assets/js/v2-cache.js?v=7',
+  'assets/js/v2-cache.js?v=8',
   'data/v2-scores.js?v=4'
 ];
 
@@ -53,7 +53,7 @@ self.addEventListener('fetch', event => {
   const path = url.pathname;
 
   if (path.endsWith('/data/songs.json')) {
-    event.respondWith(networkFirst(req));
+    event.respondWith(staleWhileRevalidate(req, event));
     return;
   }
   if (path.indexOf('/data/scores/') !== -1) {
@@ -66,19 +66,19 @@ self.addEventListener('fetch', event => {
     return;
   }
   if (path.endsWith('/data/chords-guitar.json')) {
-    event.respondWith(staleWhileRevalidate(req));
+    event.respondWith(staleWhileRevalidate(req, event));
     return;
   }
   if (path.endsWith('/player-frame.html')) {
-    event.respondWith(networkFirstShell(req));
+    event.respondWith(staleWhileRevalidate(req, event));
     return;
   }
   if (req.mode === 'navigate') {
-    event.respondWith(navigationFirst(req));
+    event.respondWith(navigationFirst(req, event));
     return;
   }
   if (path.endsWith('.js') || path.endsWith('.css') || path.endsWith('.html') || path.endsWith('favicon.ico')) {
-    event.respondWith(networkFirstShell(req));
+    event.respondWith(staleWhileRevalidate(req, event));
     return;
   }
   event.respondWith(fetch(req).catch(() => caches.match(req, {ignoreSearch:true})));
@@ -91,19 +91,6 @@ async function cacheFirstShell(req){
   const res = await fetch(req);
   if (res && res.ok) cache.put(req, res.clone());
   return res;
-}
-
-async function networkFirstShell(req){
-  try{
-    const res = await fetch(req, {cache:'no-store'});
-    if (res && res.ok){
-      const cache = await caches.open(SHELL_CACHE);
-      cache.put(req, res.clone());
-    }
-    return res;
-  }catch(e){
-    return (await caches.match(req, {ignoreSearch:true})) || Response.error();
-  }
 }
 
 async function staleWhileRevalidateJson(req, event){
@@ -135,31 +122,33 @@ async function cacheFirst(req){
   return res;
 }
 
-async function staleWhileRevalidate(req){
+async function staleWhileRevalidate(req, event){
   const cache = await caches.open(SHELL_CACHE);
   const hit = await cache.match(req);
-  const network = fetch(req).then(res => {
+  const network = fetch(req, {cache:'no-store'}).then(res => {
     if (res && res.ok) cache.put(req, res.clone());
     return res;
   }).catch(() => null);
-  return hit || network || Response.error();
+  if (hit){
+    if (event && event.waitUntil) event.waitUntil(network);
+    return hit;
+  }
+  return (await network) || Response.error();
 }
 
-async function navigationFirst(req){
-  try{
-    const res = await fetch(req, {cache:'no-store'});
-    if (res && res.ok){
-      const cache = await caches.open(SHELL_CACHE);
-      cache.put(req, res.clone());
-    }
+async function navigationFirst(req, event){
+  const cache = await caches.open(SHELL_CACHE);
+  const indexUrl = new URL('index.html', self.registration.scope).href;
+  const hit = (await cache.match(req, {ignoreSearch:true})) || (await cache.match(indexUrl));
+  const network = fetch(req, {cache:'no-store'}).then(res => {
+    if (res && res.ok) cache.put(req, res.clone());
     return res;
-  }catch(e){
-    const cache = await caches.open(SHELL_CACHE);
-    const indexUrl = new URL('index.html', self.registration.scope).href;
-    return (await cache.match(req, {ignoreSearch:true})) ||
-           (await cache.match(indexUrl)) ||
-           Response.error();
+  }).catch(() => null);
+  if (hit){
+    if (event && event.waitUntil) event.waitUntil(network);
+    return hit;
   }
+  return (await network) || Response.error();
 }
 
 async function networkFirst(req){
