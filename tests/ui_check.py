@@ -21,8 +21,8 @@ def fail(msg: str) -> None:
     errors.append(msg)
 
 
-def open_score(browser, path: str):
-    ctx = browser.new_context(viewport={"width": 1280, "height": 900}, service_workers="block")
+def open_score(browser, path: str, width: int = 1280):
+    ctx = browser.new_context(viewport={"width": width, "height": 900}, service_workers="block")
     page = ctx.new_page()
     errs: list[str] = []
     page.on("pageerror", lambda e: errs.append("pageerror: " + str(e)))
@@ -170,6 +170,21 @@ def main() -> int:
                 fail(f"jt017 bar3: tail pseudo left not half box: {tail}")
         if errs:
             fail("jt017 page errors: " + " | ".join(errs[:4]))
+        ctx.close()
+
+        # mid-line repeat-start (narrow viewport wraps bar 9 inside a line)
+        ctx, page, frame, errs = open_score(browser, "lz/019", width=900)
+        mb = frame.locator('.bar[data-bar="8"]')
+        cls = mb.get_attribute("class") or ""
+        if "repeat-start" not in cls or "line-first" in cls:
+            fail(f"lz019@900: bar9 classes {cls!r}, expected mid-line repeat-start")
+        mbg = mb.evaluate("el=>getComputedStyle(el,'::before').backgroundImage")
+        if mbg.count("linear-gradient") != 2:
+            fail("lz019@900: mid-line repeat sign missing thick/thin lines")
+        if "rgb(36, 31, 26)" not in mbg:
+            fail("lz019@900: mid-line repeat dots are not ink black")
+        if errs:
+            fail("lz019@900 page errors: " + " | ".join(errs[:3]))
         ctx.close()
 
         # every score: last bar = final double barline; repeat dots only when a repeat ends there;
@@ -337,8 +352,9 @@ def main() -> int:
                 if not rgeo:
                     fail("lz019 bar9: repeat-start bar missing")
                 else:
-                    if rgeo["brackets"]:
-                        fail("lz019 bar9: system bracket still drawn outside the repeat sign")
+                    if rs.evaluate("el=>el.classList.contains('line-first')"):
+                        if rgeo["brackets"]:
+                            fail("lz019 bar9: system bracket still drawn outside a line-start repeat sign")
                     if rgeo["bg"].count("linear-gradient") != 2:
                         fail("lz019 bar9: repeat sign needs a thick + thin line inside the bar")
                     if rgeo["pw"] < rgeo["fs"]*0.75:

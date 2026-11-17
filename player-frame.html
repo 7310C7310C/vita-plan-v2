@@ -152,20 +152,10 @@
   }
   .rest{color:var(--muted);font-size:.92em;font-family:"Times New Roman",Georgia,serif}
   .bar.repeat-start::before{
-    content:"";position:absolute;left:0;top:0;bottom:0;width:12px;z-index:3;pointer-events:none;
+    content:"";position:absolute;left:0;top:0;bottom:0;width:1.2em;z-index:3;pointer-events:none;
     background:
-      radial-gradient(circle at 8px 34%, var(--ink-2) 0 1.5px, transparent 1.7px),
-      radial-gradient(circle at 8px 54%, var(--ink-2) 0 1.5px, transparent 1.7px),
-      linear-gradient(90deg, var(--ink-2) 0 2.6px, transparent 2.6px),
-      linear-gradient(90deg, transparent 3.6px, var(--ink-2) 3.6px 4.8px, transparent 4.8px);
-    opacity:.9;
-  }
-  /* 行首反复：系统括号已提供粗线，小节左边线为细线，只画点 */
-  .bar.repeat-start.line-first::before{
-    width:1.2em;   /* 留出右侧双点的空间，避免被伪元素宽度裁掉 */
-    background:
-      radial-gradient(circle at .613em 34%, var(--ink-2) 0 1.5px, transparent 1.7px),
-      radial-gradient(circle at .613em 54%, var(--ink-2) 0 1.5px, transparent 1.7px),
+      radial-gradient(circle at .613em 34%, var(--ink) 0 1.5px, transparent 1.7px),
+      radial-gradient(circle at .613em 54%, var(--ink) 0 1.5px, transparent 1.7px),
       linear-gradient(to right, var(--barline) 0 1.3px, transparent 1.3px),
       linear-gradient(to right, currentColor 0 .2em, transparent .2em);
     background-repeat:no-repeat;
@@ -175,9 +165,8 @@
   .bar.repeat-end::before{
     content:"";position:absolute;right:.5em;top:0;bottom:0;width:4px;z-index:3;pointer-events:none;
     background:
-      radial-gradient(circle at 1.6px 34%, var(--ink-2) 0 1.5px, transparent 1.7px),
-      radial-gradient(circle at 1.6px 54%, var(--ink-2) 0 1.5px, transparent 1.7px);
-    opacity:.9;
+      radial-gradient(circle at 1.6px 34%, var(--ink) 0 1.5px, transparent 1.7px),
+      radial-gradient(circle at 1.6px 54%, var(--ink) 0 1.5px, transparent 1.7px);
   }
   .bar.repeat-end:not(.final)::after{
     content:"";position:absolute;top:var(--staff-top);bottom:0;right:0;width:.42em;
