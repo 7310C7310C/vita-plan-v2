@@ -1,5 +1,5 @@
 /* Vita Plan v2 service worker: pre-cache shell + all JSON scores after first paint. */
-const SHELL_CACHE = 'v2-shell-106';
+const SHELL_CACHE = 'v2-shell-107';
 const JSON_CACHE = 'v2-json-v2';
 const SHELL = [
   'index.html',
@@ -10,7 +10,7 @@ const SHELL = [
   'assets/css/v2-ui.css?v=20',
   'assets/js/v2-ui.js?v=19',
   'assets/js/script.js?v=2026111603',
-  'assets/js/v2-cache.js?v=4',
+  'assets/js/v2-cache.js?v=5',
   'data/v2-scores.js?v=4'
 ];
 
@@ -70,7 +70,7 @@ self.addEventListener('fetch', event => {
     return;
   }
   if (path.endsWith('/player-frame.html')) {
-    event.respondWith(cacheFirstShell(req));
+    event.respondWith(networkFirstShell(req));
     return;
   }
   if (req.mode === 'navigate') {
@@ -78,7 +78,7 @@ self.addEventListener('fetch', event => {
     return;
   }
   if (path.endsWith('.js') || path.endsWith('.css') || path.endsWith('.html') || path.endsWith('favicon.ico')) {
-    event.respondWith(staleWhileRevalidate(req));
+    event.respondWith(networkFirstShell(req));
     return;
   }
   event.respondWith(fetch(req).catch(() => caches.match(req, {ignoreSearch:true})));
@@ -91,6 +91,19 @@ async function cacheFirstShell(req){
   const res = await fetch(req);
   if (res && res.ok) cache.put(req, res.clone());
   return res;
+}
+
+async function networkFirstShell(req){
+  try{
+    const res = await fetch(req);
+    if (res && res.ok){
+      const cache = await caches.open(SHELL_CACHE);
+      cache.put(req, res.clone());
+    }
+    return res;
+  }catch(e){
+    return (await caches.match(req, {ignoreSearch:true})) || Response.error();
+  }
 }
 
 async function networkFirstJson(req){

@@ -285,6 +285,8 @@ def main() -> int:
     sw = (ROOT / "sw-v2.js").read_text(encoding="utf-8")
     if "networkFirstJson(req)" not in sw or "/data/scores/" not in sw:
         err("sw-v2.js: score JSON must use networkFirstJson (stale data bug)")
+    if "networkFirstShell(req)" not in sw:
+        err("sw-v2.js: shell assets must use networkFirstShell (stale UI bug)")
     shell_block = re.search(r"const SHELL = \[(.*?)\];", sw, re.S)
     if not shell_block:
         err("sw-v2.js: SHELL array not found")
