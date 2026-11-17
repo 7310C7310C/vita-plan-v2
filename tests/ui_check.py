@@ -228,22 +228,27 @@ def main() -> int:
                   const rows = bar.querySelectorAll('.vrow');
                   if (!sv || !rows.length) return null;
                   const sr = sv.getBoundingClientRect(), br = bar.getBoundingClientRect();
+                  const rect = sv.querySelector('rect').getBoundingClientRect();
                   const tr = rows[0].getBoundingClientRect(), er = rows[rows.length-1].getBoundingClientRect();
                   return {top: tr.top - sr.top, bottom: sr.bottom - er.bottom,
-                          gap: br.left - sr.right,
-                          sw: parseFloat(getComputedStyle(sv.querySelector('path')).strokeWidth)};
+                          rectGap: br.left - rect.right, rectW: rect.width,
+                          reach: sr.right - br.left,
+                          fs: parseFloat(getComputedStyle(document.querySelector('#score')).fontSize)};
                 }""")
                 if not geo:
                     fail(f"{key}: system bracket/rows missing")
                 else:
-                    if not (-2 <= geo["top"] <= 8):
-                        fail(f"{key}: bracket top offset {geo['top']:.1f}px not at first voice row")
-                    if not (-2 <= geo["bottom"] <= 8):
-                        fail(f"{key}: bracket bottom offset {geo['bottom']:.1f}px not at last voice row")
-                    if not (0 <= geo["gap"] <= 3):
-                        fail(f"{key}: bracket gap to first barline {geo['gap']:.1f}px")
-                    if geo["sw"] < 1.5:
-                        fail(f"{key}: bracket stroke too thin ({geo['sw']}px)")
+                    fs = geo["fs"]
+                    if not (-fs*0.5 <= geo["top"] <= 2):
+                        fail(f"{key}: bracket top offset {geo['top']:.1f}px vs voice row")
+                    if not (-fs*0.5 <= geo["bottom"] <= 2):
+                        fail(f"{key}: bracket bottom offset {geo['bottom']:.1f}px vs voice row")
+                    if not (fs*0.25 <= geo["rectGap"] <= fs*0.55):
+                        fail(f"{key}: bracket bar to first barline {geo['rectGap']:.1f}px (fs={fs:.1f})")
+                    if geo["rectW"] < 2:
+                        fail(f"{key}: bracket bar too thin ({geo['rectW']:.1f}px)")
+                    if geo["reach"] < 3:
+                        fail(f"{key}: bracket flags do not reach the staff ({geo['reach']:.1f}px)")
                 fl = frame.locator(".bar.line-first").first.evaluate("el=>getComputedStyle(el).borderLeftWidth")
                 if fl in ("0px", "0"):
                     fail(f"{key}: multi-voice first bar lost its thin barline")
