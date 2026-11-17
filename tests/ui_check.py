@@ -81,6 +81,42 @@ def main() -> int:
         if display != "none":
             fail(f"cl001: single-voice menu 声部 row display={display!r}, expected none")
         page.click("#v2MenuClose")
+        wrap_on = frame.locator("body").evaluate("""() => ({
+          wrap: window.__hymn.autowrap,
+          lines: [...document.querySelectorAll('.line')].map(l=>l.querySelectorAll('.bar').length),
+          total: document.querySelectorAll('#score .bar').length,
+          nowrap: document.querySelector('#score').classList.contains('nowrap')
+        })""")
+        frame.locator("body").evaluate("()=>document.getElementById('wrapBtn').click()")
+        page.wait_for_timeout(400)
+        wrap_off = frame.locator("body").evaluate("""() => ({
+          wrap: window.__hymn.autowrap,
+          lines: [...document.querySelectorAll('.line')].map(l=>l.querySelectorAll('.bar').length),
+          total: document.querySelectorAll('#score .bar').length,
+          nowrap: document.querySelector('#score').classList.contains('nowrap')
+        })""")
+        if not wrap_on["wrap"] or wrap_on["nowrap"] or len(wrap_on["lines"]) < 2:
+            fail(f"cl001: autowrap on must wrap into >=2 lines: {wrap_on}")
+        if wrap_off["wrap"] or not wrap_off["nowrap"] or wrap_off["lines"] != [wrap_off["total"]]:
+            fail(f"cl001: autowrap off must render one row with all bars: {wrap_off}")
+        page.set_viewport_size({"width": 640, "height": 900})
+        page.wait_for_timeout(500)
+        narrow = frame.locator("body").evaluate("""() => {
+          const s=document.querySelector('#score');
+          return {lines:[...document.querySelectorAll('.line')].map(l=>l.querySelectorAll('.bar').length),
+                  sw:s.scrollWidth, cw:s.clientWidth};
+        }""")
+        if narrow["lines"] != [8] or narrow["sw"] <= narrow["cw"] + 2:
+            fail(f"cl001: nowrap at narrow width must scroll horizontally: {narrow}")
+        page.set_viewport_size({"width": 1280, "height": 900})
+        frame.locator("body").evaluate("()=>document.getElementById('wrapBtn').click()")
+        page.wait_for_timeout(400)
+        wrap_back = frame.locator("body").evaluate("""() => ({
+          lines: [...document.querySelectorAll('.line')].map(l=>l.querySelectorAll('.bar').length),
+          nowrap: document.querySelector('#score').classList.contains('nowrap')
+        })""")
+        if wrap_back["nowrap"] or wrap_back["lines"] != wrap_on["lines"]:
+            fail(f"cl001: toggling autowrap back must restore wrapped layout: {wrap_back} vs {wrap_on['lines']}")
         if errs:
             fail("cl001 page errors: " + " | ".join(errs[:4]))
         ctx.close()
