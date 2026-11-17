@@ -1534,9 +1534,9 @@ function drawSystemBrackets(){
   if (SHOW_VOICES.length < 2) return;
   const fs = parseFloat(getComputedStyle(scoreEl).fontSize) || 16;
   const bw = Math.max(2.4, fs*0.2);      /* 粗竖线宽 */
-  const ext = fs*1.4;                    /* 端部弯钩向右伸出 */
-  const rise = fs*0.45;                  /* 端部弯钩高出/低于竖线端 */
-  const gap = fs*0.4;                    /* 粗线右缘到首小节细线 */
+  const ext = fs*0.7;                    /* 端部弯钩向右伸出 */
+  const rise = fs*0.32;                  /* 端部弯钩高出/低于竖线端 */
+  const gap = fs*0.16;                   /* 粗线右缘到首小节细线 */
   const inset = fs*0.55;                 /* 竖线端缩进第一个/最后一个声部行 */
   const NS = "http://www.w3.org/2000/svg";
   document.querySelectorAll(".line").forEach(line=>{
