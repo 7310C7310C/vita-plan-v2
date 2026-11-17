@@ -273,10 +273,10 @@ def main() -> int:
                     fail(f"{key}: system bracket/rows missing")
                 else:
                     fs = geo["fs"]
-                    if not (-fs*0.5 <= geo["top"] <= 2):
-                        fail(f"{key}: bracket top offset {geo['top']:.1f}px vs voice row")
-                    if not (-fs*0.5 <= geo["bottom"] <= 2):
-                        fail(f"{key}: bracket bottom offset {geo['bottom']:.1f}px vs voice row")
+                    if abs(geo["top"]) > 1.2:
+                        fail(f"{key}: bracket hook top not at thin-line top ({geo['top']:.1f}px)")
+                    if abs(geo["bottom"]) > 1.2:
+                        fail(f"{key}: bracket hook bottom not at thin-line bottom ({geo['bottom']:.1f}px)")
                     if not (fs*0.08 <= geo["rectGap"] <= fs*0.25):
                         fail(f"{key}: bracket bar to first barline {geo['rectGap']:.1f}px (fs={fs:.1f})")
                     if geo["rectW"] < 2:

@@ -1654,11 +1654,11 @@ function drawSystemBrackets(){
     const lb = line.getBoundingClientRect();
     const rb = first.getBoundingClientRect(), eb = last.getBoundingClientRect();
     const br = bar.getBoundingClientRect();
-    const inset = fs*0.55;
     const rise = fs*0.32;
     const x = br.left - lb.left;
-    const top = (rb.top - lb.top) + inset - rise;
-    const h = (eb.bottom - rb.top) - inset*2 + rise*2;
+    /* 弯钩尾端落在左侧细线的上/下端（S 行顶 / B 行底） */
+    const top = rb.top - lb.top;
+    const h = eb.bottom - rb.top;
     const W = bw + ext;
     const svg = document.createElementNS(NS, "svg");
     svg.setAttribute("class", "sys-bracket");
