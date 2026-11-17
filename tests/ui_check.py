@@ -252,6 +252,53 @@ def main() -> int:
                 fl = frame.locator(".bar.line-first").first.evaluate("el=>getComputedStyle(el).borderLeftWidth")
                 if fl in ("0px", "0"):
                     fail(f"{key}: multi-voice first bar lost its thin barline")
+                rs = frame.locator(".bar.repeat-start.line-first").first
+                if rs.count():
+                    bg = rs.evaluate("el=>getComputedStyle(el,'::before').backgroundImage")
+                    if "linear-gradient" in bg:
+                        fail(f"{key}: line-start repeat draws an extra thick/thin line over the bracket")
+            if key == "jt/017":
+                bn = frame.locator("body").evaluate("""() => {
+                  const bar = document.querySelector('.bar[data-bar="1"]');
+                  const num = bar.querySelector('.bnum');
+                  const chord = bar.querySelector('.chordrow');
+                  if (!num || !chord) return null;
+                  const nr = num.getBoundingClientRect(), br = bar.getBoundingClientRect(), cr = chord.getBoundingClientRect();
+                  return {dx: (nr.left + nr.width/2) - br.left,
+                          ncy: nr.top + nr.height/2, ccy: cr.top + cr.height/2,
+                          pos: getComputedStyle(num).position};
+                }""")
+                if not bn:
+                    fail("jt017 bar2: bar number / chord row missing")
+                else:
+                    if abs(bn["dx"]) > 3:
+                        fail(f"jt017 bar2: bar number center is {bn['dx']:.1f}px from the barline")
+                    if abs(bn["ncy"] - bn["ccy"]) > 3:
+                        fail(f"jt017 bar2: bar number not vertically aligned with chord row ({bn['ncy']:.1f} vs {bn['ccy']:.1f})")
+                    if bn["pos"] != "absolute":
+                        fail(f"jt017 bar2: bar number is not absolutely positioned ({bn['pos']})")
+            if key == "lz/019":
+                row = frame.locator('.bar[data-bar="0"] .vrow[data-vrow="S"]')
+                nb = row.locator('.group-beam').count()
+                if nb != 1:
+                    fail(f"lz019 bar1: S group beams {nb}, expected 1 continuous beam")
+                vis = row.evaluate("r=>[...r.querySelectorAll('.note .u1')].filter(u=>getComputedStyle(u).display!=='none').length")
+                if vis != 0:
+                    fail(f"lz019 bar1: {vis} per-note underlines still visible under beamed notes")
+                span = row.evaluate("""r => {
+                  const bs = [...r.querySelectorAll('.group-beam')][0];
+                  const notes = [...r.querySelectorAll('.note')].filter(n=>parseFloat(n.dataset.bs)>=3);
+                  if (!bs || notes.length < 3) return null;
+                  const br = bs.getBoundingClientRect();
+                  const a = notes[0].getBoundingClientRect(), z = notes[notes.length-1].getBoundingClientRect();
+                  return {left: br.left - a.left, right: z.right - br.right};
+                }""")
+                if not span or span["left"] > 2 or span["right"] > 2:
+                    fail(f"lz019 bar1: beam does not span the 4 3 1 group: {span}")
+            if key == "lz/019":
+                rs = frame.locator('.bar[data-bar="8"].repeat-start.line-first')
+                if not rs.count():
+                    fail("lz019 bar9: repeat-start line-first marker missing")
             if errs:
                 fail(f"{key} page errors: " + " | ".join(errs[:3]))
             ctx.close()

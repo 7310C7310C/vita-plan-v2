@@ -140,12 +140,19 @@
   .bar:last-child{border-right:1.3px solid rgba(90,75,55,.55);border-right:1.3px solid color-mix(in srgb,var(--ink-2) 55%,transparent)}
   .rest{color:var(--muted);font-size:.92em;font-family:"Times New Roman",Georgia,serif}
   .bar.repeat-start::before{
-    content:"";position:absolute;left:0;top:0;bottom:0;width:8px;z-index:3;pointer-events:none;
+    content:"";position:absolute;left:0;top:0;bottom:0;width:12px;z-index:3;pointer-events:none;
+    background:
+      radial-gradient(circle at 8px 34%, var(--ink-2) 0 1.5px, transparent 1.7px),
+      radial-gradient(circle at 8px 54%, var(--ink-2) 0 1.5px, transparent 1.7px),
+      linear-gradient(90deg, var(--ink-2) 0 2.6px, transparent 2.6px),
+      linear-gradient(90deg, transparent 3.6px, var(--ink-2) 3.6px 4.8px, transparent 4.8px);
+    opacity:.9;
+  }
+  /* 行首反复：系统括号已提供粗线，小节左边线为细线，只画点 */
+  .bar.repeat-start.line-first::before{
     background:
       radial-gradient(circle at 6px 34%, var(--ink-2) 0 1.5px, transparent 1.7px),
-      radial-gradient(circle at 6px 54%, var(--ink-2) 0 1.5px, transparent 1.7px),
-      linear-gradient(90deg, var(--ink-2) 0 2.6px, transparent 2.6px);
-    opacity:.9;
+      radial-gradient(circle at 6px 54%, var(--ink-2) 0 1.5px, transparent 1.7px);
   }
   .bar.repeat-end::before{
     content:"";position:absolute;right:.5em;top:0;bottom:0;width:4px;z-index:3;pointer-events:none;
@@ -181,9 +188,11 @@
   .bar.playing{box-shadow:inset 0 0 0 1.5px var(--hl)}
 
   .btag{margin-left:.4em;color:var(--accent);font-size:.9em;letter-spacing:.04em}
+  .bnum .btag{position:absolute;left:100%;top:50%;transform:translateY(-50%);margin-left:.3em;white-space:nowrap}
   .dc-mark{position:absolute;right:.05em;top:0;font-size:calc(.55 * var(--em));font-weight:600;color:var(--ink-2);letter-spacing:.03em;white-space:nowrap;pointer-events:none}
-  .bnum{font-size:calc(.6 * var(--em));color:var(--muted);height:calc(1.3 * var(--em));line-height:calc(1.3 * var(--em));font-variant-numeric:tabular-nums}
-  .bar-meter{display:inline-flex;align-items:center;font-size:1.25em;line-height:1;margin-right:.4em;color:var(--ink-2);vertical-align:middle}
+  .bnum{position:absolute;left:0;top:0;height:calc(1.45 * var(--em));display:flex;align-items:center;transform:translateX(-50%);font-size:calc(.6 * var(--em));color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;pointer-events:none;z-index:4}
+  .bar-meter{position:absolute;left:.05em;top:-1.15em;display:inline-flex;align-items:center;font-size:calc(.7 * var(--em));line-height:1;color:var(--ink-2);pointer-events:none;z-index:4}
+  .bar-meter .meter-stack{font-size:1.15em}
   .meter-stack{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;line-height:.9;font-family:"Times New Roman",Georgia,serif;font-weight:600;vertical-align:middle}
   .meter-stack b,.meter-stack i{font-style:normal;font-weight:600;display:block;padding:0 .14em}
   .meter-stack b{border-bottom:1.5px solid currentColor;line-height:1.05;margin-bottom:1px}
@@ -191,7 +200,7 @@
   .chordrow,.vrow,.lrow{display:grid;align-items:center}
   .chordrow{height:calc(1.45 * var(--em));font-family:"Noto Sans TC",system-ui,sans-serif;font-size:calc(.64 * var(--em));font-weight:700;color:var(--accent);line-height:1.05}
   .chordrow span{text-align:left;white-space:nowrap;overflow:visible;padding-left:0}
-  .vrow{height:calc(2.15 * var(--em))}
+  .vrow{height:calc(2.15 * var(--em));position:relative}
   .lrow{height:calc(1.45 * var(--em));font-family:var(--lyric-font);font-size:calc(.88 * var(--em));
     font-weight:var(--lyric-weight,400);color:var(--ink-2)}
   .vrow.muted{opacity:.28}
@@ -1338,11 +1347,13 @@ function renderBar(bi, verseIdxs){
   if (bar.meter){
     const prevMeter = bi>0 ? (SCORE.bars[bi-1].meter || SCORE.meter) : null;
     if (bi===0 || bar.meter !== prevMeter){
-      const mm = String(bar.meter).split("/");
       meterHTML = `<span class="bar-meter">${meterStackHTML(bar.meter)}</span>`;
     }
   }
-  h += `<div class="bnum">${meterHTML}${bi+1}${bar.tag?`<span class="btag">${escHtml(bar.tag)}</span>`:""}</div>`;
+  h += meterHTML;
+  /* 小节序号与和弦同一行；有拍号变更时让位给拍号，但保留 tag（如“弱起”） */
+  if (!meterHTML) h += `<span class="bnum">${bi+1}${bar.tag?`<span class="btag">${escHtml(bar.tag)}</span>`:""}</span>`;
+  else if (bar.tag) h += `<span class="bnum"><span class="btag">${escHtml(bar.tag)}</span></span>`;
   if (SCORE.dc && SCORE.dc.from === bi) h += `<span class="dc-mark">D.C. al Fine</span>`;
   if (SCORE.dc && SCORE.dc.to === bi) h += `<span class="dc-mark">Fine</span>`;
   h += `<div class="chordrow" style="grid-template-columns:repeat(${n},minmax(0,1fr))">`;
@@ -1490,7 +1501,7 @@ function render(){
     body.className = "line-body";
     const gutter = document.createElement("div");
     gutter.className = "gutter";
-    let gh = `<div class="g-cell g-bnum"></div><div class="g-cell g-chord"></div>`;
+    let gh = `<div class="g-cell g-chord"></div>`;
     if (SHOW_VOICES.length>1 && SHOW_VOICES.indexOf("S")>=0) gh += `<div class="g-cell g-voice" data-gv="S">S</div>`;
     if (SHOW_VOICES.length>1 && SHOW_VOICES.indexOf("A")>=0) gh += `<div class="g-cell g-voice" data-gv="A">A</div>`;
     const visVerses = SCORE.lyrics.map((_,vi)=>vi)
@@ -1523,8 +1534,60 @@ function render(){
   alignChords();
   fixChordOverlaps();
   fixBeams();
+  fixGroupBeams();
   drawSystemBrackets();
   if (lang === "t") convertTree(scoreEl);
+}
+
+/* 同一拍组内的连续短音符：画一条连续符槓，取代逐音符下划线（6/8 每 3 个八分音为一组） */
+function fixGroupBeams(){
+  document.querySelectorAll('#score .bar').forEach(bar=>{
+    const bd = SCORE.bars[+bar.dataset.bar];
+    if (!bd) return;
+    const mm = String(bd.meter || SCORE.meter || "").match(/^(\d+)\/(\d+)$/);
+    const num = mm ? +mm[1] : 4, den = mm ? +mm[2] : 4;
+    const groupSize = (den === 8 && num % 3 === 0) ? 3 : 1;
+    const gidx = b => Math.floor((b + 1e-6) / groupSize);
+    bar.querySelectorAll('.vrow').forEach(row=>{
+      const notes = Array.prototype.slice.call(row.querySelectorAll('.note'))
+        .filter(n=>n.querySelector('.num'));
+      let run = [], lastG = null;
+      const flush = ()=>{
+        if (run.length >= 2) drawRunBeam(row, run);
+        run = [];
+      };
+      notes.forEach(n=>{
+        const u = n.querySelector('.u1');
+        const short = u && getComputedStyle(u).display !== 'none';
+        const bs = parseFloat(n.dataset.bs);
+        const end = bs + parseFloat(n.dataset.bd || "0");
+        if (!short){ flush(); lastG = null; return; }
+        const g = gidx(bs);
+        if (run.length){
+          const prev = run[run.length-1];
+          const prevEnd = parseFloat(prev.dataset.bs) + parseFloat(prev.dataset.bd || "0");
+          if (g !== lastG || bs > prevEnd + 1e-6) flush();
+        }
+        run.push(n); lastG = g;
+      });
+      flush();
+    });
+  });
+}
+function drawRunBeam(row, notes){
+  const rr = row.getBoundingClientRect();
+  const first = notes[0].getBoundingClientRect();
+  const last = notes[notes.length-1].getBoundingClientRect();
+  const u = notes[0].querySelector('.u1');
+  if (!u) return;
+  const ur = u.getBoundingClientRect();
+  const line = document.createElement('i');
+  line.className = 'group-beam';
+  line.style.left = (first.left - rr.left) + 'px';
+  line.style.width = Math.max(6, last.right - first.left) + 'px';
+  line.style.top = (ur.bottom - rr.top - 1) + 'px';
+  row.appendChild(line);
+  notes.forEach(n=>{ const uu = n.querySelector('.u1'); if (uu) uu.style.display = 'none'; });
 }
 
 /* 多声部系统括号：参考 lz020 原谱——粗竖线 + 实心尖角弯钩，上下钩向右外扬；
