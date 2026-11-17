@@ -137,6 +137,30 @@ def main() -> int:
             fail("cl002 page errors: " + " | ".join(errs[:4]))
         ctx.close()
 
+        # narrow autowrap: one-bar lines must still end with a visible barline
+        ctx, page, frame, errs = open_score(browser, "cl/002", width=360)
+        narrow_lines = frame.locator("body").evaluate("""() => {
+          return [...document.querySelectorAll('.line')].map(l=>{
+            const bars=[...l.querySelectorAll('.bar')];
+            const b=bars[bars.length-1], cs=getComputedStyle(b);
+            return {n:bars.length, final:b.classList.contains('final'),
+                    bg:cs.backgroundImage, pos:cs.backgroundPosition,
+                    after:getComputedStyle(b,'::after').backgroundImage};
+          });
+        }""")
+        if len(narrow_lines) != 22 or any(x["n"] != 1 for x in narrow_lines):
+            fail(f"cl002@360: expected 22 one-bar lines, got {[x['n'] for x in narrow_lines]}")
+        for i, x in enumerate(narrow_lines):
+            if x["final"]:
+                if "linear-gradient" not in x["after"]:
+                    fail(f"cl002@360: final line lost its double barline: {x}")
+                continue
+            if x["bg"].count("linear-gradient") != 1 or not x["pos"].startswith("100%"):
+                fail(f"cl002@360: line {i+1} must have exactly one right barline: {x}")
+        if errs:
+            fail("cl002@360 page errors: " + " | ".join(errs[:4]))
+        ctx.close()
+
         # accidental and sustain-dash alignment
         ctx, page, frame, errs = open_score(browser, "lz/020")
         acc = frame.locator("body").evaluate("""() => {
@@ -287,8 +311,12 @@ def main() -> int:
                 bw = frame.locator(".gutter").first.evaluate("el=>getComputedStyle(el).borderRightWidth")
                 if bw not in ("0px", "0"):
                     fail(f"{key}: single-voice gutter still draws bracket line ({bw})")
-                fl = frame.locator(".bar.line-first").first.evaluate("el=>getComputedStyle(el).backgroundImage")
-                if fl != "none":
+                fl = frame.locator("body").evaluate("""() => {
+                  const line=[...document.querySelectorAll('.line')].find(l=>l.querySelectorAll('.bar').length>1);
+                  if (!line) return "skip";
+                  return getComputedStyle(line.querySelector('.bar')).backgroundImage;
+                }""")
+                if fl not in ("skip","none"):
                     fail(f"{key}: single-voice line start still draws a left line ({fl[:30]})")
             else:
                 if n_brackets != n_lines:
