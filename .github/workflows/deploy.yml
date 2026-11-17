@@ -1,16 +1,40 @@
-name: Vita Plan v2 Deploy
+name: Vita Plan v2 Validate and Deploy
 
 on:
   push:
     branches: [main]
 
 jobs:
-  deploy:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate score data / manifest / assets
+        run: python3 scripts/check_scores.py
+      - name: JS syntax
+        run: |
+          for f in assets/js/v2-ui.js assets/js/v2-cache.js assets/js/script.js assets/js/offline.js sw-v2.js sw.js admin/admin.js; do
+            node --check "$f"
+          done
+      - name: Install Playwright
+        run: |
+          python3 -m pip install --quiet playwright
+          python3 -m playwright install --with-deps chromium
+      - name: Browser UI checks
+        run: |
+          python3 -m http.server 8080 &
+          sleep 1
+          python3 tests/ui_check.py http://127.0.0.1:8080/
 
+  deploy:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.0.1
         with:

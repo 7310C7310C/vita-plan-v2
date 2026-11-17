@@ -1,5 +1,5 @@
 /* Vita Plan v2 service worker: pre-cache shell + all JSON scores after first paint. */
-const SHELL_CACHE = 'v2-shell-81';
+const SHELL_CACHE = 'v2-shell-82';
 const JSON_CACHE = 'v2-json-v2';
 const SHELL = [
   'index.html',
@@ -11,7 +11,7 @@ const SHELL = [
   'assets/js/v2-ui.js?v=18',
   'assets/js/script.js?v=2026111603',
   'assets/js/v2-cache.js?v=4',
-  'data/v2-scores.js?v=3'
+  'data/v2-scores.js?v=4'
 ];
 
 self.addEventListener('install', event => {

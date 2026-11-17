@@ -1,0 +1,36 @@
+# AGENTS.md — Vita Plan v2 强制规则
+
+本文件优先于一般习惯。任何 agent/开发者改本仓库前先读；违反规则不得提交/部署。
+
+## 必读
+- `README.md`：用户手册/生产口径。
+- `docs/omr-checklist.md`：OMR 制谱核对清单（每次新谱必须逐项过）。
+- `scripts/check_scores.py`、`tests/ui_check.py`：提交前必须跑。
+
+## 强制检查（CI 不过则不能部署）
+```bash
+python3 scripts/check_scores.py
+python3 -m http.server 8080 &          # 新终端或后台
+python3 tests/ui_check.py http://127.0.0.1:8080/
+```
+`.github/workflows/deploy.yml` 的 `validate` job 会跑同一组检查；`deploy` 依赖 `validate`，失败不会上服务器。
+
+## 乐谱/OMR
+1. Dolce OMR 只作为音高/时值/歌词/和弦初稿；**不直接信其视觉排版**。
+2. 每谱必须按 `docs/omr-checklist.md` 核对：拍号/小节数、各声部音高八度时值、beam 分组、slur/tie、歌词逐字起拍、和弦/斜杠低音/Capo、默认速度。
+3. 连音线/延音线必须写入 `slurs`/`ties`，不能因为“听不出来”省略；同音高用 tie，不同音高用 slur。
+4. 歌词以原图逐字对位为准；特别检查小节末与下一小节首、一字多音（melisma）。cl001 第7/8小节、jt017 第13/14小节是已发生过的反例。
+5. beam 分组按拍处理：同一拍内连成一条、拍与拍之间留缺口；不要把整小节八分音符连成一条。
+6. 单声部谱必须 `voices:["S"]`；菜单隐藏「声部」整行，谱面隐藏 S/A/T/B 标记。
+7. 升降号绝对定位，不得挤动音符数字；延音 dash 用置中线（与数字同宽、约 3px 厚），音符/dash/歌词中心对齐。
+8. 任何新增/修改分数后运行 `python3 scripts/generate_v2_manifest.py`；`check_scores.py` 会校验 manifest 与 mapping。
+9. 曲号沿用既有编号，永不重排；删歌留空号。
+
+## 资源/部署
+- 改前端资源或 `player-frame.html` 后：同步升 `?v=`、`sw-v2.js` 的 `SHELL_CACHE`，并把 `index.html` 复制为 `404.html`；`check_scores.py` 会检查 SW 是否引用当前版本。
+- 提交中文说明；staging `v2.kcan.cc` 验收后再谈 root。
+- v2 不新增指向 v1 / GitHub Pages 的对外链接。
+
+## 评审
+- 任何 frozen diff 部署前由 Reviewer 独立审；高风险（auth/权限/支付/数据/secrets/对外暴露）加 Auditor。
+- Reviewer/Auditor 不改产品码；review 前后工作树必须 clean。
