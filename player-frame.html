@@ -199,7 +199,7 @@
       var(--barline) .22em .42em);
     opacity:1;
   }
-  .bar.sel{background:transparent}
+  .bar.sel{background-color:transparent}   /* keep the barline background-image */
   .sel-band{
     position:absolute;pointer-events:none;z-index:3;
     background:rgba(243,221,164,.26);background:color-mix(in srgb,var(--sel) 26%,transparent);
@@ -1340,8 +1340,9 @@ function fixChordOverlaps(){
       s.dataset.shift = '0';
       s.style.transform = base ? ('translateX(' + base + 'px)') : '';
     });
+    const ink = s=>{ const r=document.createRange(); r.selectNodeContents(s); return r.getBoundingClientRect(); };
     for (let i=0;i<spans.length-1;i++){
-      const a = spans[i].getBoundingClientRect(), b = spans[i+1].getBoundingClientRect();
+      const a = ink(spans[i]), b = ink(spans[i+1]);
       if (a.right > b.left - 1){
         const baseNext = +(spans[i+1].dataset.align || 0);
         const prev = +(spans[i+1].dataset.shift || 0);

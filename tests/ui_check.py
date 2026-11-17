@@ -300,6 +300,22 @@ def main() -> int:
                 bars = frame.locator(".bar").count()
                 if bn != bars:
                     fail(f"cl001: {bn} bar numbers for {bars} bars (meter changes must not hide numbers)")
+            if key == "lz/020":
+                if frame.locator('.bar[data-bar="0"] .btag').count():
+                    fail("lz020: 弱起 tag should be removed")
+                g = frame.locator("body").evaluate("""() => {
+                  const bar = document.querySelector('.bar[data-bar="7"]');
+                  const span = [...bar.querySelectorAll('.chordrow span')].find(s=>s.textContent.trim()==='G');
+                  const tail = bar.querySelectorAll('.vrow[data-vrow="S"] .cell')[3].querySelector('.tail');
+                  if (!span || !tail) return null;
+                  const r=document.createRange(); r.selectNodeContents(span);
+                  const sr=r.getBoundingClientRect(), tr=tail.getBoundingClientRect();
+                  return {c:(sr.left+sr.right)/2, t:(tr.left+tr.right)/2};
+                }""")
+                if not g:
+                    fail("lz020 bar8: G chord or beat4 tail missing")
+                elif abs(g["c"] - g["t"]) > 1.5:
+                    fail(f"lz020 bar8 G chord center {g['c']:.1f} != beat4 dash {g['t']:.1f}")
             if key == "cl/002":
                 g = frame.locator("body").evaluate("""() => {
                   const bar = document.querySelector('.bar[data-bar="1"]');
@@ -373,6 +389,11 @@ def main() -> int:
                     s_last = frame.locator('.bar[data-bar="0"] .vrow[data-vrow="S"] .note').last
                     if s_last.locator(".dot").count() != 1:
                         fail("jt017 bar1 S 7: low octave dot missing")
+                    frame.locator('body').evaluate("()=>document.querySelector('.bar').classList.add('sel')")
+                    selbg = frame.locator('.bar').first.evaluate("el=>getComputedStyle(el).backgroundImage")
+                    if "linear-gradient" not in selbg:
+                        fail("selected bar lost its barline background image")
+                    frame.locator('body').evaluate("()=>document.querySelector('.bar').classList.remove('sel')")
                     a11 = frame.locator('.bar[data-bar="10"] .vrow[data-vrow="A"] .note').first.inner_text().strip()
                     if a11 != "1":
                         fail(f"jt017 bar11 A first note {a11!r}, expected 1")
