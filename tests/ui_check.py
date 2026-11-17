@@ -309,6 +309,16 @@ def main() -> int:
                         fail(f"jt017 bar2: bar number not vertically aligned with chord row ({bn['ncy']:.1f} vs {bn['ccy']:.1f})")
                     if bn["pos"] != "absolute":
                         fail(f"jt017 bar2: bar number is not absolutely positioned ({bn['pos']})")
+                    first_s = frame.locator('.bar[data-bar="0"] .vrow[data-vrow="S"] .cell').first.inner_text().strip()
+                    first_a = frame.locator('.bar[data-bar="0"] .vrow[data-vrow="A"] .cell').first.inner_text().strip()
+                    if first_s != "0" or first_a != "0":
+                        fail(f"jt017 bar1: rests at beat 1 must show 0 (S={first_s!r}, A={first_a!r})")
+                    t0 = frame.locator('.bar[data-bar="0"] .vrow[data-vrow="T"] .note').first
+                    if t0.locator(".dot").count():
+                        fail("jt017 bar1 T 7: octave dot should be suppressed (original has none)")
+                    s_last = frame.locator('.bar[data-bar="0"] .vrow[data-vrow="S"] .note').last
+                    if s_last.locator(".dot").count() != 1:
+                        fail("jt017 bar1 S 7: low octave dot missing")
                     st = frame.locator('.bar[data-bar="1"]').evaluate("""el=>{
                       const cs=getComputedStyle(el);
                       return {bw:cs.borderLeftWidth, bg:cs.backgroundImage};
@@ -317,6 +327,13 @@ def main() -> int:
                         fail(f"jt017 bar2: barline still uses a full-height border ({st['bw']})")
                     if "linear-gradient" not in st["bg"]:
                         fail("jt017 bar2: barline background missing")
+            if key == "jt/017":
+                l15 = " ".join(frame.locator('.bar[data-bar="14"] .lrow').first.inner_text().split())
+                l16 = " ".join(frame.locator('.bar[data-bar="15"] .lrow').first.inner_text().split())
+                if l15 != "耶 路 撒" or "冷" in l15:
+                    fail(f"jt017 bar15 lyrics {l15!r}, expected '耶 路 撒' with 路 on beat 3")
+                if l16 != "冷":
+                    fail(f"jt017 bar16 lyrics {l16!r}, expected '冷'")
             if key == "lz/019":
                 row = frame.locator('.bar[data-bar="0"] .vrow[data-vrow="S"]')
                 nb = row.locator('.group-beam').count()

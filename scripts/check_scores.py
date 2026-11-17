@@ -48,6 +48,8 @@ def check_event(where: str, ev, beats: float, lyric_len: int) -> None:
     if syl is not None:
         if not isinstance(syl, int) or isinstance(syl, bool) or not (0 <= syl < lyric_len):
             err(f"{where}: bad syllable index {syl!r} (lyrics[0] len={lyric_len})")
+    if len(ev) > 5 and ev[5] not in (None, "nodot"):
+        err(f"{where}: event[5] must be null or 'nodot' (got {ev[5]!r})")
 
 
 def check_score(path: Path, score: dict, ids: set[str]) -> None:

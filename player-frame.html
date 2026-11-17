@@ -150,7 +150,7 @@
     background-position:0 var(--staff-top),100% var(--staff-top);
     background-size:1.3px calc(100% - var(--staff-top)),1.3px calc(100% - var(--staff-top));
   }
-  .rest{color:var(--muted);font-size:.92em;font-family:"Times New Roman",Georgia,serif}
+  .rest{color:var(--ink);font-size:1em;font-family:inherit;font-weight:inherit}
   .bar.repeat-start::before{
     content:"";position:absolute;left:0;top:0;bottom:0;width:1.2em;z-index:3;pointer-events:none;
     background:
@@ -707,9 +707,9 @@ function midiToJianpu(m){
   }
   return {deg:idx||1, acc, oct};
 }
-function noteHTML(jp,{underline=0,dot=0,beam=false,beamLast=false}={}){
+function noteHTML(jp,{underline=0,dot=0,beam=false,beamLast=false,noOctDot=false}={}){
   let dots = "";
-  const n = Math.min(Math.abs(jp.oct),2);
+  const n = noOctDot ? 0 : Math.min(Math.abs(jp.oct),2);
   const lowTop = underline ? 0.36 : 0.19;
   for (let k=0;k<n;k++){
     dots += jp.oct>0
@@ -1384,7 +1384,7 @@ function renderBar(bi, verseIdxs){
     let r = `<div class="vrow" data-vrow="${v}" style="grid-template-columns:repeat(${n},minmax(0,1fr))">`;
     cells.forEach((cell,ci)=>{
       const align = tripCells.has(ci) && cell.type!=="triplet" ? " start" : "";
-      if (cell.type==="empty") r += `<div class="cell${align}" data-rest="1" data-bs="${ci}"></div>`;
+      if (cell.type==="empty") r += `<div class="cell${align}" data-rest="1" data-bs="${ci}"><span class="rest">0</span></div>`;
       else if (cell.type==="note"){
         const d = cell.ev[1];
         let underline=0, dot=0, dashN=0;
@@ -1393,7 +1393,7 @@ function renderBar(bi, verseIdxs){
         } else {
           underline = d<0.75?1:0; dot = Math.abs(d-1.5)<1e-6?1:0; dashN = d>=1.75 ? Math.round(d)-1 : 0;
         }
-        const nh = noteHTML(midiToJianpu(cell.ev[2] + 12*(VOICE_OCT[v]||0)), {underline, dot});
+        const nh = noteHTML(midiToJianpu(cell.ev[2] + 12*(VOICE_OCT[v]||0)), {underline, dot, noOctDot: cell.ev[5]==="nodot"});
         const bs = cell.ev[0], bd = SCORE.compound ? d : Math.min(1, d);
         const dashes = (SCORE.compound && dashN>0) ? `<span class="dash">${"<i></i>".repeat(dashN)}</span>` : "";
         r += `<div class="cell${align}"><span class="note ${nh.cls}" data-id="${evId(bi,v,cell.idx)}" data-bs="${bs}" data-bd="${bd}" data-bar="${bi}" data-voice="${v}" data-idx="${cell.idx}">${nh.html}${dashes}</span></div>`;
@@ -1406,7 +1406,7 @@ function renderBar(bi, verseIdxs){
           let underline=0, dot=0;
           if (SCORE.compound){ underline = d===1?1:0; dot = (d===3||d===5)?1:0; }
           else { underline = d<0.75?1:0; dot = Math.abs(d-1.5)<1e-6?1:0; }
-          const nh = noteHTML(midiToJianpu(ev[2] + 12*(VOICE_OCT[v]||0)), {underline, dot, beam: cell.list.length>1, beamLast: cell.list.length>1 && ni===cell.list.length-1});
+          const nh = noteHTML(midiToJianpu(ev[2] + 12*(VOICE_OCT[v]||0)), {underline, dot, beam: cell.list.length>1, beamLast: cell.list.length>1 && ni===cell.list.length-1, noOctDot: ev[5]==="nodot"});
           const left = (ev[0]-ci)*100, width = Math.max(22, d*100);
           r += `<span class="note ${nh.cls}" style="left:${left}%;width:${width}%" data-id="${evId(bi,v,idx)}" data-bs="${ev[0]}" data-bd="${d}" data-bar="${bi}" data-voice="${v}" data-idx="${idx}">${nh.html}</span>`;
         });
