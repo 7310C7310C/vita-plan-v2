@@ -79,25 +79,27 @@
     const path = String(score && score.file || '');
     if (!validScorePath(path)) throw new Error('invalid score path');
     const url = basePath() + path;
-    /* network-first: a page-side cache-first read bypasses the SW and serves stale scores */
-    try{
-      const res = await fetch(url, {cache:'no-store'});
-      if (res.ok){
-        const data = await res.json();
-        try{
-          const cache = await caches.open('v2-json-v2');
-          await cache.put(url, new Response(JSON.stringify(data), {headers:{'Content-Type':'application/json'}}));
-        }catch(e){}
-        return data;
-      }
-    }catch(e){}
+    let cached = null;
     try{
       const cache = await caches.open('v2-json-v2');
       const hit = await cache.match(url, {ignoreSearch:true});
-      if (hit) return await hit.json();
+      if (hit) cached = await hit.json();
     }catch(e){}
+    const refresh = fetch(url, {cache:'no-store', headers:{'X-VP2-Revalidate':'1'}}).then(async res=>{
+      if (!res || !res.ok) return null;
+      const data = await res.json();
+      try{
+        const cache = await caches.open('v2-json-v2');
+        await cache.put(url, new Response(JSON.stringify(data), {headers:{'Content-Type':'application/json'}}));
+      }catch(e){}
+      return data;
+    }).catch(()=>null);
+    if (cached) return cached;          /* cached score opens instantly; refresh updates cache in background */
+    const data = await refresh;         /* first visit for this score: wait once, then cache */
+    if (data) return data;
     throw new Error('score unavailable');
   }
+
   async function enter(cat, song, score){
     const token = ++state.loadToken;
     state.active = true; state.image = false; state.ready = false;

@@ -292,8 +292,8 @@ def main() -> int:
         if not (ROOT / p).exists():
             err(f"index.html: referenced file missing: {ref}")
     sw = (ROOT / "sw-v2.js").read_text(encoding="utf-8")
-    if "networkFirstJson(req)" not in sw or "/data/scores/" not in sw:
-        err("sw-v2.js: score JSON must use networkFirstJson (stale data bug)")
+    if "staleWhileRevalidateJson(req, event)" not in sw or "/data/scores/" not in sw:
+        err("sw-v2.js: score JSON must use staleWhileRevalidateJson (instant cached open + background update)")
     if "networkFirstShell(req)" not in sw:
         err("sw-v2.js: shell assets must use networkFirstShell (stale UI bug)")
     shell_block = re.search(r"const SHELL = \[(.*?)\];", sw, re.S)

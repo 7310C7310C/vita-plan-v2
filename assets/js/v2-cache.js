@@ -28,7 +28,7 @@
       if (localStorage.getItem(key) === manifest.version && hits.every(Boolean)) return;
       await Promise.all(files.map(async function(f){
         try{
-          const r = await fetch(base + f.path, {cache:'no-store'});
+          const r = await fetch(base + f.path, {cache:'no-store', headers:{'X-VP2-Revalidate':'1'}});
           if (r && r.ok) await cache.put(base + f.path, r);
         }catch(e){}
       }));

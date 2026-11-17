@@ -1,5 +1,5 @@
 /* Vita Plan v2 service worker: pre-cache shell + all JSON scores after first paint. */
-const SHELL_CACHE = 'v2-shell-115';
+const SHELL_CACHE = 'v2-shell-117';
 const JSON_CACHE = 'v2-json-v2';
 const SHELL = [
   'index.html',
@@ -8,9 +8,9 @@ const SHELL = [
   'data/songs.json?v=20261115185326',
   'assets/css/style.css?v=20261115185326',
   'assets/css/v2-ui.css?v=22',
-  'assets/js/v2-ui.js?v=21',
+  'assets/js/v2-ui.js?v=23',
   'assets/js/script.js?v=2026111603',
-  'assets/js/v2-cache.js?v=6',
+  'assets/js/v2-cache.js?v=7',
   'data/v2-scores.js?v=4'
 ];
 
@@ -57,8 +57,8 @@ self.addEventListener('fetch', event => {
     return;
   }
   if (path.indexOf('/data/scores/') !== -1) {
-    /* 乐谱数据必须网络优先：否则改谱后用户刷新仍看到旧 JSON */
-    event.respondWith(networkFirstJson(req));
+    /* 已缓存秒开；后台 no-store 拉新版写回缓存，下次打开即新 */
+    event.respondWith(staleWhileRevalidateJson(req, event));
     return;
   }
   if (path.endsWith('/data/v2-scores.json') || path.endsWith('/data/v2-manifest.json')) {
@@ -106,17 +106,24 @@ async function networkFirstShell(req){
   }
 }
 
-async function networkFirstJson(req){
-  try{
+async function staleWhileRevalidateJson(req, event){
+  const cache = await caches.open(JSON_CACHE);
+  if (req.headers.get('x-vp2-revalidate')){
     const res = await fetch(req, {cache:'no-store'});
-    if (res && res.ok){
-      const cache = await caches.open(JSON_CACHE);
-      cache.put(req, res.clone());
-    }
+    if (res && res.ok) await cache.put(req, res.clone());
     return res;
-  }catch(e){
-    return (await caches.match(req, {ignoreSearch:true})) || Response.error();
   }
+  const hit = await cache.match(req, {ignoreSearch:true});
+  const network = fetch(req, {cache:'no-store'}).then(async res=>{
+    if (res && res.ok) await cache.put(req, res.clone());
+    return res;
+  }).catch(()=>null);
+  if (hit){
+    if (event && event.waitUntil) event.waitUntil(network);
+    return hit;
+  }
+  const res = await network;
+  return res || Response.error();
 }
 
 async function cacheFirst(req){
@@ -140,7 +147,7 @@ async function staleWhileRevalidate(req){
 
 async function navigationFirst(req){
   try{
-    const res = await fetch(req);
+    const res = await fetch(req, {cache:'no-store'});
     if (res && res.ok){
       const cache = await caches.open(SHELL_CACHE);
       cache.put(req, res.clone());

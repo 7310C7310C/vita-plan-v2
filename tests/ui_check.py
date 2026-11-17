@@ -172,7 +172,7 @@ def main() -> int:
             fail("jt017 page errors: " + " | ".join(errs[:4]))
         ctx.close()
 
-        # page-side cache must not override network JSON (stale score bug)
+        # cached score opens instantly; background refresh updates the cache for the next open
         ctx = browser.new_context(viewport={"width": 1280, "height": 900}, service_workers="block")
         page = ctx.new_page()
         page.goto(BASE, wait_until="load", timeout=60000)
@@ -186,8 +186,14 @@ def main() -> int:
         page.goto(BASE + "jt/017", wait_until="load", timeout=60000)
         page.wait_for_timeout(3500)
         nbars = page.frame_locator("#v2Frame").locator(".bar").count()
-        if nbars != 32:
-            fail(f"page-side stale score used: {nbars} bars, expected 32")
+        if nbars != 1:
+            fail(f"cached score should open instantly (got {nbars} bars, expected cached 1)")
+        page.wait_for_timeout(2500)
+        page.reload(wait_until="load", timeout=60000)
+        page.wait_for_timeout(3500)
+        nbars2 = page.frame_locator("#v2Frame").locator(".bar").count()
+        if nbars2 != 32:
+            fail(f"background refresh did not update cache: {nbars2} bars on reopen, expected 32")
         ctx.close()
 
         # mid-line repeat-start (narrow viewport wraps bar 9 inside a line)
