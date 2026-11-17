@@ -26,7 +26,7 @@ def open_score(browser, path: str):
     page = ctx.new_page()
     errs: list[str] = []
     page.on("pageerror", lambda e: errs.append("pageerror: " + str(e)))
-    page.on("console", lambda m: errs.append("console: " + m.text) if m.type == "error" else None)
+    page.on("console", lambda m: errs.append("console: " + m.text + " @ " + ((m.location or {}).get("url") or "?")) if m.type == "error" else None)
     page.goto(BASE + path, wait_until="load", timeout=60000)
     page.wait_for_timeout(3200)
     frame = page.frame_locator("#v2Frame")
