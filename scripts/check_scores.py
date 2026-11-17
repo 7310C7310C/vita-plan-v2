@@ -231,6 +231,15 @@ def main() -> int:
         if manifest.get("version") != expect_version:
             err(f"data/v2-manifest.json: version {manifest.get('version')} != {expect_version}")
 
+    # agent/OMR instructions must stay in place
+    for name in ("AGENTS.md", "CLAUDE.md", "docs/omr-checklist.md"):
+        if not (ROOT / name).exists():
+            err(f"missing required instructions: {name}")
+    if (ROOT / "AGENTS.md").exists() and "lodebar2026/dolce" not in (ROOT / "AGENTS.md").read_text(encoding="utf-8"):
+        err("AGENTS.md must name lodebar2026/dolce as the OMR tool")
+    if (ROOT / "CLAUDE.md").exists() and "AGENTS.md" not in (ROOT / "CLAUDE.md").read_text(encoding="utf-8"):
+        err("CLAUDE.md must point to AGENTS.md")
+
     # static shell invariants
     idx = ROOT / "index.html"
     copy = ROOT / "404.html"
