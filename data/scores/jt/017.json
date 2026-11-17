@@ -1402,7 +1402,8 @@
       null
      ]
     ]
-   }
+   },
+   "endbar": "thinThick"
   },
   {
    "beats": 4,
@@ -2126,7 +2127,8 @@
      ]
     ]
    },
-   "hum": "呜"
+   "hum": "呜",
+   "endbar": "doubleThin"
   }
  ],
  "lyrics": [
@@ -2633,7 +2635,8 @@
     14,
     "S",
     2
-   ]
+   ],
+   "playonly"
   ],
   [
    [

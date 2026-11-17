@@ -121,6 +121,8 @@ def check_score(path: Path, score: dict, ids: set[str]) -> None:
             err(f"{where}: bad bar.meter {bar['meter']!r}")
         if "hum" in bar and not isinstance(bar["hum"], str):
             err(f"{where}: hum must be a string")
+        if "endbar" in bar and bar["endbar"] not in ("thinThick", "doubleThin"):
+            err(f"{where}: endbar must be thinThick or doubleThin (got {bar['endbar']!r})")
         chords = bar.get("chords", [])
         if not isinstance(chords, list):
             err(f"{where}: chords not list"); chords = []
@@ -173,10 +175,13 @@ def check_score(path: Path, score: dict, ids: set[str]) -> None:
     if not isinstance(ties, list):
         err(f"{rel}: ties not list"); ties = []
     for pair in ties:
-        if not isinstance(pair, list) or len(pair) != 2 or any(not isinstance(x, list) or len(x) != 3 for x in pair):
+        if not isinstance(pair, list) or len(pair) not in (2, 3) or any(not isinstance(x, list) or len(x) != 3 for x in pair[:2]):
             err(f"{rel}: bad tie {pair!r}"); continue
+        if len(pair) == 3 and pair[2] != "playonly":
+            err(f"{rel}: tie flag must be 'playonly' (got {pair[2]!r})")
+            continue
         notes = []
-        for b, v, i in pair:
+        for b, v, i in pair[:2]:
             if not (isinstance(b, int) and 0 <= b < len(bars) and v in voices and isinstance(i, int)):
                 err(f"{rel}: tie target invalid {pair!r}"); notes = []; break
             evs = bars[b].get("V", {}).get(v, [])

@@ -230,9 +230,10 @@ def main() -> int:
                 fail(f"{key}: repeat end has no repeat dots")
             if not expect_repeat and dots != "none":
                 fail(f"{key}: last bar shows repeat dots but no repeat ends there")
-            endline = bar.evaluate("el=>getComputedStyle(el,'::after').backgroundImage")
-            if endline == "none":
-                fail(f"{key}: last bar has no final double barline")
+            if "endbar" not in score["bars"][-1]:
+                endline = bar.evaluate("el=>getComputedStyle(el,'::after').backgroundImage")
+                if endline == "none":
+                    fail(f"{key}: last bar has no final double barline")
             single = score.get("voices") == ["S"]
             root_cls = (frame.locator("#score").get_attribute("class") or "").split()
             if ("single-voice" in root_cls) != single:
@@ -358,7 +359,7 @@ def main() -> int:
                     return {x1:a[0],y1:a[1],x2:a[a.length-2],y2:a[a.length-1]};
                   });
                   const find=(x1,x2)=>paths.find(p=>Math.abs(p.x1-x1)<2 && Math.abs(p.x2-x2)<2);
-                  return {long:find(notes[0],notes[2]), short:find(notes[1],notes[2]), notes};
+                  return {long:find(notes[0],notes[2]), short:find(notes[0],notes[1]), notes};
                 }""")
                 if not order or not order["long"] or not order["short"]:
                     fail(f"jt017 bar15: long/short slur paths not found: {order}")
@@ -367,7 +368,7 @@ def main() -> int:
                 bad7 = [x for x in score.get("slurs", []) if x[:3] in ([6,'S',1],[6,'A',1],[6,'T',1],[6,'B',1]) and x[3]==2]
                 if bad7:
                     fail(f"jt/017: bar7 first pair is a beam, not a slur: {bad7}")
-                needed_ties = [[[15,'B',0],[16,'B',0]],[[14,'S',1],[14,'S',2]],[[11,'T',0],[12,'T',0]],[[11,'B',0],[12,'B',0]],
+                needed_ties = [[[15,'B',0],[16,'B',0]],[[14,'S',1],[14,'S',2],'playonly'],[[11,'T',0],[12,'T',0]],[[11,'B',0],[12,'B',0]],
                                [[17,'S',2],[18,'S',0]],[[18,'S',3],[19,'S',0]],[[21,'S',2],[22,'S',0]],
                                [[17,'T',0],[18,'T',0]],[[19,'T',0],[20,'T',0]],[[21,'T',0],[22,'T',0]],
                                [[25,'T',0],[26,'T',0]],[[27,'T',0],[28,'T',0]],[[29,'T',0],[30,'T',0]],
@@ -428,6 +429,16 @@ def main() -> int:
                     }""")
                     if pf["d"] != "block" or pf["l"] < 1.2 or pf["l"] > 1.4 or pf["r"] > 0.5:
                         fail(f"playing frame must hug barlines (left~1.3, right~0): {pf}")
+                    eb16 = frame.locator('.bar[data-bar="15"]').evaluate("el=>({cls:el.className,bg:getComputedStyle(el,'::after').backgroundImage})")
+                    if "endbar-thin-thick" not in eb16["cls"] or "linear-gradient" not in eb16["bg"]:
+                        fail(f"jt017 bar16 endbar thinThick missing: {eb16}")
+                    eb32 = frame.locator('.bar[data-bar="31"]').evaluate("el=>({cls:el.className,bg:getComputedStyle(el,'::after').backgroundImage,bc:getComputedStyle(el,'::after').backgroundColor,bgi:getComputedStyle(el).backgroundImage})")
+                    if "endbar-double-thin" not in eb32["cls"] or "final" in eb32["cls"].split():
+                        fail(f"jt017 bar32 endbar doubleThin/final wrong: {eb32}")
+                    if eb32["bc"] in ("rgba(0, 0, 0, 0)", "transparent"):
+                        fail(f"jt017 bar32 double-thin inner line missing: {eb32}")
+                    if eb32["bgi"].count("linear-gradient") < 2:
+                        fail(f"jt017 bar32 lost its right thin barline: {eb32}")
                     capo_val = page.locator("#v2Capo").input_value() if page.locator("#v2Capo").count() else "0"
                     if capo_val != "0":
                         fail(f"jt017: capo must default to 0, got {capo_val}")

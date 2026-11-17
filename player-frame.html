@@ -199,6 +199,18 @@
       var(--barline) .22em .42em);
     opacity:1;
   }
+  .bar.endbar-thin-thick::after{
+    content:"";position:absolute;top:var(--staff-top);bottom:0;right:0;width:.42em;
+    background:linear-gradient(90deg,
+      var(--barline) 0 1.3px,
+      transparent 1.3px .22em,
+      var(--barline) .22em .42em);
+    opacity:1;
+  }
+  .bar.endbar-double-thin::after{
+    content:"";position:absolute;top:var(--staff-top);bottom:0;right:.22em;width:1.3px;
+    background:var(--barline);
+  }
   .bar.sel{background-color:transparent}   /* keep the barline background-image */
   .sel-band{
     position:absolute;pointer-events:none;z-index:3;
@@ -1365,7 +1377,9 @@ function renderBar(bi, verseIdxs, hasHum){
   });
 
   const basis = Math.max(n*1.75 + 0.5, 3.2);
-  let h = `<div class="bar${bi===SCORE.bars.length-1?" final":""}${bi===(SCORE.repeat?SCORE.repeat.to:-1)?" repeat-end":""}${bi===(SCORE.repeat?SCORE.repeat.from:-1)?" repeat-start":""}" data-bar="${bi}" style="flex:0.25 1 ${basis.toFixed(2)}em;max-width:${(basis*2.1).toFixed(2)}em"><span class="play-frame" aria-hidden="true"></span>`;
+  const EBAR = {thinThick:"endbar-thin-thick", doubleThin:"endbar-double-thin"};
+  const ebar = EBAR[bar.endbar] || "";
+  let h = `<div class="bar${(bi===SCORE.bars.length-1 && !bar.endbar)?" final":""}${ebar?` ${ebar}`:""}${bi===(SCORE.repeat?SCORE.repeat.to:-1)?" repeat-end":""}${bi===(SCORE.repeat?SCORE.repeat.from:-1)?" repeat-start":""}" data-bar="${bi}" style="flex:0.25 1 ${basis.toFixed(2)}em;max-width:${(basis*2.1).toFixed(2)}em"><span class="play-frame" aria-hidden="true"></span>`;
   let meterHTML = "";
   if (bar.meter){
     const prevMeter = bi>0 ? (SCORE.bars[bi-1].meter || SCORE.meter) : null;
@@ -1685,7 +1699,7 @@ function drawSlurs(){
     if (s.length === 6) pairs.push([s[0],s[1],s[2],s[3],s[4],s[5]]);
     else pairs.push([s[0],s[1],s[2],s[0],s[1],s[3]]);
   });
-  TIES.forEach(([a,z])=>pairs.push([a[0],a[1],a[2],z[0],z[1],z[2]]));
+  TIES.forEach(t=>{ if (t[2] !== "playonly") pairs.push([t[0][0],t[0][1],t[0][2],t[1][0],t[1][1],t[1][2]]); });
   const items = [];
   pairs.forEach(([b1,v1,i1,b2,v2,i2])=>{
     const l1 = LINE_OF_BAR[b1], l2 = LINE_OF_BAR[b2];
