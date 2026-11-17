@@ -1269,10 +1269,16 @@ function alignChords(){
       if(!span.textContent.trim()) return;
       const cell=cells[ci]; if(!cell) return;
       const note=cell.querySelector('.note .num') || cell.querySelector('.note');
-      if(!note) return;
-      const nr=note.getBoundingClientRect(), sr=span.getBoundingClientRect();
-      const dx=nr.left - sr.left;
-      if (isFinite(dx)){ span.dataset.align=String(dx); span.style.transform='translateX('+dx+'px)'; }
+      const tail=cell.querySelector('.tail');
+      const sr=span.getBoundingClientRect();
+      let dx=null;
+      if(note){
+        dx=note.getBoundingClientRect().left - sr.left;
+      } else if(tail){
+        const tr=tail.getBoundingClientRect();
+        dx=(tr.left + tr.width/2) - (sr.left + sr.width/2);
+      }
+      if (dx !== null && isFinite(dx)){ span.dataset.align=String(dx); span.style.transform='translateX('+dx+'px)'; }
     });
   });
 }

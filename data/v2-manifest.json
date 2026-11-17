@@ -1,15 +1,15 @@
 {
-  "version": "817f1617cdbd1353",
+  "version": "1641270a98982b86",
   "files": [
     {
       "path": "data/scores/cl/001.json",
-      "hash": "76f7f6a475c31d57cf5da959e359f6fab15e40bffcaddb4fd1dbc3754b9d950b",
+      "hash": "34768a3f525e79c81b8f63c730909311419d850263ba2be43c789b80207c040d",
       "size": 3621
     },
     {
       "path": "data/scores/cl/002.json",
-      "hash": "1d33fec9fdd18c674d4051b690efe0e5f0102e7963543282ea1e7cd34078edcb",
-      "size": 7739
+      "hash": "61c81a4bac0506b8a7d066ccc1d5e9cf082ffc1ab7079c643ffd3f1650a0b0f6",
+      "size": 7738
     },
     {
       "path": "data/scores/jt/017.json",
