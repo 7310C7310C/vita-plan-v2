@@ -8,7 +8,7 @@
 - `scripts/check_scores.py`、`tests/ui_check.py`：提交前必须跑。
 
 ## OMR 工具（强制）
-1. 制谱前必须先用 **`lodebar2026/dolce`** 识别简谱：按其仓库 README 安装/运行，输出 123 或结构化谱面，再转本仓库 JSON。
+1. 制谱前必须先用 **`lodebar2026/dolce`** 识别简谱：先用 `git fetch` 确认已是最新 tag/main（落后则 `pull --ff-only`），再按其仓库 README 安装/运行，输出 123 或结构化谱面，后转本仓库 JSON。
 2. 不得跳过 Dolce 直接手工抄谱；除非用户明确提供结构化谱面/数据，或明确说明无法使用该工具。
 3. Dolce 输出只作初稿；音高/时值/歌词/和弦之外，beam、slur/tie、歌词边界必须按原图核对。
 4. 不写死任何机器路径、账号或环境限制；任何接手者/设备按 `lodebar2026/dolce` 的通用文档执行。

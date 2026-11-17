@@ -1,6 +1,6 @@
 # OMR / 制谱核对清单
 
-识别工具：**`lodebar2026/dolce`**（按该仓库 README 安装/运行；输出 123 初稿）。任何接手者/设备都用该工具，不写死本地路径。
+识别工具：**`lodebar2026/dolce`**（使用前先 `git fetch` 确认最新 tag/main，落后先 `pull --ff-only`；按该仓库 README 安装/运行；输出 123 初稿）。任何接手者/设备都用该工具，不写死本地路径。
 制谱流程：Dolce 识别 → 本清单逐项核对 → 写入 `data/scores/*.json`。每次新谱必须逐项过一遍。
 
 ## Dolce 输出
