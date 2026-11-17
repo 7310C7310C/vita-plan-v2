@@ -336,10 +336,19 @@ def main() -> int:
                     fail(f"jt/017: missing slurs {missing}")
                 if [14,'S',0,1] in score.get("slurs", []):
                     fail("jt/017 bar15: 3→first-beat-2 slur must be removed")
+                tie_play = frame.locator("body").evaluate("""() => {
+                  const h=window.__hymn, start=h.BAR_START[14];
+                  const evs=h.engine.events.filter(e=>e.bar===14 && e.voice==='S');
+                  const a=evs.find(e=>Math.abs(e.beat-(start+0.5))<1e-6);
+                  const b=evs.find(e=>Math.abs(e.beat-(start+1))<1e-6);
+                  return {a:a?{dur:a.dur,midi:a.midi}:null, b:!!b};
+                }""")
+                if not tie_play["a"] or abs(tie_play["a"]["dur"] - 1.5) > 1e-6 or tie_play["b"]:
+                    fail(f"jt017 bar15: tied 2 must sustain 1.5 beats without re-attack, got {tie_play}")
                 bad7 = [x for x in score.get("slurs", []) if x[:3] in ([6,'S',1],[6,'A',1],[6,'T',1],[6,'B',1]) and x[3]==2]
                 if bad7:
                     fail(f"jt/017: bar7 first pair is a beam, not a slur: {bad7}")
-                needed_ties = [[[15,'B',0],[16,'B',0]],[[11,'T',0],[12,'T',0]],[[11,'B',0],[12,'B',0]],
+                needed_ties = [[[15,'B',0],[16,'B',0]],[[14,'S',1],[14,'S',2]],[[11,'T',0],[12,'T',0]],[[11,'B',0],[12,'B',0]],
                                [[17,'S',2],[18,'S',0]],[[18,'S',3],[19,'S',0]],[[21,'S',2],[22,'S',0]],
                                [[17,'T',0],[18,'T',0]],[[19,'T',0],[20,'T',0]],[[21,'T',0],[22,'T',0]],
                                [[25,'T',0],[26,'T',0]],[[27,'T',0],[28,'T',0]],[[29,'T',0],[30,'T',0]],
