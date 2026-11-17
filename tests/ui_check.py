@@ -296,7 +296,7 @@ def main() -> int:
                 needed = [[2,'A',2,3],[2,'A',2,4],[2,'B',2,3],[2,'S',2,3],[2,'S',2,4],
                           [2,'T',2,3],[2,'T',2,4],[6,'A',2,3],[6,'B',2,3],[6,'S',2,3],[6,'T',2,3],
                           [10,'A',2,3],[10,'B',2,3],[10,'S',2,3],[10,'T',2,3],
-                          [12,'S',1,2],[14,'S',0,1],[14,'S',0,2]]
+                          [12,'S',1,2],[14,'S',0,1],[14,'S',0,2],[19,'S',0,0],[23,'S',0,0],[27,'S',0,0]]
                 missing = [x for x in needed if x not in score.get("slurs", [])]
                 if missing:
                     fail(f"jt/017: missing slurs {missing}")
@@ -350,6 +350,36 @@ def main() -> int:
                     fail(f"jt017 bar15 lyrics {l15!r}, expected '耶 路 撒' with 路 on beat 3")
                 if l16 != "冷":
                     fail(f"jt017 bar16 lyrics {l16!r}, expected '冷'")
+                cross = frame.locator("body").evaluate("""() => {
+                  const lines = [...document.querySelectorAll('.line')];
+                  const l1 = lines.findIndex(l=>l.querySelector('.bar[data-bar="25"]'));
+                  const l2 = lines.findIndex(l=>l.querySelector('.bar[data-bar="26"]'));
+                  if (l1 < 0 || l2 < 0) return null;
+                  return {same: l1===l2,
+                          p1: lines[l1].querySelectorAll('.slur-layer path').length,
+                          p2: lines[l2].querySelectorAll('.slur-layer path').length};
+                }""")
+                if not cross:
+                    fail("jt017: bars 26/27 not found for cross-line slur check")
+                elif not cross["same"] and (cross["p1"] < 1 or cross["p2"] < 1):
+                    fail(f"jt017: cross-line slur missing a half (line paths {cross['p1']}/{cross['p2']})")
+                dark = frame.locator("body").evaluate("""() => {
+                  const lyr = document.querySelector('.lrow');
+                  const kt = document.querySelector('.score-head .kt');
+                  const bar = document.querySelector('.bar');
+                  document.documentElement.dataset.theme = 'dark';
+                  const out = {
+                    ly: getComputedStyle(lyr).color,
+                    kt: kt ? getComputedStyle(kt).color : null,
+                    bg: getComputedStyle(bar).backgroundImage
+                  };
+                  document.documentElement.dataset.theme = 'light';
+                  return out;
+                }""")
+                if dark["ly"] != "rgb(236, 227, 212)" or (dark["kt"] and dark["kt"] != "rgb(236, 227, 212)"):
+                    fail(f"jt017 dark mode: lyrics/meta must be light, got {dark}")
+                if "rgb(236, 227, 212)" not in dark["bg"]:
+                    fail("jt017 dark mode: barline must be light")
                 y0 = frame.locator("body").evaluate("()=>window.scrollY")
                 page.keyboard.press("PageDown"); page.wait_for_timeout(700)
                 y1 = frame.locator("body").evaluate("()=>window.scrollY")

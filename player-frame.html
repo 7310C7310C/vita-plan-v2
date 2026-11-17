@@ -12,6 +12,7 @@
     --shadow:0 1px 2px rgba(60,40,20,.07),0 8px 22px rgba(60,40,20,.06);
     --btn:#fffef9; --btn-hover:#fff6e4;
     --tool-bg:rgba(250,247,240,.94);
+    --score-ink:#000;
     --lyric-font:"Noto Serif TC","Noto Serif SC","Noto Serif CJK TC","Noto Serif CJK SC","Songti TC","Songti SC",STSong,SimSun,serif;
   }
   html[data-theme="dark"]{
@@ -21,6 +22,7 @@
     --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 22px rgba(0,0,0,.35);
     --btn:#241f19; --btn-hover:#2e2820;
     --tool-bg:rgba(20,18,15,.94);
+    --score-ink:#ece3d4;
   }
   *{box-sizing:border-box;-webkit-user-select:none;-moz-user-select:none;user-select:none;-webkit-touch-callout:none}
   html{overscroll-behavior:contain}
@@ -102,20 +104,20 @@
   header h1{margin:0;font-size:26px;font-size:clamp(21px,2.6vw,30px);letter-spacing:.14em;font-weight:700}
   header .meta-original{margin-top:3px;color:var(--muted);font-size:12px;letter-spacing:.13em}
   header .meta-credit{margin-top:5px;color:var(--muted);font-size:11px;line-height:1.55;letter-spacing:.08em;text-align:right}
-  .score-tempo{font-size:calc(.74rem * var(--scale,1));color:#000;margin:-.1em 0 .6em .2em;letter-spacing:.05em;font-family:"Noto Sans TC",system-ui,sans-serif}
+  .score-tempo{font-size:calc(.74rem * var(--scale,1));color:var(--score-ink);margin:-.1em 0 .6em .2em;letter-spacing:.05em;font-family:"Noto Sans TC",system-ui,sans-serif}
   .score-tempo .tempo-note{display:inline-block;width:.62em;height:.92em;vertical-align:-.06em;margin-right:.12em;fill:currentColor}
   .score-tempo .tempo-note svg{display:block;width:100%;height:100%}
   .score-tempo .tempo-val{font-size:1em}
   .score-capo{font-size:calc(.74rem * var(--scale,1));color:var(--accent);margin:-.45em 0 .6em .2em;letter-spacing:.05em;font-family:"Noto Sans TC",system-ui,sans-serif}
 
   .score-head{display:flex;gap:1.4em;align-items:center;margin:0 0 .55em 0;padding-left:.2em}
-  .score-head .kt{font-size:calc(.8rem * var(--scale,1));color:#000;font-weight:600;letter-spacing:.06em;font-family:"Noto Sans TC",system-ui,sans-serif}
+  .score-head .kt{font-size:calc(.8rem * var(--scale,1));color:var(--score-ink);font-weight:600;letter-spacing:.06em;font-family:"Noto Sans TC",system-ui,sans-serif}
   .score{display:flex;flex-direction:column;gap:1.15em;
     /* 1rem 随使用者／瀏览器预设字号变动，换行亦随之重算 */
     --em:calc(1rem * var(--scale,1));
     --staff-top:calc(1.45 * var(--em));
     --staff-mid:calc(.725 * var(--em));
-    --barline:#000;
+    --barline:var(--score-ink);
     font-size:var(--em)}
   .score.no-chords{gap:.9em;--staff-top:.95em;--staff-mid:.475em}
   .score.no-chords .chordrow,.score.no-chords .gutter .g-chord{height:.95em}
@@ -124,14 +126,14 @@
 
   .gutter{width:2.5em;flex:0 0 2.5em;display:flex;flex-direction:column;position:relative}
   .score.single-voice .bar.line-first{background-image:none}
-  .sys-bracket{position:absolute;pointer-events:none;z-index:2;color:#000;overflow:visible}
+  .sys-bracket{position:absolute;pointer-events:none;z-index:2;color:var(--score-ink);overflow:visible}
   .g-cell{display:flex;align-items:center;justify-content:flex-end;padding-right:.9em;color:var(--muted)}
   .g-bnum{height:calc(1.3 * var(--em));font-size:calc(.6 * var(--em))}
   .g-chord{height:calc(1.45 * var(--em));font-size:calc(.64 * var(--em))}
   .g-voice{height:calc(2.15 * var(--em));color:var(--accent);font-weight:700;font-size:calc(.68 * var(--em))}
   .g-lyr{height:calc(1.45 * var(--em));font-family:var(--lyric-font);font-size:calc(.64 * var(--em))}
   .g-cell.dim{opacity:.32}
-  .kt{font-size:1.05em;color:#000;font-weight:600;letter-spacing:0;font-family:"Noto Sans TC",system-ui,sans-serif}
+  .kt{font-size:1.05em;color:var(--score-ink);font-weight:600;letter-spacing:0;font-family:"Noto Sans TC",system-ui,sans-serif}
 
   .bars{display:flex;flex:1;min-width:0}
   .line.cards .line-body{padding:.1em 0}
@@ -207,9 +209,9 @@
 
   .btag{margin-left:.4em;color:var(--accent);font-size:.9em;letter-spacing:.04em}
   .bnum .btag{position:absolute;left:100%;top:50%;transform:translateY(-50%);margin-left:.3em;white-space:nowrap}
-  .dc-mark{position:absolute;right:.05em;top:0;font-size:calc(.55 * var(--em));font-weight:600;color:#000;letter-spacing:.03em;white-space:nowrap;pointer-events:none}
+  .dc-mark{position:absolute;right:.05em;top:0;font-size:calc(.55 * var(--em));font-weight:600;color:var(--score-ink);letter-spacing:.03em;white-space:nowrap;pointer-events:none}
   .bnum{position:absolute;left:0;top:0;height:var(--staff-top);display:flex;align-items:center;transform:translateX(-50%);font-size:calc(.6 * var(--em));color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;pointer-events:none;z-index:4}
-  .bar-meter{position:absolute;left:.35em;top:-1.3em;display:inline-flex;align-items:center;font-size:calc(.7 * var(--em));line-height:1;color:#000;pointer-events:none;z-index:4}
+  .bar-meter{position:absolute;left:.35em;top:-1.3em;display:inline-flex;align-items:center;font-size:calc(.7 * var(--em));line-height:1;color:var(--score-ink);pointer-events:none;z-index:4}
   .bar-meter .meter-stack{font-size:1.15em}
   .meter-stack{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;line-height:.9;font-family:"Times New Roman",Georgia,serif;font-weight:600;vertical-align:middle}
   .meter-stack b,.meter-stack i{font-style:normal;font-weight:600;display:block;padding:0 .14em}
@@ -220,7 +222,7 @@
   .chordrow span{text-align:left;white-space:nowrap;overflow:visible;padding-left:0}
   .vrow{height:calc(2.15 * var(--em));position:relative}
   .lrow{height:calc(1.45 * var(--em));font-family:var(--lyric-font);font-size:calc(.88 * var(--em));
-    font-weight:var(--lyric-weight,400);color:#000}
+    font-weight:var(--lyric-weight,400);color:var(--score-ink)}
   .vrow.muted{opacity:.28}
 
   .cell{display:flex;align-items:center;justify-content:center;min-width:0;position:relative;height:100%}
@@ -1665,24 +1667,55 @@ function drawSystemBrackets(){
 function drawSlurs(){
   document.querySelectorAll("svg.slur-layer").forEach(el=>el.remove());
   const NS = "http://www.w3.org/2000/svg";
-  document.querySelectorAll(".line").forEach(line=>{
+  const lineEls = Array.prototype.slice.call(document.querySelectorAll(".line"));
+  const pairs = [];
+  SLURS.forEach(([bi,v,i1,i2])=>pairs.push([bi,v,i1,bi,v,i2]));
+  TIES.forEach(([a,z])=>pairs.push([a[0],a[1],a[2],z[0],z[1],z[2]]));
+  const items = [];
+  pairs.forEach(([b1,v1,i1,b2,v2,i2])=>{
+    const l1 = LINE_OF_BAR[b1], l2 = LINE_OF_BAR[b2];
+    if (l1===undefined || l2===undefined) return;
+    const line1 = lineEls[l1], line2 = lineEls[l2];
+    if (!line1 || !line2) return;
+    const e1 = line1.querySelector(`.bar[data-bar="${b1}"] .note[data-voice="${v1}"][data-idx="${i1}"]`);
+    const e2 = line2.querySelector(`.bar[data-bar="${b2}"] .note[data-voice="${v2}"][data-idx="${i2}"]`);
+    if (!e1 || !e2) return;
+    const base1 = line1.getBoundingClientRect();
+    const r1 = e1.getBoundingClientRect(), r2 = e2.getBoundingClientRect();
+    const k1 = `${b1}:${v1}:${i1}`, k2 = `${b2}:${v2}:${i2}`;
+    if (l1 === l2){
+      items.push({line:line1, x1:r1.left+r1.width/2-base1.left, x2:r2.left+r2.width/2-base1.left,
+                  y:Math.min(r1.top,r2.top)-base1.top-3, k1, k2});
+    } else {
+      const bars1 = line1.querySelectorAll(".bar"), bars2 = line2.querySelectorAll(".bar");
+      const xr = Math.max.apply(null, Array.prototype.map.call(bars1,b=>b.getBoundingClientRect().right)) - base1.left - 3;
+      const base2 = line2.getBoundingClientRect();
+      const xl = Math.min.apply(null, Array.prototype.map.call(bars2,b=>b.getBoundingClientRect().left)) - base2.left + 3;
+      items.push({line:line1, x1:r1.left+r1.width/2-base1.left, x2:xr,
+                  y:r1.top-base1.top-3, k1, k2:k2+"@s"});
+      items.push({line:line2, x1:xl, x2:r2.left+r2.width/2-base2.left,
+                  y:r2.top-base2.top-3, k1:k1+"@e", k2});
+    }
+  });
+  const byLine = new Map();
+  items.forEach(it=>{ if(!byLine.has(it.line)) byLine.set(it.line, []); byLine.get(it.line).push(it); });
+  byLine.forEach(list=>{
+    list.forEach((it,idx)=>{
+      let level = 0;
+      for (let j=0;j<idx;j++){
+        const o = list[j];
+        if (o.k1 === it.k1 || o.k2 === it.k2) level = Math.max(level, (o.level||0)+1);
+      }
+      it.level = level;
+    });
+  });
+  byLine.forEach((list,line)=>{
     const base = line.getBoundingClientRect();
-    const paths = [];
-    const pairs = [];
-    SLURS.forEach(([bi,v,i1,i2])=>pairs.push([bi,v,i1,bi,v,i2]));
-    TIES.forEach(([a,b])=>pairs.push([a[0],a[1],a[2],b[0],b[1],b[2]]));
-    pairs.forEach(([b1,v1,i1,b2,v2,i2])=>{
-      const e1 = line.querySelector(`.bar[data-bar="${b1}"] .note[data-voice="${v1}"][data-idx="${i1}"]`);
-      const e2 = line.querySelector(`.bar[data-bar="${b2}"] .note[data-voice="${v2}"][data-idx="${i2}"]`);
-      if (!e1 || !e2) return;
-      const r1 = e1.getBoundingClientRect(), r2 = e2.getBoundingClientRect();
-      const x1 = r1.left + r1.width/2 - base.left;
-      const x2 = r2.left + r2.width/2 - base.left;
-      /* 连音线一律画在音符上方 */
-      const y = Math.min(r1.top, r2.top) - base.top - 3;
-      const lift = Math.max(3.5, Math.min(9, Math.abs(x2-x1)*0.12 + 3.5));
-      const mx = (x1+x2)/2;
-      paths.push(`M ${x1.toFixed(1)} ${y.toFixed(1)} Q ${mx.toFixed(1)} ${(y-lift).toFixed(1)} ${x2.toFixed(1)} ${y.toFixed(1)}`);
+    const paths = list.map(it=>{
+      const y = it.y - (it.level||0)*5;
+      const lift = Math.max(3.5, Math.min(10, Math.abs(it.x2-it.x1)*0.12 + 3.5));
+      const mx = (it.x1+it.x2)/2;
+      return `M ${it.x1.toFixed(1)} ${y.toFixed(1)} Q ${mx.toFixed(1)} ${(y-lift).toFixed(1)} ${it.x2.toFixed(1)} ${y.toFixed(1)}`;
     });
     if (!paths.length) return;
     const svg = document.createElementNS(NS,"svg");
