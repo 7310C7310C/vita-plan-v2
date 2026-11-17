@@ -1,5 +1,5 @@
 {
-  "version": "0ca31b30ee007299",
+  "version": "94a619d8d04cb4ee",
   "files": [
     {
       "path": "data/scores/cl/001.json",
@@ -13,8 +13,8 @@
     },
     {
       "path": "data/scores/jt/017.json",
-      "hash": "f7696a11986396f1b76a1500025751ff0793d828802e548c53ae273292480dcf",
-      "size": 22758
+      "hash": "b7a75f5102cc796d150f74fe34ad93faff5f79c55d65d51b18f86227262c8af5",
+      "size": 22863
     },
     {
       "path": "data/scores/lz/008.json",
