@@ -314,14 +314,14 @@ def main() -> int:
                 needed = [[2,'A',2,3],[2,'A',2,4],[2,'B',2,3],[2,'S',2,3],[2,'S',2,4],
                           [2,'T',2,3],[2,'T',2,4],[6,'A',2,3],[6,'B',2,3],[6,'S',2,3],[6,'T',2,3],
                           [10,'A',2,3],[10,'B',2,3],[10,'S',2,3],[10,'T',2,3],
-                          [12,'S',1,2],[14,'S',0,1],[14,'S',0,2],[15,'T',0,16,'T',0],[23,'T',0,24,'T',0],[31,'T',0,0,'T',0]]
+                          [12,'B',1,2],[12,'S',1,2],[14,'S',0,1],[14,'S',0,2],[15,'T',0,16,'T',0],[23,'T',0,24,'T',0],[31,'T',0,0,'T',0]]
                 missing = [x for x in needed if x not in score.get("slurs", [])]
                 if missing:
                     fail(f"jt/017: missing slurs {missing}")
                 bad7 = [x for x in score.get("slurs", []) if x[:3] in ([6,'S',1],[6,'A',1],[6,'T',1],[6,'B',1]) and x[3]==2]
                 if bad7:
                     fail(f"jt/017: bar7 first pair is a beam, not a slur: {bad7}")
-                needed_ties = [[[15,'B',0],[16,'B',0]],[[11,'T',0],[12,'T',0]],
+                needed_ties = [[[15,'B',0],[16,'B',0]],[[11,'T',0],[12,'T',0]],[[11,'B',0],[12,'B',0]],
                                [[17,'S',2],[18,'S',0]],[[18,'S',3],[19,'S',0]],[[21,'S',2],[22,'S',0]],
                                [[17,'T',0],[18,'T',0]],[[19,'T',0],[20,'T',0]],[[21,'T',0],[22,'T',0]],
                                [[25,'T',0],[26,'T',0]],[[27,'T',0],[28,'T',0]],[[29,'T',0],[30,'T',0]],
@@ -367,6 +367,12 @@ def main() -> int:
                     s_last = frame.locator('.bar[data-bar="0"] .vrow[data-vrow="S"] .note').last
                     if s_last.locator(".dot").count() != 1:
                         fail("jt017 bar1 S 7: low octave dot missing")
+                    a11 = frame.locator('.bar[data-bar="10"] .vrow[data-vrow="A"] .note').first.inner_text().strip()
+                    if a11 != "1":
+                        fail(f"jt017 bar11 A first note {a11!r}, expected 1")
+                    b13 = " ".join(frame.locator('.bar[data-bar="12"] .vrow[data-vrow="B"]').inner_text().split())
+                    if b13 != "6 – – 6 5":
+                        fail(f"jt017 bar13 B row {b13!r}, expected '6 – – 6 5'")
                     st = frame.locator('.bar[data-bar="1"]').evaluate("""el=>{
                       const cs=getComputedStyle(el);
                       return {bw:cs.borderLeftWidth, bg:cs.backgroundImage};
