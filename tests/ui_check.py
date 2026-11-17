@@ -234,9 +234,8 @@ def main() -> int:
                 if fl != "none":
                     fail(f"{key}: single-voice line start still draws a left line ({fl[:30]})")
             else:
-                n_repeat_lines = frame.locator(".bar.repeat-start.line-first").count()
-                if n_brackets != n_lines - n_repeat_lines:
-                    fail(f"{key}: system brackets {n_brackets}, lines {n_lines}, repeat-start lines {n_repeat_lines}")
+                if n_brackets != n_lines:
+                    fail(f"{key}: system brackets {n_brackets}, lines {n_lines}")
                 geo = frame.locator("body").evaluate("""() => {
                   const line = document.querySelector('.line');
                   const sv = line.querySelector('.sys-bracket');
@@ -353,10 +352,13 @@ def main() -> int:
                     fail("lz019 bar9: repeat-start bar missing")
                 else:
                     if rs.evaluate("el=>el.classList.contains('line-first')"):
-                        if rgeo["brackets"]:
-                            fail("lz019 bar9: system bracket still drawn outside a line-start repeat sign")
-                    if rgeo["bg"].count("linear-gradient") != 2:
-                        fail("lz019 bar9: repeat sign needs a thick + thin line inside the bar")
+                        if not rgeo["brackets"]:
+                            fail("lz019 bar9: line-start repeat lost the system bracket (thick line)")
+                        if rgeo["bg"].count("linear-gradient") != 0:
+                            fail("lz019 bar9: line-start repeat should only add dots, not extra lines")
+                    else:
+                        if rgeo["bg"].count("linear-gradient") != 2:
+                            fail("lz019 bar9: mid-line repeat needs thick + thin lines")
                     if rgeo["pw"] < rgeo["fs"]*0.75:
                         fail(f"lz019 bar9: repeat dot area too narrow ({rgeo['pw']:.1f}px), dots clipped")
             if errs:
