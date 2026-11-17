@@ -114,6 +114,8 @@
     /* 1rem 随使用者／瀏览器预设字号变动，换行亦随之重算 */
     --em:calc(1rem * var(--scale,1));
     font-size:var(--em)}
+  .score.no-chords{gap:.9em}
+  .score.no-chords .chordrow,.score.no-chords .gutter .g-chord{display:none}
   .line{position:relative;padding-bottom:.5em}
   .line-body{display:flex;align-items:stretch;padding:.1em 0}
 
@@ -1454,6 +1456,7 @@ function layoutRows(){
 function render(){
   const rows = layoutRows();
   scoreEl.classList.toggle("nowrap", !autowrap);
+  scoreEl.classList.toggle("no-chords", SCORE.bars.every(b=>!(b.chords && b.chords.length)));
   scoreEl.innerHTML = "";
   barEls = [];
   LINE_OF_BAR = {};
