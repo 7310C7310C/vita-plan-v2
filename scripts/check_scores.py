@@ -131,6 +131,16 @@ def check_score(path: Path, score: dict, ids: set[str]) -> None:
                 err(f"{where}: bad chord {c!r}")
             elif not (-1e-6 <= c[0] < beats + 1e-6):
                 err(f"{where}: chord beat out of bar: {c!r}")
+        marks = bar.get("marks", [])
+        if not isinstance(marks, list):
+            err(f"{where}: marks not list"); marks = []
+        for mk in marks:
+            if not isinstance(mk, list) or len(mk) != 2 or not is_num(mk[0]) or not isinstance(mk[1], str) or not mk[1]:
+                err(f"{where}: bad mark {mk!r}")
+            elif not (-1e-6 <= mk[0] < beats + 1e-6):
+                err(f"{where}: mark beat out of bar: {mk!r}")
+        if score.get("markMode") and not marks and not chords:
+            err(f"{where}: markMode score bar has neither chords nor marks")
         V = bar.get("V")
         if not isinstance(V, dict):
             err(f"{where}: V not object"); continue
@@ -253,9 +263,38 @@ def main() -> int:
             s = load(f)
             if isinstance(s, dict) and s.get("id") and s["id"] not in ids:
                 err(f"data/v2-scores.json: {key} points to score id {s['id']} not scanned")
+    referenced: set[str] = set()
+    for ent in entries.values():
+        if not isinstance(ent, dict):
+            continue
+        if ent.get("file"):
+            referenced.add(ent["file"])
+        vers = ent.get("versions")
+        if vers is None:
+            continue
+        if not isinstance(vers, dict):
+            err("data/v2-scores.json: versions must be an object")
+            continue
+        for code, vent in vers.items():
+            if code not in ("o", "g", "b", "a"):
+                err(f"data/v2-scores.json: bad version code {code!r}")
+            if not isinstance(vent, dict) or not vent.get("file"):
+                err(f"data/v2-scores.json: bad version entry {code!r}")
+                continue
+            vf = ROOT / vent["file"]
+            if not vf.exists():
+                err(f"data/v2-scores.json: missing version file {vent['file']} ({code})")
+            else:
+                referenced.add(vent["file"])
+                vs = load(vf)
+                if isinstance(vs, dict):
+                    if vs.get("versionCode") != code:
+                        err(f"{vent['file']}: versionCode {vs.get('versionCode')!r} != mapping code {code!r}")
+                    if not vs.get("versionLabel"):
+                        err(f"{vent['file']}: missing versionLabel")
     for path in sorted(SCORES.rglob("*.json")):
         rel = path.relative_to(ROOT).as_posix()
-        if not any(ent.get("file") == rel for ent in entries.values() if isinstance(ent, dict)):
+        if rel not in referenced:
             err(f"{rel}: score file not referenced by data/v2-scores.json")
 
     # manifest hashes/version must match the generator

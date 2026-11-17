@@ -40,7 +40,8 @@
     annotRedo: false,
     langPending: false,
     langLoading: false,
-    loadToken: 0
+    loadToken: 0,
+    version: 'o'
   };
 
   /* Runtime mapping is a tiny JS file loaded before this script (no sync XHR). */
@@ -57,6 +58,14 @@
     return code && state.data.scores ? state.data.scores[code + '/' + id] : null;
   }
   function has(cat, id){ return !!scoreFor(cat, id); }
+  /* 版本 JSON：v2-scores.json 每个曲目可带 versions:{g|b|a:{file,label}}，缺省回落到原谱 */
+  function versionScore(cat, id, versionCode){
+    const ent = scoreFor(cat, id);
+    if (!ent) return null;
+    const map = ent.versions || {};
+    const v = map[versionCode || 'o'] || null;
+    return v && v.file ? v : null;
+  }
   function post(cmd, extra){
     if (!frame || !frame.contentWindow) return;
     frame.contentWindow.postMessage(Object.assign({type:'vp2:cmd', cmd:cmd}, extra || {}), location.origin);
@@ -67,7 +76,7 @@
     loadingIndicator.style.display = on ? 'block' : 'none';
   }
   function validScorePath(path){
-    return /^data\/scores\/[a-z0-9_-]+\/[0-9]+\.json$/i.test(String(path || ''));
+    return /^data\/scores\/[a-z0-9_-]+\/[0-9]+(?:-[a-z])?\.json$/i.test(String(path || ''));
   }
   function errorScore(song){
     return {id:'__error__', title:(song && song.title) || '乐谱加载失败', credit:'',
@@ -100,10 +109,10 @@
     throw new Error('score unavailable');
   }
 
-  async function enter(cat, song, score){
+  async function enter(cat, song, score, versionCode){
     const token = ++state.loadToken;
     state.active = true; state.image = false; state.ready = false;
-    state.cat = cat; state.song = song; state.score = score;
+    state.cat = cat; state.song = song; state.score = score; state.version = versionCode || 'o';
     state.playing = false;
     setPlayUI(false);
     document.body.classList.add('v2-active', 'v2-json-mode');
@@ -617,7 +626,7 @@
   }
 
   window.VP2UI = {
-    has, scoreFor, enter, leave, setImageMode, isActive:()=>state.active, isImage:()=>state.image,
+    has, scoreFor, versionScore, enter, leave, setImageMode, isActive:()=>state.active, isImage:()=>state.image,
     pushRoute, setVersionQuery, routeFor, routeForCategory, pushPath, handleRoute, basePath, post, setUILang: applyUILang,
     get state(){ return state; }
   };

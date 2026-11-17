@@ -1291,10 +1291,23 @@ function transposeChord(chord, semitones, preferFlat){
   }
   return out;
 }
+function chordSpelling(part){
+  /* 只看根音（及低音）的升降号，后缀里的 b（如 m7b5）不参与判断 */
+  const m = String(part || '').match(/^([A-G][#b]?)/);
+  if (!m || m[1].length < 2) return null;
+  return m[1][1] === 'b';
+}
 function transposeChordText(text, semitones){
   if (!semitones) return text;
-  const flat = capoPreferFlat();
-  return String(text).split(' · ').map(c=>transposeChord(c, semitones, flat)).join(' · ');
+  const keyFlat = capoPreferFlat();
+  return String(text).split(' · ').map(c=>{
+    /* 和弦本身带降号就沿用降号记法，避免原谱的 Bb/F 变成 A#/F */
+    const parts = String(c).split('/');
+    const own = chordSpelling(parts[0]);
+    const bassOwn = own === null && parts[1] ? chordSpelling(parts[1]) : null;
+    const flat = own !== null ? own : (bassOwn !== null ? bassOwn : keyFlat);
+    return transposeChord(c, semitones, flat);
+  }).join(' · ');
 }
 function applyCapo(){
   document.querySelectorAll('#score .chordrow span[data-chord]').forEach(el=>{
@@ -1367,6 +1380,18 @@ function fixChordOverlaps(){
       s.style.transform = base ? ('translateX(' + base + 'px)') : '';
     });
     const ink = s=>{ const r=document.createRange(); r.selectNodeContents(s); return r.getBoundingClientRect(); };
+    /* 首和弦若压住小节序号（序号居中于小节线，会伸进小节内），整体右移让开 */
+    const bar = row.closest('.bar');
+    const bnum = bar && bar.querySelector('.bnum');
+    if (bnum && spans.length){
+      const bn = bnum.getBoundingClientRect();
+      const first = ink(spans[0]);
+      if (bn.width > 0 && first.left < bn.right + 1 && first.bottom > bn.top && first.top < bn.bottom){
+        const shift = Math.ceil(bn.right + 1 - first.left);
+        spans[0].dataset.shift = String(shift);
+        spans[0].style.transform = 'translateX(' + ((+(spans[0].dataset.align || 0)) + shift) + 'px)';
+      }
+    }
     for (let i=0;i<spans.length-1;i++){
       const a = ink(spans[i]), b = ink(spans[i+1]);
       if (a.right > b.left - 1){
@@ -1384,10 +1409,18 @@ function renderBar(bi, verseIdxs, hasHum){
   const tripCells = new Set();
   VOICES.forEach(v=>layoutVoice(bar,v).forEach((c,i)=>{ if (c.type==="triplet") tripCells.add(i); }));
   const chordCells = Array.from({length:n},()=>"");
+  /* 贝司版：原图在音符上方标「弦.品」（3.3 等），不写和弦名，也不随变调夹移调 */
+  const markMode = !!SCORE.markMode;
   (bar.chords||[]).forEach(([b,label])=>{
     const c = Math.min(n-1,Math.max(0,Math.round(b)));
     chordCells[c] = chordCells[c] ? chordCells[c]+" · "+label : label;
   });
+  if (markMode){
+    (bar.marks||[]).forEach(([b,label])=>{
+      const c = Math.min(n-1,Math.max(0,Math.round(b)));
+      chordCells[c] = chordCells[c] ? chordCells[c]+" · "+label : label;
+    });
+  }
 
   const basis = Math.max(n*1.75 + 0.5, 3.2);
   const EBAR = {thinThick:"endbar-thin-thick", doubleThin:"endbar-double-thin"};
@@ -1407,6 +1440,10 @@ function renderBar(bi, verseIdxs, hasHum){
   if (SCORE.dc && SCORE.dc.to === bi) h += `<span class="dc-mark">Fine</span>`;
   h += `<div class="chordrow" style="grid-template-columns:repeat(${n},minmax(0,1fr))">`;
   chordCells.forEach((c,ci)=>{
+    if (markMode){
+      h += `<span class="fret-mark${ci===0 && c ? ' chord-first' : ''}">${escHtml(c)}</span>`;
+      return;
+    }
     const disp = transposeChordText(c, capo);
     h += `<span class="${ci===0 && c ? 'chord-first' : ''}" data-chord="${escHtml(c)}" title="${escHtml(disp)}">${escHtml(disp)}</span>`;
   });
@@ -1542,7 +1579,7 @@ function layoutRows(){
 function render(){
   const rows = layoutRows();
   scoreEl.classList.toggle("nowrap", !autowrap);
-  scoreEl.classList.toggle("no-chords", SCORE.bars.every(b=>!(b.chords && b.chords.length)));
+  scoreEl.classList.toggle("no-chords", SCORE.bars.every(b=>!(b.chords && b.chords.length) && !(SCORE.markMode && b.marks && b.marks.length)));
   scoreEl.classList.toggle("single-voice", SHOW_VOICES.length === 1);
   scoreEl.innerHTML = "";
   barEls = [];
@@ -1672,6 +1709,8 @@ function drawSystemBrackets(){
     /* 弯钩尾端落在左侧细线的上/下端（S 行顶 / B 行底） */
     const top = rb.top - lb.top;
     const h = eb.bottom - rb.top;
+    /* 嵌入图片谱时 iframe 被隐藏，几何全为 0；跳过，避免生成负高度 SVG */
+    if (!(h > fs * 0.5) || !(lb.width > 0)) return;
     const W = bw + ext;
     const svg = document.createElementNS(NS, "svg");
     svg.setAttribute("class", "sys-bracket");

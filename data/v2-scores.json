@@ -30,15 +30,37 @@
     },
     "lz/008": {
       "file": "data/scores/lz/008.json",
-      "label": "四声部"
+      "label": "四声部",
+      "versions": {
+        "g": {
+          "file": "data/scores/lz/008-g.json",
+          "label": "吉他"
+        }
+      }
     },
     "cl/001": {
       "file": "data/scores/cl/001.json",
-      "label": "旋律"
+      "label": "旋律",
+      "versions": {
+        "b": {
+          "file": "data/scores/cl/001-b.json",
+          "label": "贝司"
+        }
+      }
     },
     "cl/002": {
       "file": "data/scores/cl/002.json",
-      "label": "旋律"
+      "label": "旋律",
+      "versions": {
+        "g": {
+          "file": "data/scores/cl/002-g.json",
+          "label": "吉他"
+        },
+        "b": {
+          "file": "data/scores/cl/002-b.json",
+          "label": "贝司"
+        }
+      }
     }
   }
 }

@@ -1157,6 +1157,10 @@ function makeSongLink(category, song, html) {
     return a;
 }
 
+function versionCode(version) {
+    return ({ '原谱': 'o', '贝司': 'b', '吉他': 'g', '备选': 'a' })[version] || 'o';
+}
+
 function showSong(categoryName, song) {
     loadingOverlay.style.display = 'none';
     loadingIndicator.style.display = 'none';
@@ -1263,12 +1267,14 @@ if (weeklyView.style.display === 'block') {
         }
     } catch (e) {}
 
-    const v2Score = (window.VP2UI && VP2UI.has(categoryName, song.id))
+    const v2Base = (window.VP2UI && VP2UI.has(categoryName, song.id))
         ? VP2UI.scoreFor(categoryName, song.id) : null;
-    currentState.v2Score = v2Score;
+    const v2Ver = v2Base ? VP2UI.versionScore(categoryName, song.id, versionCode(currentState.currentVersion)) : null;
+    currentState.v2Base = v2Base;
+    currentState.v2Score = v2Ver || v2Base;
     currentState.v2ImageMode = false;
-    if (v2Score) {
-        VP2UI.enter(categoryName, song, v2Score);
+    if (currentState.v2Score) {
+        VP2UI.enter(categoryName, song, currentState.v2Score, versionCode(currentState.currentVersion));
     } else {
         if (window.VP2UI) VP2UI.leave();
         loadImage(currentState.currentPage);
@@ -1376,7 +1382,22 @@ function renderVersionButtons() {
             if (version !== currentState.currentVersion) {
                 currentState.currentVersion = version;
                 currentState.currentPage = 1;
-                if (!(currentState.v2Score && !currentState.v2ImageMode)) {
+                const codes = { '原谱': 'o', '贝司': 'b', '吉他': 'g', '备选': 'a' };
+                const vKey = codes[version] || 'o';
+                const base = (window.VP2UI && VP2UI.has(currentState.currentCategory, currentState.currentSong.id))
+                    ? VP2UI.scoreFor(currentState.currentCategory, currentState.currentSong.id) : null;
+                const entry = base ? VP2UI.versionScore(currentState.currentCategory, currentState.currentSong.id, vKey) : null;
+                /* 原谱或该版本已有 JSON → 播放器；该版本只有图片 → 回落到图片谱 */
+                const jsonEntry = vKey === 'o' ? base : entry;
+                currentState.v2Base = base;
+                if (jsonEntry) {
+                    currentState.v2Score = jsonEntry;
+                    currentState.v2ImageMode = false;
+                    VP2UI.enter(currentState.currentCategory, currentState.currentSong, jsonEntry, vKey);
+                } else {
+                    currentState.v2Score = base;
+                    currentState.v2ImageMode = true;
+                    if (base && VP2UI.isActive()) VP2UI.setImageMode(true);
                     loadImage(currentState.currentPage);
                     updatePageIndicator();
                 }

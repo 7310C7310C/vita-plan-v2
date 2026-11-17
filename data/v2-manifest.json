@@ -1,10 +1,25 @@
 {
-  "version": "cc5abb34c084b02e",
+  "version": "73f78a0920ca5bb9",
   "files": [
+    {
+      "path": "data/scores/cl/001-b.json",
+      "hash": "79cd04062d22a6e1563f73efc38ce51d54611b686f826424a6b8a9a05271f351",
+      "size": 3801
+    },
     {
       "path": "data/scores/cl/001.json",
       "hash": "34768a3f525e79c81b8f63c730909311419d850263ba2be43c789b80207c040d",
       "size": 3621
+    },
+    {
+      "path": "data/scores/cl/002-b.json",
+      "hash": "77b08e688b61fd89da5febda597cc689e90fcc995a59cc7121d4045a92d353b7",
+      "size": 9554
+    },
+    {
+      "path": "data/scores/cl/002-g.json",
+      "hash": "0b639eece7f5e1a7bf88c8811178f823feea742ffc73ba8cbd9d5dd26dd6577e",
+      "size": 9190
     },
     {
       "path": "data/scores/cl/002.json",
@@ -15,6 +30,11 @@
       "path": "data/scores/jt/017.json",
       "hash": "1ebc1917127e71fe82b00be25c96900310f4fe27237e7d13d710e011a25c670d",
       "size": 24583
+    },
+    {
+      "path": "data/scores/lz/008-g.json",
+      "hash": "a8d27ac440f7883a13fc0750cc658aad75e354a28a5619cb185a248404017f0c",
+      "size": 7431
     },
     {
       "path": "data/scores/lz/008.json",

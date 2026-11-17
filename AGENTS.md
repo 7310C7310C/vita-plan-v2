@@ -46,6 +46,9 @@ python3 tests/ui_check.py http://127.0.0.1:8080/
 8. 任何新增/修改分数后运行 `python3 scripts/generate_v2_manifest.py`；`check_scores.py` 会校验 manifest 与 mapping。乐谱 JSON 用缓存优先 + 后台 revalidate（`staleWhileRevalidateJson`）：已缓存秒开，后台更新缓存；壳/列表用 SWR（缓存优先，后台更新）；manifest 用网络优先 `no-store` 供同步。
 9. 曲号沿用既有编号，永不重排；删歌留空号。
 10. slur/tie 必须逐条对照原图；修改者与 Reviewer 都必须抽查原图，不得只依据 JSON/测试断言。
+11. 版本谱（吉他/贝司/备选）必须也是 JSON，且与原谱同旋律的小节数/歌词/连音线一致；在 `data/v2-scores.json` 的曲目条目里加 `versions:{g|b|a:{file,label}}`，文件命名为 `<编号>-<g|b|a>.json`，`versionCode` 必须与映射一致。播放器按 `?v=g|b|a` 加载对应 JSON；该版本没有 JSON 时才回落到图片谱。
+11b. 吉他版和弦写**实际音高（原调）**，`capo` 默认 0；原图印的 Capo 3 形状需 +3 半音写入（如 Am→Cm、G/B→Bb/D），乐手手动设 Capo 3 时播放器自动显示回原图形状。不得写死 capo 或自动套用图片上的 Capo。
+11c. 贝司版和弦行改为原图的「弦.品」记号：小节写 `marks:[[拍,"3.3"],…]`，整谱 `markMode:true`，`chords` 留空；记号不随变调夹移调、不弹和弦指法。原图的 `2x/3x/3X` 是重复/空弦记号，照原样写入 `marks`。
 
 ## 资源/部署
 - 改前端资源或 `player-frame.html` 后：同步升 `?v=`、`sw-v2.js` 的 `SHELL_CACHE`，并把 `index.html` 复制为 `404.html`；`check_scores.py` 会检查 SW 是否引用当前版本。

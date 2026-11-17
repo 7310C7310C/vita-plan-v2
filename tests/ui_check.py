@@ -708,6 +708,147 @@ def main() -> int:
                 fail(f"{key} page errors: " + " | ".join(errs[:3]))
             ctx.close()
 
+        # lz008 吉他版：仍是四声部，只把和弦换成原图手写 Capo 3 形状 +3 半音的实际音高
+        ctx, page, frame, errs = open_score(browser, "lz/008")
+        page.click(".version-toggle-button"); page.wait_for_timeout(250)
+        page.click('.version-button:has-text("吉他")'); page.wait_for_timeout(2400)
+        g8 = page.evaluate("VP2UI.isImage()")
+        info8 = frame.locator("body").evaluate("""() => ({
+          chords: [...document.querySelectorAll('.chordrow span')].filter(s=>s.textContent.trim()).map(s=>s.textContent),
+          marks: [...document.querySelectorAll('.fret-mark')].filter(s=>s.textContent.trim()).length,
+          clickable: document.querySelectorAll('.chordrow span[data-chord]').length,
+          voices: document.querySelectorAll('.vrow').length,
+          bars: document.querySelectorAll('.bar').length,
+          capo: (document.getElementById('scoreCapo')||{}).textContent || '' })""")
+        if g8:
+            fail("lz008 吉他: has JSON, must not fall back to the image")
+        if info8["chords"][:3] != ["Eb", "Bb/Ab", "Eb/G"]:
+            fail(f"lz008 吉他: first chords {info8['chords'][:4]} != ['Eb','Bb/Ab','Eb/G']")
+        if info8["marks"]:
+            fail("lz008 吉他: guitar version must not render fret marks")
+        if info8["clickable"] < 15:
+            fail(f"lz008 吉他: chords should be clickable ({info8['clickable']})")
+        if info8["voices"] < 4 or info8["bars"] != 8:
+            fail(f"lz008 吉他: must keep SATB rows and 8 bars ({info8['voices']} voices/{info8['bars']} bars)")
+        if info8["capo"]:
+            fail(f"lz008 吉他: capo must default to 0 (badge {info8['capo']!r})")
+        # Capo 3 时必须显示回原图手写形状（根音与斜杠低音一起回退，降号记法保持）
+        page.click("#v2MenuBtn"); page.wait_for_timeout(250)
+        page.select_option("#v2Capo", "3"); page.wait_for_timeout(900)
+        shapes = frame.locator("body").evaluate("""() => [...document.querySelectorAll('.chordrow span')]
+              .map(s=>s.textContent.trim()).filter(Boolean)""")
+        want = ["C", "G/F", "C/E", "G/D", "C", "G/B", "C", "Am", "D/F#", "G",
+                "C/E", "F/A", "C/G", "F6", "Bb/F", "C/E", "F/A", "C", "G", "C"]
+        if shapes != want:
+            fail(f"lz008 吉他 capo 3: shapes {shapes} != printed chart {want}")
+        page.select_option("#v2Capo", "0"); page.wait_for_timeout(500)
+        page.click("#v2MenuBtn"); page.wait_for_timeout(250)
+        page.click(".version-toggle-button"); page.wait_for_timeout(250)
+        page.click('.version-button:has-text("原谱")'); page.wait_for_timeout(2400)
+        if page.evaluate("VP2UI.isImage()"):
+            fail("lz008: switching back to 原谱 should stay in JSON mode")
+        if "v=" in page.url:
+            fail(f"lz008: switching back to 原谱 leaves version in URL ({page.url})")
+        if errs:
+            fail("lz008 吉他 page errors: " + " | ".join(errs[:3]))
+        ctx.close()
+
+        # cl001 贝司版：12 个弦.品记号，无和弦弹窗
+        ctx, page, frame, errs = open_score(browser, "cl/001?v=b")
+        b1 = frame.locator("body").evaluate("""() => ({
+          chords: [...document.querySelectorAll('.chordrow span')].filter(s=>s.textContent.trim()).map(s=>s.textContent),
+          marks: [...document.querySelectorAll('.fret-mark')].filter(s=>s.textContent.trim()).length,
+          clickable: [...document.querySelectorAll('.chordrow span[data-chord]')].filter(s=>s.textContent.trim()).length,
+          bars: document.querySelectorAll('.bar').length })""")
+        if b1["marks"] != 12:
+            fail(f"cl001?v=b: expected 12 fret marks, got {b1['marks']}")
+        if b1["clickable"]:
+            fail(f"cl001?v=b: fret marks must not open the chord popup ({b1['clickable']})")
+        if b1["chords"][:2] != ["2X", "3X"] or "3.2" not in b1["chords"]:
+            fail(f"cl001?v=b: marks {b1['chords'][:4]} != ['2X','3X',...,'3.2']")
+        if b1["bars"] != 8:
+            fail(f"cl001?v=b: expected 8 bars, got {b1['bars']}")
+        if errs:
+            fail("cl001?v=b page errors: " + " | ".join(errs[:3]))
+        ctx.close()
+
+        # 版本没有 JSON 的模式：把 versionScore 临时置空，点「吉他」应回落图片谱
+        ctx, page, frame, errs = open_score(browser, "cl/002")
+        page.evaluate("VP2UI.versionScore = () => null")
+        page.click(".version-toggle-button"); page.wait_for_timeout(250)
+        page.click('.version-button:has-text("吉他")'); page.wait_for_timeout(1800)
+        fb = page.evaluate("""() => ({
+          image: VP2UI.isImage(),
+          src: (document.getElementById('sheet-image') || {}).getAttribute ? document.getElementById('sheet-image').getAttribute('src') : '' })""")
+        if not fb["image"] or "垂怜曲_002" not in fb["src"] or "吉他" not in fb["src"]:
+            fail(f"version without JSON: should fall back to the version image, got {fb}")
+        if errs:
+            fail("version fallback page errors: " + " | ".join(errs[:3]))
+        ctx.close()
+
+        # version JSONs: 吉他 / 贝司 与原谱同一旋律，和弦改为实际音高 / 弦.品记号
+        for vkey, label, expect_chord in (("g", "吉他", "Cm"), ("b", "贝司", None)):
+            ctx, page, frame, errs = open_score(browser, f"cl/002?v={vkey}")
+            info = frame.locator("body").evaluate("""() => ({
+              chords: [...document.querySelectorAll('.chordrow span')].filter(s=>s.textContent.trim()).map(s=>s.textContent),
+              marks: [...document.querySelectorAll('.fret-mark')].filter(s=>s.textContent.trim()).length,
+              clickable: document.querySelectorAll('.chordrow span[data-chord]').length,
+              first_clickable: !!(document.querySelector('.chordrow span[data-chord]')||{}).getAttribute,
+              capo: document.getElementById('scoreCapo') ? document.getElementById('scoreCapo').textContent : ''
+            })""")
+            if label == "吉他":
+                if not info["chords"] or info["chords"][0] != expect_chord:
+                    fail(f"cl002?v=g: first chord {info['chords'][:2]} != {expect_chord}")
+                if info["marks"]:
+                    fail("cl002?v=g: guitar version must not render fret marks")
+                if not info["first_clickable"]:
+                    fail("cl002?v=g: chords are not clickable")
+            else:
+                if info["marks"] != 40 or info["clickable"]:
+                    fail(f"cl002?v=b: expected 40 fret marks and no clickable chords ({info})")
+                if info["chords"] and info["chords"][0] != "3.3":
+                    fail(f"cl002?v=b: first mark {info['chords'][:2]} != '3.3'")
+            if info["capo"]:
+                fail(f"cl002?v={vkey}: capo must default to 0 (badge {info['capo']!r})")
+            if errs:
+                fail(f"cl002?v={vkey} page errors: " + " | ".join(errs[:3]))
+            ctx.close()
+
+        # version switch in the UI: 原谱 -> 吉他 (chords change, URL ?v=g) -> 原谱 (chords gone)
+        ctx, page, frame, errs = open_score(browser, "cl/002")
+        page.click(".version-toggle-button"); page.wait_for_timeout(250)
+        page.click('.version-button:has-text("吉他")'); page.wait_for_timeout(2400)
+        g = frame.locator("body").evaluate("""() => ({
+          first: (document.querySelector('.chordrow span')||{}).textContent || '',
+          marks: document.querySelectorAll('.fret-mark').length })""")
+        if g["first"] != "Cm" or g["marks"]:
+            fail(f"cl002 version switch to 吉他: {g}")
+        if "v=g" not in page.url:
+            fail(f"cl002 version switch: URL missing ?v=g ({page.url})")
+        page.click(".version-toggle-button"); page.wait_for_timeout(250)
+        page.click('.version-button:has-text("原谱")'); page.wait_for_timeout(2400)
+        o = frame.locator("body").evaluate("""() => [...document.querySelectorAll('.chordrow span[data-chord]')]
+              .filter(s=>s.textContent.trim()).length""")
+        if o:
+            fail(f"cl002 switch back to 原谱: still renders {o} chords")
+        if "v=" in page.url:
+            fail(f"cl002 switch back to 原谱: URL still has version ({page.url})")
+        if errs:
+            fail("cl002 version switch page errors: " + " | ".join(errs[:3]))
+        ctx.close()
+
+        # capo transposes sounding chords back to the printed shapes (Eb - 3 = C)
+        ctx, page, frame, errs = open_score(browser, "cl/002?v=g")
+        page.click("#v2MenuBtn"); page.wait_for_timeout(250)
+        page.select_option("#v2Capo", "3"); page.wait_for_timeout(900)
+        capo = frame.locator("body").evaluate("""() => ({
+          first: (document.querySelector('.chordrow span')||{}).textContent || '',
+          badge: (document.getElementById('scoreCapo')||{}).textContent || '' })""")
+        if capo["first"] != "Am" or "Capo 3" not in capo["badge"]:
+            fail(f"capo 3 should show the printed capo-3 shape (Am) with badge, got {capo}")
+        page.select_option("#v2Capo", "0"); page.wait_for_timeout(500)
+        ctx.close()
+
         browser.close()
 
     if errors:
