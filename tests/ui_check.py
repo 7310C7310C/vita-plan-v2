@@ -57,7 +57,11 @@ def main() -> int:
             const bar = document.querySelector('.bar[data-bar="'+i+'"]');
             const cs = [...bar.querySelectorAll('.chordrow span')].filter(s=>s.textContent.trim());
             const ts = [...bar.querySelectorAll('.tail')].map(t=>t.getBoundingClientRect().x + t.getBoundingClientRect().width/2);
-            out[i] = cs.map(s=>({name:s.textContent, c:s.getBoundingClientRect().x + s.getBoundingClientRect().width/2, tails:ts}));
+            out[i] = cs.map(s=>{
+              const r=document.createRange(); r.selectNodeContents(s);
+              const tr=r.getBoundingClientRect();
+              return {name:s.textContent, c:(tr.left+tr.right)/2, tails:ts};
+            });
           });
           return out;
         }""")
