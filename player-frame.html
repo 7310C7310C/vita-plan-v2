@@ -1460,11 +1460,11 @@ function render(){
     const gutter = document.createElement("div");
     gutter.className = "gutter";
     let gh = `<div class="g-cell g-bnum"></div><div class="g-cell g-chord"></div>`;
-    if (SHOW_VOICES.indexOf("S")>=0) gh += `<div class="g-cell g-voice" data-gv="S">S</div>`;
-    if (SHOW_VOICES.indexOf("A")>=0) gh += `<div class="g-cell g-voice" data-gv="A">A</div>`;
+    if (SHOW_VOICES.length>1 && SHOW_VOICES.indexOf("S")>=0) gh += `<div class="g-cell g-voice" data-gv="S">S</div>`;
+    if (SHOW_VOICES.length>1 && SHOW_VOICES.indexOf("A")>=0) gh += `<div class="g-cell g-voice" data-gv="A">A</div>`;
     gh += VERSE_LABELS.map(v=>`<div class="g-cell g-lyr">${v}</div>`).join("");
-    if (SHOW_VOICES.indexOf("T")>=0) gh += `<div class="g-cell g-voice" data-gv="T">T</div>`;
-    if (SHOW_VOICES.indexOf("B")>=0) gh += `<div class="g-cell g-voice" data-gv="B">B</div>`;
+    if (SHOW_VOICES.length>1 && SHOW_VOICES.indexOf("T")>=0) gh += `<div class="g-cell g-voice" data-gv="T">T</div>`;
+    if (SHOW_VOICES.length>1 && SHOW_VOICES.indexOf("B")>=0) gh += `<div class="g-cell g-voice" data-gv="B">B</div>`;
     gutter.innerHTML = gh;
     const barsWrap = document.createElement("div");
     barsWrap.className = "bars";

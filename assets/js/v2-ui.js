@@ -223,6 +223,11 @@
     });
     const all = document.getElementById('v2PartsAll');
     if (all) all.style.display = list.length > 1 ? '' : 'none';
+    const anyPart = document.querySelector('#v2Menu [data-part]');
+    if (anyPart){
+      const row = anyPart.closest('.v2-row');
+      if (row) row.style.display = list.length > 1 ? '' : 'none';
+    }
   }
   function syncParts(parts){
     if (!parts) return;

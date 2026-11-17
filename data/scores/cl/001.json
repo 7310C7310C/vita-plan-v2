@@ -379,7 +379,14 @@
    "怜"
   ]
  ],
- "slurs": [],
+ "slurs": [
+  [
+   6,
+   "S",
+   0,
+   1
+  ]
+ ],
  "ties": [],
  "dc": null,
  "repeat": null
