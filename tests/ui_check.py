@@ -418,6 +418,16 @@ def main() -> int:
                     if "linear-gradient" not in selbg:
                         fail("selected bar lost its barline background image")
                     frame.locator('body').evaluate("()=>document.querySelector('.bar').classList.remove('sel')")
+                    pf = frame.locator('body').evaluate("""() => {
+                      const bar=document.querySelector('.bar'); bar.classList.add('playing');
+                      const f=bar.querySelector('.play-frame');
+                      const cs=getComputedStyle(f);
+                      const out={d:cs.display,l:parseFloat(cs.left),r:parseFloat(cs.right)};
+                      bar.classList.remove('playing');
+                      return out;
+                    }""")
+                    if pf["d"] != "block" or pf["l"] < 1 or pf["r"] < 1:
+                        fail(f"playing frame must be inset from barlines: {pf}")
                     capo_val = page.locator("#v2Capo").input_value() if page.locator("#v2Capo").count() else "0"
                     if capo_val != "0":
                         fail(f"jt017: capo must default to 0, got {capo_val}")
