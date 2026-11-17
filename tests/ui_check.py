@@ -92,6 +92,9 @@ def main() -> int:
         n = frame.locator(".slur-layer path").count()
         if n < 20:
             fail(f"cl002: slur paths {n} < 20")
+        lab = frame.locator(".line").first.locator(".gutter .g-lyr").inner_text().strip()
+        if lab:
+            fail(f"cl002 single verse must not carry a verse number, got {lab!r}")
         if errs:
             fail("cl002 page errors: " + " | ".join(errs[:4]))
         ctx.close()
@@ -126,6 +129,15 @@ def main() -> int:
         g = frame.locator(".line").first.locator(".gutter .g-lyr").count()
         if g != 1:
             fail(f"jt017 first line gutter lyric labels {g}, expected 1")
+        first_label = frame.locator(".line").first.locator(".gutter .g-lyr").inner_text().strip()
+        if first_label:
+            fail(f"jt017 shared main verse must not carry a verse number, got {first_label!r}")
+        split_labels = frame.locator("body").evaluate("""() => {
+          const line = [...document.querySelectorAll('.line')].find(l=>l.querySelector('.bar[data-bar="16"]'));
+          return line ? [...line.querySelectorAll('.gutter .g-lyr')].map(x=>x.textContent.trim()) : null;
+        }""")
+        if split_labels != ["1.", "2.", "3."]:
+            fail(f"jt017 verse labels after divergence {split_labels!r}, expected ['1.','2.','3.']")
         dc = frame.locator('.bar[data-bar="31"] .dc-mark').inner_text()
         fine = frame.locator('.bar[data-bar="15"] .dc-mark').inner_text()
         if dc != "D.C. al Fine":

@@ -1493,7 +1493,8 @@ function render(){
     if (SHOW_VOICES.length>1 && SHOW_VOICES.indexOf("A")>=0) gh += `<div class="g-cell g-voice" data-gv="A">A</div>`;
     const visVerses = SCORE.lyrics.map((_,vi)=>vi)
       .filter(vi=>vi===0 || LYRIC_SPLIT<0 || bars.some(bi=>barVerseSplit(bi)));
-    gh += visVerses.map(vi=>`<div class="g-cell g-lyr">${VERSE_LABELS[vi]}</div>`).join("");
+    const showVerseLabels = visVerses.length > 1;
+    gh += visVerses.map(vi=>`<div class="g-cell g-lyr">${showVerseLabels?VERSE_LABELS[vi]:""}</div>`).join("");
     if (SHOW_VOICES.length>1 && SHOW_VOICES.indexOf("T")>=0) gh += `<div class="g-cell g-voice" data-gv="T">T</div>`;
     if (SHOW_VOICES.length>1 && SHOW_VOICES.indexOf("B")>=0) gh += `<div class="g-cell g-voice" data-gv="B">B</div>`;
     gutter.innerHTML = gh;
