@@ -204,17 +204,49 @@ def main() -> int:
             root_cls = (frame.locator("#score").get_attribute("class") or "").split()
             if ("single-voice" in root_cls) != single:
                 fail(f"{key}: single-voice class {('single-voice' in root_cls)}, expected {single}")
+            n_lines = frame.locator(".line").count()
+            n_first = frame.locator(".bar.line-first").count()
+            if n_first != n_lines:
+                fail(f"{key}: line-first bars {n_first}, lines {n_lines}")
+            n_brackets = frame.locator(".sys-bracket").count()
             if single:
+                if n_brackets:
+                    fail(f"{key}: single-voice score draws {n_brackets} system brackets")
                 bw = frame.locator(".gutter").first.evaluate("el=>getComputedStyle(el).borderRightWidth")
                 if bw not in ("0px", "0"):
                     fail(f"{key}: single-voice gutter still draws bracket line ({bw})")
-                n_lines = frame.locator(".line").count()
-                n_first = frame.locator(".bar.line-first").count()
-                if n_first != n_lines:
-                    fail(f"{key}: line-first bars {n_first}, lines {n_lines}")
                 fl = frame.locator(".bar.line-first").first.evaluate("el=>getComputedStyle(el).borderLeftWidth")
                 if fl not in ("0px", "0"):
                     fail(f"{key}: single-voice line start still draws a left line ({fl})")
+            else:
+                if n_brackets != n_lines:
+                    fail(f"{key}: system brackets {n_brackets}, lines {n_lines}")
+                geo = frame.locator("body").evaluate("""() => {
+                  const line = document.querySelector('.line');
+                  const sv = line.querySelector('.sys-bracket');
+                  const bar = line.querySelector('.bar');
+                  const rows = bar.querySelectorAll('.vrow');
+                  if (!sv || !rows.length) return null;
+                  const sr = sv.getBoundingClientRect(), br = bar.getBoundingClientRect();
+                  const tr = rows[0].getBoundingClientRect(), er = rows[rows.length-1].getBoundingClientRect();
+                  return {top: tr.top - sr.top, bottom: sr.bottom - er.bottom,
+                          gap: br.left - sr.right,
+                          sw: parseFloat(getComputedStyle(sv.querySelector('path')).strokeWidth)};
+                }""")
+                if not geo:
+                    fail(f"{key}: system bracket/rows missing")
+                else:
+                    if not (-2 <= geo["top"] <= 8):
+                        fail(f"{key}: bracket top offset {geo['top']:.1f}px not at first voice row")
+                    if not (-2 <= geo["bottom"] <= 8):
+                        fail(f"{key}: bracket bottom offset {geo['bottom']:.1f}px not at last voice row")
+                    if not (0 <= geo["gap"] <= 3):
+                        fail(f"{key}: bracket gap to first barline {geo['gap']:.1f}px")
+                    if geo["sw"] < 1.5:
+                        fail(f"{key}: bracket stroke too thin ({geo['sw']}px)")
+                fl = frame.locator(".bar.line-first").first.evaluate("el=>getComputedStyle(el).borderLeftWidth")
+                if fl in ("0px", "0"):
+                    fail(f"{key}: multi-voice first bar lost its thin barline")
             if errs:
                 fail(f"{key} page errors: " + " | ".join(errs[:3]))
             ctx.close()
