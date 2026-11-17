@@ -215,9 +215,9 @@ def main() -> int:
                 bw = frame.locator(".gutter").first.evaluate("el=>getComputedStyle(el).borderRightWidth")
                 if bw not in ("0px", "0"):
                     fail(f"{key}: single-voice gutter still draws bracket line ({bw})")
-                fl = frame.locator(".bar.line-first").first.evaluate("el=>getComputedStyle(el).borderLeftWidth")
-                if fl not in ("0px", "0"):
-                    fail(f"{key}: single-voice line start still draws a left line ({fl})")
+                fl = frame.locator(".bar.line-first").first.evaluate("el=>getComputedStyle(el).backgroundImage")
+                if fl != "none":
+                    fail(f"{key}: single-voice line start still draws a left line ({fl[:30]})")
             else:
                 if n_brackets != n_lines:
                     fail(f"{key}: system brackets {n_brackets}, lines {n_lines}")
@@ -249,8 +249,8 @@ def main() -> int:
                         fail(f"{key}: bracket bar too thin ({geo['rectW']:.1f}px)")
                     if geo["reach"] < 3:
                         fail(f"{key}: bracket flags do not reach the staff ({geo['reach']:.1f}px)")
-                fl = frame.locator(".bar.line-first").first.evaluate("el=>getComputedStyle(el).borderLeftWidth")
-                if fl in ("0px", "0"):
+                fl = frame.locator(".bar.line-first").first.evaluate("el=>getComputedStyle(el).backgroundImage")
+                if "linear-gradient" not in fl:
                     fail(f"{key}: multi-voice first bar lost its thin barline")
                 rs = frame.locator(".bar.repeat-start.line-first").first
                 if rs.count():
@@ -277,6 +277,14 @@ def main() -> int:
                         fail(f"jt017 bar2: bar number not vertically aligned with chord row ({bn['ncy']:.1f} vs {bn['ccy']:.1f})")
                     if bn["pos"] != "absolute":
                         fail(f"jt017 bar2: bar number is not absolutely positioned ({bn['pos']})")
+                    st = frame.locator('.bar[data-bar="1"]').evaluate("""el=>{
+                      const cs=getComputedStyle(el);
+                      return {bw:cs.borderLeftWidth, bg:cs.backgroundImage};
+                    }""")
+                    if st["bw"] not in ("0px", "0"):
+                        fail(f"jt017 bar2: barline still uses a full-height border ({st['bw']})")
+                    if "linear-gradient" not in st["bg"]:
+                        fail("jt017 bar2: barline background missing")
             if key == "lz/019":
                 row = frame.locator('.bar[data-bar="0"] .vrow[data-vrow="S"]')
                 nb = row.locator('.group-beam').count()
