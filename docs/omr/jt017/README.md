@@ -1,6 +1,7 @@
 # jt017 天上的耶路撒冷 — OMR/原图核对记录
 
 - 原图：`img/进堂咏/进堂咏_017_天上的耶路撒冷_1.jpeg`
+- Dolce OMR 记录：`dolce-v0.8.8.123`、`dolce-v0.8.8.musicxml`，由 `lodebar2026/dolce` v0.8.8（defb759）Linux CLI 于 2026-11-17 生成（命令：`omr <原图> -f 123|musicxml -o ... --kind=jianpu`）。OMR 只作初稿；第11小节 A 首拍、第13小节 B 的用户校正优先于 OMR/原图。
 - 转写来源：旧版手工转写 `kcan-new/build017.py`（不在本仓库），**目前没有 Dolce OMR 输出记录**。按 AGENTS 规则，下一次改谱前必须先用 `lodebar2026/dolce` 生成并保存到本目录。
 - 2026-11-17 前段（1–16 小节）S 声部逐条核对：
   - 第 3 小节：两条同起点 slur（2 拍后半→3 拍、→4 拍）。

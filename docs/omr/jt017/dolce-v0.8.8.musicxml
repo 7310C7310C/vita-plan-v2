@@ -1,0 +1,3769 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">
+<score-partwise version="3.1">
+  <work>
+    <work-title>天上的耶路撒冷</work-title>
+  </work>
+  <identification>
+    <creator type="composer">Sandrine-Emmanuelle Vongue</creator>
+    <creator type="composer">中譯：大博爾明供聖禮祈禱會</creator>
+    <encoding>
+      <software>Dolce</software>
+    </encoding>
+  </identification>
+  <credit page="1">
+    <credit-type>title</credit-type>
+    <credit-words>天上的耶路撒冷</credit-words>
+  </credit>
+  <credit page="1">
+    <credit-type>subtitle</credit-type>
+    <credit-words>Céleste Jérusalem</credit-words>
+  </credit>
+  <credit page="1">
+    <credit-type>composer</credit-type>
+    <credit-words>Sandrine-Emmanuelle Vongue</credit-words>
+  </credit>
+  <credit page="1">
+    <credit-type>composer</credit-type>
+    <credit-words>中譯：大博爾明供聖禮祈禱會</credit-words>
+  </credit>
+  <part-list>
+    <score-part id="P1">
+      <part-name print-object="no"/>
+    </score-part>
+    <score-part id="P2">
+      <part-name print-object="no"/>
+    </score-part>
+    <score-part id="P3">
+      <part-name print-object="no"/>
+    </score-part>
+    <score-part id="P4">
+      <part-name print-object="no"/>
+    </score-part>
+  </part-list>
+  <part id="P1">
+    <measure number="1">
+      <attributes>
+        <divisions>48</divisions>
+        <key>
+          <fifths>2</fifths>
+        </key>
+        <time>
+          <beats>2</beats>
+          <beat-type>2</beat-type>
+        </time>
+      </attributes>
+      <direction placement="above">
+        <direction-type>
+          <metronome>
+            <beat-unit>quarter</beat-unit>
+            <per-minute>100</per-minute>
+          </metronome>
+        </direction-type>
+        <sound tempo="100"/>
+      </direction>
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="2">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>144</duration>
+        <voice>1</voice>
+        <type>half</type>
+        <dot/>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="3">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>24</duration>
+        <voice>1</voice>
+        <type>eighth</type>
+        <beam number="1">begin</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>24</duration>
+        <voice>1</voice>
+        <type>eighth</type>
+        <beam number="1">end</beam>
+        <notations>
+          <slur type="start" number="1"/>
+        </notations>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <notations>
+          <slur type="stop" number="1"/>
+        </notations>
+      </note>
+    </measure>
+    <measure number="4">
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+      </note>
+    </measure>
+    <measure number="5">
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>96</duration>
+        <voice>1</voice>
+        <type>half</type>
+      </note>
+      <note>
+        <pitch>
+          <step>F</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>F</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="6">
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>144</duration>
+        <voice>1</voice>
+        <type>half</type>
+        <dot/>
+      </note>
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="7">
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>F</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>24</duration>
+        <voice>1</voice>
+        <type>eighth</type>
+        <beam number="1">begin</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>F</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>24</duration>
+        <tie type="start"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <beam number="1">end</beam>
+        <notations>
+          <tied type="start" number="1"/>
+        </notations>
+      </note>
+      <note>
+        <pitch>
+          <step>F</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <tie type="stop"/>
+        <voice>1</voice>
+        <type>quarter</type>
+        <notations>
+          <tied type="stop" number="1"/>
+        </notations>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="8">
+      <note>
+        <pitch>
+          <step>E</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+      </note>
+    </measure>
+    <measure number="9">
+      <print new-system="yes"/>
+      <note>
+        <pitch>
+          <step>E</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="10">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>144</duration>
+        <voice>1</voice>
+        <type>half</type>
+        <dot/>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="11">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>24</duration>
+        <voice>1</voice>
+        <type>eighth</type>
+        <beam number="1">begin</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>24</duration>
+        <tie type="start"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <beam number="1">end</beam>
+        <notations>
+          <tied type="start" number="1"/>
+        </notations>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <tie type="stop"/>
+        <voice>1</voice>
+        <type>quarter</type>
+        <notations>
+          <tied type="stop" number="1"/>
+        </notations>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="12">
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+      </note>
+    </measure>
+    <measure number="13">
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>144</duration>
+        <voice>1</voice>
+        <type>half</type>
+        <dot/>
+      </note>
+      <note>
+        <pitch>
+          <step>F</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>24</duration>
+        <voice>1</voice>
+        <type>eighth</type>
+        <beam number="1">begin</beam>
+        <notations>
+          <slur type="start" number="1"/>
+        </notations>
+      </note>
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>24</duration>
+        <voice>1</voice>
+        <type>eighth</type>
+        <beam number="1">end</beam>
+        <notations>
+          <slur type="stop" number="1"/>
+        </notations>
+      </note>
+    </measure>
+    <measure number="14">
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>96</duration>
+        <voice>1</voice>
+        <type>half</type>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>96</duration>
+        <voice>1</voice>
+        <type>half</type>
+      </note>
+    </measure>
+    <measure number="15">
+      <note>
+        <pitch>
+          <step>F</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>24</duration>
+        <voice>1</voice>
+        <type>eighth</type>
+        <beam number="1">begin</beam>
+        <notations>
+          <slur type="start" number="1"/>
+        </notations>
+      </note>
+      <note>
+        <pitch>
+          <step>E</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>24</duration>
+        <voice>1</voice>
+        <type>eighth</type>
+        <beam number="1">end</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>E</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <notations>
+          <slur type="stop" number="1"/>
+        </notations>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="16">
+      <direction placement="above">
+        <direction-type>
+          <words>Fine</words>
+        </direction-type>
+        <offset>192</offset>
+        <sound fine="yes"/>
+      </direction>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+      </note>
+      <barline location="right">
+        <bar-style>light-light</bar-style>
+      </barline>
+    </measure>
+    <measure number="17">
+      <print new-system="yes"/>
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>F</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>1.羔</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>2.主</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>3.如</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>羊</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>會</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>今</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>將</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>同</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>正</text>
+        </lyric>
+      </note>
+    </measure>
+    <measure number="18">
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>96</duration>
+        <voice>1</voice>
+        <type>half</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>是</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>我</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>是</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>我</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>們</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>救</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <tie type="start"/>
+        <voice>1</voice>
+        <type>quarter</type>
+        <notations>
+          <tied type="start" number="1"/>
+        </notations>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>們</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>住</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>恩</text>
+        </lyric>
+      </note>
+    </measure>
+    <measure number="19">
+      <note>
+        <pitch>
+          <step>B</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <tie type="stop"/>
+        <voice>1</voice>
+        <type>quarter</type>
+        <notations>
+          <tied type="stop" number="1"/>
+        </notations>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>的</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>在</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>的</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>明</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>一</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>時</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <tie type="start"/>
+        <voice>1</voice>
+        <type>quarter</type>
+        <notations>
+          <tied type="start" number="1"/>
+        </notations>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>燈</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>起</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>日</text>
+        </lyric>
+      </note>
+    </measure>
+    <measure number="20">
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>192</duration>
+        <tie type="stop"/>
+        <voice>1</voice>
+        <type>whole</type>
+        <notations>
+          <tied type="stop" number="1"/>
+        </notations>
+      </note>
+    </measure>
+    <measure number="21">
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>不</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>他</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>我</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>E</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>會</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>會</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>們</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>F</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>需</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>擦</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>主</text>
+        </lyric>
+      </note>
+    </measure>
+    <measure number="22">
+      <note>
+        <pitch>
+          <step>F</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>96</duration>
+        <voice>1</voice>
+        <type>half</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>要</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>乾</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>的</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>F</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>太</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>我</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>全</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <tie type="start"/>
+        <voice>1</voice>
+        <type>quarter</type>
+        <notations>
+          <tied type="start" number="1"/>
+        </notations>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>陽</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>們</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>能</text>
+        </lyric>
+      </note>
+    </measure>
+    <measure number="23">
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>96</duration>
+        <tie type="stop"/>
+        <voice>1</voice>
+        <type>half</type>
+        <notations>
+          <tied type="stop" number="1"/>
+        </notations>
+      </note>
+      <note>
+        <pitch>
+          <step>F</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>光</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>的</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>和</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>淚</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>國</text>
+        </lyric>
+      </note>
+    </measure>
+    <measure number="24">
+      <note>
+        <pitch>
+          <step>E</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>照</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>水</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>度</text>
+        </lyric>
+      </note>
+    </measure>
+    <measure number="25">
+      <print new-system="yes"/>
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>永</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>沒</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>住</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>5</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>遠</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>有</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>在</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <alter>1</alter>
+          <octave>5</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>不</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>哀</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>高</text>
+        </lyric>
+      </note>
+    </measure>
+    <measure number="26">
+      <note>
+        <pitch>
+          <step>C</step>
+          <alter>1</alter>
+          <octave>5</octave>
+        </pitch>
+        <duration>96</duration>
+        <voice>1</voice>
+        <type>half</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>會</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>嚎</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>天</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>再</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>沒</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>的</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <tie type="start"/>
+        <voice>1</voice>
+        <type>quarter</type>
+        <notations>
+          <tied type="start" number="1"/>
+        </notations>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>有</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>有</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>都</text>
+        </lyric>
+      </note>
+    </measure>
+    <measure number="27">
+      <note>
+        <pitch>
+          <step>B</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <tie type="stop"/>
+        <voice>1</voice>
+        <type>quarter</type>
+        <notations>
+          <tied type="stop" number="1"/>
+        </notations>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>歡</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>黑</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>苦</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>樂</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <tie type="start"/>
+        <voice>1</voice>
+        <type>quarter</type>
+        <notations>
+          <tied type="start" number="1"/>
+        </notations>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>夜</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>楚</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>吧</text>
+        </lyric>
+      </note>
+    </measure>
+    <measure number="28">
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>192</duration>
+        <tie type="stop"/>
+        <voice>1</voice>
+        <type>whole</type>
+        <notations>
+          <tied type="stop" number="1"/>
+        </notations>
+      </note>
+    </measure>
+    <measure number="29">
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>主</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>因</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>祂</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>E</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>會</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>為</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>要</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>F</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>給</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>以</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>為</text>
+        </lyric>
+      </note>
+    </measure>
+    <measure number="30">
+      <note>
+        <pitch>
+          <step>F</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>96</duration>
+        <voice>1</voice>
+        <type>half</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>我</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>前</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>王</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>F</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>們</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>的</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>直</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <tie type="start"/>
+        <voice>1</voice>
+        <type>quarter</type>
+        <notations>
+          <tied type="start" number="1"/>
+        </notations>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>祂</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>事</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>到</text>
+        </lyric>
+      </note>
+    </measure>
+    <measure number="31">
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>96</duration>
+        <tie type="stop"/>
+        <voice>1</voice>
+        <type>half</type>
+        <notations>
+          <tied type="stop" number="1"/>
+        </notations>
+      </note>
+      <note>
+        <pitch>
+          <step>F</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>的</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>過</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>永</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>光</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>去</text>
+        </lyric>
+      </note>
+    </measure>
+    <measure number="32">
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>明</text>
+        </lyric>
+        <lyric number="2">
+          <syllabic>single</syllabic>
+          <text>了</text>
+        </lyric>
+        <lyric number="3">
+          <syllabic>single</syllabic>
+          <text>遠</text>
+        </lyric>
+      </note>
+      <barline location="right">
+        <bar-style>light-heavy</bar-style>
+      </barline>
+    </measure>
+  </part>
+  <part id="P2">
+    <measure number="1">
+      <attributes>
+        <divisions>48</divisions>
+        <key>
+          <fifths>2</fifths>
+        </key>
+        <time>
+          <beats>2</beats>
+          <beat-type>2</beat-type>
+        </time>
+      </attributes>
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>我</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>們</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>家</text>
+        </lyric>
+      </note>
+    </measure>
+    <measure number="2">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>144</duration>
+        <voice>1</voice>
+        <type>half</type>
+        <dot/>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>鄉</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>原</text>
+        </lyric>
+      </note>
+    </measure>
+    <measure number="3">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>是</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>24</duration>
+        <voice>1</voice>
+        <type>eighth</type>
+        <beam number="1">begin</beam>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>在</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>24</duration>
+        <voice>1</voice>
+        <type>eighth</type>
+        <beam number="1">end</beam>
+        <notations>
+          <slur type="start" number="1"/>
+        </notations>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>天</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>E</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <notations>
+          <slur type="stop" number="1"/>
+        </notations>
+      </note>
+    </measure>
+    <measure number="4">
+      <note>
+        <pitch>
+          <step>F</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>192</duration>
+        <tie type="start"/>
+        <voice>1</voice>
+        <type>whole</type>
+        <notations>
+          <tied type="start" number="1"/>
+        </notations>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>上</text>
+        </lyric>
+      </note>
+    </measure>
+    <measure number="5">
+      <note>
+        <pitch>
+          <step>F</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>96</duration>
+        <tie type="stop"/>
+        <voice>1</voice>
+        <type>half</type>
+        <notations>
+          <tied type="stop" number="1"/>
+        </notations>
+      </note>
+      <note>
+        <pitch>
+          <step>F</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>我</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>F</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>們</text>
+        </lyric>
+      </note>
+    </measure>
+    <measure number="6">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>144</duration>
+        <voice>1</voice>
+        <type>half</type>
+        <dot/>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>將</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>看</text>
+        </lyric>
+      </note>
+    </measure>
+    <measure number="7">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>羔</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>24</duration>
+        <voice>1</voice>
+        <type>eighth</type>
+        <beam number="1">begin</beam>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>羊</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>24</duration>
+        <tie type="start"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <beam number="1">end</beam>
+        <notations>
+          <tied type="start" number="1"/>
+        </notations>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>的</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <tie type="stop"/>
+        <voice>1</voice>
+        <type>quarter</type>
+        <notations>
+          <tied type="stop" number="1"/>
+        </notations>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>新</text>
+        </lyric>
+      </note>
+    </measure>
+    <measure number="8">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>娘</text>
+        </lyric>
+      </note>
+    </measure>
+    <measure number="9">
+      <print new-system="yes"/>
+      <note>
+        <pitch>
+          <step>C</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>穿</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>上</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>天</text>
+        </lyric>
+      </note>
+    </measure>
+    <measure number="10">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>144</duration>
+        <voice>1</voice>
+        <type>half</type>
+        <dot/>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>主</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>那</text>
+        </lyric>
+      </note>
+    </measure>
+    <measure number="11">
+      <note>
+        <pitch>
+          <step>C</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>華</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>24</duration>
+        <voice>1</voice>
+        <type>eighth</type>
+        <beam number="1">begin</beam>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>麗</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>24</duration>
+        <tie type="start"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <beam number="1">end</beam>
+        <notations>
+          <tied type="start" number="1"/>
+        </notations>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>的</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <tie type="stop"/>
+        <voice>1</voice>
+        <type>quarter</type>
+        <notations>
+          <tied type="stop" number="1"/>
+        </notations>
+      </note>
+      <note>
+        <pitch>
+          <step>E</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>榮</text>
+        </lyric>
+      </note>
+    </measure>
+    <measure number="12">
+      <note>
+        <pitch>
+          <step>F</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>192</duration>
+        <tie type="start"/>
+        <voice>1</voice>
+        <type>whole</type>
+        <notations>
+          <tied type="start" number="1"/>
+        </notations>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>耀</text>
+        </lyric>
+      </note>
+    </measure>
+    <measure number="13">
+      <note>
+        <pitch>
+          <step>F</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>144</duration>
+        <tie type="stop"/>
+        <voice>1</voice>
+        <type>half</type>
+        <dot/>
+        <notations>
+          <tied type="stop" number="1"/>
+        </notations>
+      </note>
+      <note>
+        <pitch>
+          <step>F</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>天</text>
+        </lyric>
+      </note>
+    </measure>
+    <measure number="14">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>96</duration>
+        <voice>1</voice>
+        <type>half</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>上</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>96</duration>
+        <voice>1</voice>
+        <type>half</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>的</text>
+        </lyric>
+      </note>
+    </measure>
+    <measure number="15">
+      <note>
+        <pitch>
+          <step>C</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>96</duration>
+        <voice>1</voice>
+        <type>half</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>耶</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>路</text>
+        </lyric>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>撒</text>
+        </lyric>
+      </note>
+    </measure>
+    <measure number="16">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>冷</text>
+        </lyric>
+      </note>
+      <barline location="right">
+        <bar-style>light-light</bar-style>
+      </barline>
+    </measure>
+    <measure number="17">
+      <print new-system="yes"/>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>96</duration>
+        <voice>1</voice>
+        <type>half</type>
+      </note>
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="18">
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="19">
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="20">
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="21">
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="22">
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="23">
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="24">
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="25">
+      <print new-system="yes"/>
+      <note>
+        <pitch>
+          <step>C</step>
+          <alter>1</alter>
+          <octave>5</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+      </note>
+    </measure>
+    <measure number="26">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>192</duration>
+        <tie type="start"/>
+        <voice>1</voice>
+        <type>whole</type>
+        <notations>
+          <tied type="start" number="1"/>
+        </notations>
+      </note>
+    </measure>
+    <measure number="27">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>192</duration>
+        <tie type="stop"/>
+        <voice>1</voice>
+        <type>whole</type>
+        <notations>
+          <tied type="stop" number="1"/>
+        </notations>
+      </note>
+    </measure>
+    <measure number="28">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>192</duration>
+        <tie type="start"/>
+        <voice>1</voice>
+        <type>whole</type>
+        <notations>
+          <tied type="start" number="1"/>
+        </notations>
+      </note>
+    </measure>
+    <measure number="29">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>192</duration>
+        <tie type="stop"/>
+        <voice>1</voice>
+        <type>whole</type>
+        <notations>
+          <tied type="stop" number="1"/>
+        </notations>
+      </note>
+    </measure>
+    <measure number="30">
+      <note>
+        <pitch>
+          <step>B</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+      </note>
+    </measure>
+    <measure number="31">
+      <note>
+        <pitch>
+          <step>B</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+      </note>
+    </measure>
+    <measure number="32">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+      </note>
+      <barline location="right">
+        <bar-style>light-heavy</bar-style>
+      </barline>
+    </measure>
+  </part>
+  <part id="P3">
+    <measure number="1">
+      <attributes>
+        <divisions>48</divisions>
+        <key>
+          <fifths>2</fifths>
+        </key>
+        <time>
+          <beats>2</beats>
+          <beat-type>2</beat-type>
+        </time>
+        <clef>
+          <sign>G</sign>
+          <line>2</line>
+          <clef-octave-change>-1</clef-octave-change>
+        </clef>
+      </attributes>
+      <note>
+        <pitch>
+          <step>C</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>E</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="2">
+      <note>
+        <pitch>
+          <step>F</step>
+          <alter>1</alter>
+          <octave>3</octave>
+        </pitch>
+        <duration>144</duration>
+        <voice>1</voice>
+        <type>half</type>
+        <dot/>
+      </note>
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="3">
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>24</duration>
+        <voice>1</voice>
+        <type>eighth</type>
+        <beam number="1">begin</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>24</duration>
+        <voice>1</voice>
+        <type>eighth</type>
+        <beam number="1">end</beam>
+        <notations>
+          <slur type="start" number="1"/>
+        </notations>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+        <notations>
+          <slur type="stop" number="1"/>
+        </notations>
+      </note>
+    </measure>
+    <measure number="4">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+      </note>
+    </measure>
+    <measure number="5">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>96</duration>
+        <voice>1</voice>
+        <type>half</type>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="6">
+      <note>
+        <pitch>
+          <step>B</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>144</duration>
+        <voice>1</voice>
+        <type>half</type>
+        <dot/>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="7">
+      <note>
+        <pitch>
+          <step>B</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>24</duration>
+        <voice>1</voice>
+        <type>eighth</type>
+        <beam number="1">begin</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>24</duration>
+        <tie type="start"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <beam number="1">end</beam>
+        <notations>
+          <tied type="start" number="1"/>
+        </notations>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <tie type="stop"/>
+        <voice>1</voice>
+        <type>quarter</type>
+        <notations>
+          <tied type="stop" number="1"/>
+        </notations>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="8">
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+      </note>
+    </measure>
+    <measure number="9">
+      <print new-system="yes"/>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="10">
+      <note>
+        <pitch>
+          <step>F</step>
+          <alter>1</alter>
+          <octave>3</octave>
+        </pitch>
+        <duration>144</duration>
+        <voice>1</voice>
+        <type>half</type>
+        <dot/>
+      </note>
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="11">
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>24</duration>
+        <voice>1</voice>
+        <type>eighth</type>
+        <beam number="1">begin</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>24</duration>
+        <tie type="start"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <beam number="1">end</beam>
+        <notations>
+          <tied type="start" number="1"/>
+        </notations>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <tie type="stop"/>
+        <voice>1</voice>
+        <type>quarter</type>
+        <notations>
+          <tied type="stop" number="1"/>
+        </notations>
+      </note>
+      <note>
+        <pitch>
+          <step>C</step>
+          <alter>1</alter>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="12">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+      </note>
+    </measure>
+    <measure number="13">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>144</duration>
+        <voice>1</voice>
+        <type>half</type>
+        <dot/>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="14">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>96</duration>
+        <voice>1</voice>
+        <type>half</type>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>96</duration>
+        <voice>1</voice>
+        <type>half</type>
+      </note>
+    </measure>
+    <measure number="15">
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>96</duration>
+        <voice>1</voice>
+        <type>half</type>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="16">
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+      </note>
+      <barline location="right">
+        <bar-style>light-light</bar-style>
+      </barline>
+    </measure>
+    <measure number="17">
+      <print new-system="yes"/>
+      <note>
+        <pitch>
+          <step>F</step>
+          <alter>1</alter>
+          <octave>3</octave>
+        </pitch>
+        <duration>96</duration>
+        <voice>1</voice>
+        <type>half</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>嗚…</text>
+        </lyric>
+      </note>
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="18">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>192</duration>
+        <tie type="start"/>
+        <voice>1</voice>
+        <type>whole</type>
+        <notations>
+          <tied type="start" number="1"/>
+        </notations>
+      </note>
+    </measure>
+    <measure number="19">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>192</duration>
+        <tie type="stop"/>
+        <voice>1</voice>
+        <type>whole</type>
+        <notations>
+          <tied type="stop" number="1"/>
+        </notations>
+      </note>
+    </measure>
+    <measure number="20">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+      </note>
+    </measure>
+    <measure number="21">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+      </note>
+    </measure>
+    <measure number="22">
+      <note>
+        <pitch>
+          <step>B</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+      </note>
+    </measure>
+    <measure number="23">
+      <note>
+        <pitch>
+          <step>B</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+      </note>
+    </measure>
+    <measure number="24">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>4</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+      </note>
+    </measure>
+    <measure number="25">
+      <print new-system="yes"/>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+      </note>
+    </measure>
+    <measure number="26">
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+      </note>
+    </measure>
+    <measure number="27">
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+      </note>
+    </measure>
+    <measure number="28">
+      <note>
+        <pitch>
+          <step>F</step>
+          <alter>1</alter>
+          <octave>3</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+      </note>
+    </measure>
+    <measure number="29">
+      <note>
+        <pitch>
+          <step>F</step>
+          <alter>1</alter>
+          <octave>3</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+      </note>
+    </measure>
+    <measure number="30">
+      <note>
+        <pitch>
+          <step>E</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+      </note>
+    </measure>
+    <measure number="31">
+      <note>
+        <pitch>
+          <step>E</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+      </note>
+    </measure>
+    <measure number="32">
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+      </note>
+      <barline location="right">
+        <bar-style>light-heavy</bar-style>
+      </barline>
+    </measure>
+  </part>
+  <part id="P4">
+    <measure number="1">
+      <attributes>
+        <divisions>48</divisions>
+        <key>
+          <fifths>2</fifths>
+        </key>
+        <time>
+          <beats>2</beats>
+          <beat-type>2</beat-type>
+        </time>
+        <clef>
+          <sign>G</sign>
+          <line>2</line>
+          <clef-octave-change>-1</clef-octave-change>
+        </clef>
+      </attributes>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="2">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>144</duration>
+        <voice>1</voice>
+        <type>half</type>
+        <dot/>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="3">
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>24</duration>
+        <voice>1</voice>
+        <type>eighth</type>
+        <beam number="1">begin</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>24</duration>
+        <tie type="start"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <beam number="1">end</beam>
+        <notations>
+          <tied type="start" number="1"/>
+        </notations>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>96</duration>
+        <tie type="stop"/>
+        <voice>1</voice>
+        <type>half</type>
+        <notations>
+          <tied type="stop" number="1"/>
+        </notations>
+      </note>
+    </measure>
+    <measure number="4">
+      <note>
+        <pitch>
+          <step>B</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+      </note>
+    </measure>
+    <measure number="5">
+      <note>
+        <pitch>
+          <step>B</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>96</duration>
+        <voice>1</voice>
+        <type>half</type>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="6">
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>144</duration>
+        <voice>1</voice>
+        <type>half</type>
+        <dot/>
+      </note>
+      <note>
+        <pitch>
+          <step>F</step>
+          <alter>1</alter>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="7">
+      <note>
+        <pitch>
+          <step>E</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>E</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>24</duration>
+        <voice>1</voice>
+        <type>eighth</type>
+        <beam number="1">begin</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>E</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>24</duration>
+        <tie type="start"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <beam number="1">end</beam>
+        <notations>
+          <tied type="start" number="1"/>
+        </notations>
+      </note>
+      <note>
+        <pitch>
+          <step>E</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <tie type="stop"/>
+        <voice>1</voice>
+        <type>quarter</type>
+        <notations>
+          <tied type="stop" number="1"/>
+        </notations>
+      </note>
+      <note>
+        <pitch>
+          <step>E</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="8">
+      <direction placement="below">
+        <direction-type>
+          <words>Fine</words>
+        </direction-type>
+        <offset>192</offset>
+        <sound fine="yes"/>
+      </direction>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>2</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+      </note>
+    </measure>
+    <measure number="9">
+      <print new-system="yes"/>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>2</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>2</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>2</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>2</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="10">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>144</duration>
+        <voice>1</voice>
+        <type>half</type>
+        <dot/>
+      </note>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="11">
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>24</duration>
+        <voice>1</voice>
+        <type>eighth</type>
+        <beam number="1">begin</beam>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>24</duration>
+        <tie type="start"/>
+        <voice>1</voice>
+        <type>eighth</type>
+        <beam number="1">end</beam>
+        <notations>
+          <tied type="start" number="1"/>
+        </notations>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <tie type="stop"/>
+        <voice>1</voice>
+        <type>quarter</type>
+        <notations>
+          <tied type="stop" number="1"/>
+        </notations>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="12">
+      <note>
+        <pitch>
+          <step>B</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>192</duration>
+        <tie type="start"/>
+        <voice>1</voice>
+        <type>whole</type>
+        <notations>
+          <tied type="start" number="1"/>
+        </notations>
+      </note>
+    </measure>
+    <measure number="13">
+      <note>
+        <pitch>
+          <step>B</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>144</duration>
+        <tie type="stop"/>
+        <voice>1</voice>
+        <type>half</type>
+        <dot/>
+        <notations>
+          <tied type="stop" number="1"/>
+        </notations>
+      </note>
+      <note>
+        <pitch>
+          <step>B</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>24</duration>
+        <voice>1</voice>
+        <type>eighth</type>
+        <beam number="1">begin</beam>
+        <notations>
+          <slur type="start" number="2"/>
+        </notations>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>24</duration>
+        <voice>1</voice>
+        <type>eighth</type>
+        <beam number="1">end</beam>
+        <notations>
+          <slur type="stop" number="2"/>
+        </notations>
+      </note>
+    </measure>
+    <measure number="14">
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>96</duration>
+        <voice>1</voice>
+        <type>half</type>
+      </note>
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>96</duration>
+        <voice>1</voice>
+        <type>half</type>
+      </note>
+    </measure>
+    <measure number="15">
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>96</duration>
+        <voice>1</voice>
+        <type>half</type>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>2</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>2</octave>
+        </pitch>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="16">
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+      </note>
+      <barline location="right">
+        <bar-style>light-light</bar-style>
+      </barline>
+    </measure>
+    <measure number="17">
+      <print new-system="yes"/>
+      <note>
+        <pitch>
+          <step>D</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>96</duration>
+        <voice>1</voice>
+        <type>half</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>A</text>
+        </lyric>
+      </note>
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+      <note>
+        <rest/>
+        <duration>48</duration>
+        <voice>1</voice>
+        <type>quarter</type>
+      </note>
+    </measure>
+    <measure number="18">
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>192</duration>
+        <tie type="start"/>
+        <voice>1</voice>
+        <type>whole</type>
+        <notations>
+          <tied type="start" number="1"/>
+        </notations>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>G</text>
+        </lyric>
+      </note>
+    </measure>
+    <measure number="19">
+      <note>
+        <pitch>
+          <step>G</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>192</duration>
+        <tie type="stop"/>
+        <voice>1</voice>
+        <type>whole</type>
+        <notations>
+          <tied type="stop" number="1"/>
+        </notations>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>DF</text>
+        </lyric>
+      </note>
+    </measure>
+    <measure number="20">
+      <note>
+        <pitch>
+          <step>F</step>
+          <alter>1</alter>
+          <octave>3</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>Em</text>
+        </lyric>
+      </note>
+    </measure>
+    <measure number="21">
+      <note>
+        <pitch>
+          <step>F</step>
+          <alter>1</alter>
+          <octave>3</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>A</text>
+        </lyric>
+      </note>
+    </measure>
+    <measure number="22">
+      <note>
+        <pitch>
+          <step>E</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>D</text>
+        </lyric>
+      </note>
+    </measure>
+    <measure number="23">
+      <note>
+        <pitch>
+          <step>E</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>C</text>
+        </lyric>
+      </note>
+    </measure>
+    <measure number="24">
+      <note>
+        <pitch>
+          <step>A</step>
+          <octave>3</octave>
+        </pitch>
+        <duration>192</duration>
+        <voice>1</voice>
+        <type>whole</type>
+        <lyric number="1">
+          <syllabic>single</syllabic>
+          <text>alFi</text>
+        </lyric>
+      </note>
+    </measure>
+  </part>
+</score-partwise>
