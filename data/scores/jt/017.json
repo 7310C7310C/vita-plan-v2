@@ -17,6 +17,7 @@
  "compound": false,
  "clickStep": 1,
  "lyricsMode": "note",
+ "lyricCollapse": true,
  "voiceOct": {
   "T": 1,
   "B": 2

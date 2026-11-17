@@ -180,6 +180,7 @@
   .bar.playing{box-shadow:inset 0 0 0 1.5px var(--hl)}
 
   .btag{margin-left:.4em;color:var(--accent);font-size:.9em;letter-spacing:.04em}
+  .dc-mark{position:absolute;right:.05em;top:0;font-size:calc(.55 * var(--em));font-weight:600;color:var(--ink-2);letter-spacing:.03em;white-space:nowrap;pointer-events:none}
   .bnum{font-size:calc(.6 * var(--em));color:var(--muted);height:calc(1.3 * var(--em));line-height:calc(1.3 * var(--em));font-variant-numeric:tabular-nums}
   .bar-meter{display:inline-flex;align-items:center;font-size:1.25em;line-height:1;margin-right:.4em;color:var(--ink-2);vertical-align:middle}
   .meter-stack{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;line-height:.9;font-family:"Times New Roman",Georgia,serif;font-weight:600;vertical-align:middle}
@@ -557,12 +558,6 @@ document.addEventListener("visibilitychange", ()=>{
   const kt=document.querySelectorAll(".kt");
   if(kt[0]) kt[0].textContent = "1=" + SCORE.key;
   if(kt[1]) kt[1].innerHTML = meterStackHTML(SCORE.meter || "");
-  if (SCORE.dc){
-    const head=document.querySelector(".score-head");
-    if (head && !head.querySelector(".dc-tag")){
-      const s=document.createElement("span"); s.className="kt dc-tag"; s.textContent="D.C. al Fine"; head.appendChild(s);
-    }
-  }
 }
 const PHRASES = SCORE.phrases || SCORE.bars.map((b,i)=>[i]);   // 乐句（自动换行时优先在此断行）
 /* 连音线：[小节索引, 声部, 起事件, 迄事件]（依原五线谱） */
@@ -573,6 +568,26 @@ const VOICES = ["S","A","T","B"];
 const SHOW_VOICES = (Array.isArray(SCORE.voices) && SCORE.voices.length ? SCORE.voices : VOICES)
   .filter(v=>VOICES.indexOf(v)>=0);
 const VERSE_LABELS = (SCORE.lyrics||[]).map((_,i)=>String(i+1)+".");
+
+/* 多段歌词共用开头：原谱只印一行，直到首次分歧才分行。
+   lyricCollapse=true 时自动计算首次分歧的音节索引，避免写死小节/索引。 */
+const LYRIC_SPLIT = (()=>{
+  const rows = SCORE.lyrics || [];
+  if (!SCORE.lyricCollapse || rows.length < 2) return -1;
+  const base = rows[0] || [];
+  for (let i=0;i<base.length;i++){
+    for (let v=1;v<rows.length;v++){
+      if ((rows[v][i]||"") !== (base[i]||"")) return i;
+    }
+  }
+  return -1;
+})();
+function barVerseSplit(bi){
+  if (LYRIC_SPLIT < 0) return false;
+  const bar = SCORE.bars[bi]; if (!bar) return false;
+  return Object.keys(bar.V||{}).some(v=>(bar.V[v]||[]).some(
+    ev=>ev[3]!==null && ev[3]!==undefined && ev[3]>=LYRIC_SPLIT));
+}
 
 /* ---------- General MIDI 128 音色 ---------- */
 const GM_GROUPS = [
@@ -1306,7 +1321,7 @@ function fixChordOverlaps(){
     }
   });
 }
-function renderBar(bi){
+function renderBar(bi, verseIdxs){
   const bar = SCORE.bars[bi], n = bar.beats;
   const tripCells = new Set();
   VOICES.forEach(v=>layoutVoice(bar,v).forEach((c,i)=>{ if (c.type==="triplet") tripCells.add(i); }));
@@ -1327,6 +1342,8 @@ function renderBar(bi){
     }
   }
   h += `<div class="bnum">${meterHTML}${bi+1}${bar.tag?`<span class="btag">${escHtml(bar.tag)}</span>`:""}</div>`;
+  if (SCORE.dc && SCORE.dc.from === bi) h += `<span class="dc-mark">D.C. al Fine</span>`;
+  if (SCORE.dc && SCORE.dc.to === bi) h += `<span class="dc-mark">Fine</span>`;
   h += `<div class="chordrow" style="grid-template-columns:repeat(${n},minmax(0,1fr))">`;
   chordCells.forEach((c,ci)=>{
     const disp = transposeChordText(c, capo);
@@ -1381,7 +1398,8 @@ function renderBar(bi){
   if (SHOW_VOICES.indexOf("S")>=0) h += voiceRow("S");
   if (SHOW_VOICES.indexOf("A")>=0) h += voiceRow("A");
   const sCells = layoutVoice(bar,"S");
-  SCORE.lyrics.forEach((verse,vi)=>{
+  (verseIdxs || SCORE.lyrics.map((_,i)=>i)).forEach((vi)=>{
+    const verse = SCORE.lyrics[vi] || [];
     let r = `<div class="lrow" style="grid-template-columns:repeat(${n},minmax(0,1fr))">`;
     sCells.forEach((cell,ci)=>{
       const align = tripCells.has(ci) ? " start" : "";
@@ -1473,7 +1491,9 @@ function render(){
     let gh = `<div class="g-cell g-bnum"></div><div class="g-cell g-chord"></div>`;
     if (SHOW_VOICES.length>1 && SHOW_VOICES.indexOf("S")>=0) gh += `<div class="g-cell g-voice" data-gv="S">S</div>`;
     if (SHOW_VOICES.length>1 && SHOW_VOICES.indexOf("A")>=0) gh += `<div class="g-cell g-voice" data-gv="A">A</div>`;
-    gh += VERSE_LABELS.map(v=>`<div class="g-cell g-lyr">${v}</div>`).join("");
+    const visVerses = SCORE.lyrics.map((_,vi)=>vi)
+      .filter(vi=>vi===0 || LYRIC_SPLIT<0 || bars.some(bi=>barVerseSplit(bi)));
+    gh += visVerses.map(vi=>`<div class="g-cell g-lyr">${VERSE_LABELS[vi]}</div>`).join("");
     if (SHOW_VOICES.length>1 && SHOW_VOICES.indexOf("T")>=0) gh += `<div class="g-cell g-voice" data-gv="T">T</div>`;
     if (SHOW_VOICES.length>1 && SHOW_VOICES.indexOf("B")>=0) gh += `<div class="g-cell g-voice" data-gv="B">B</div>`;
     gutter.innerHTML = gh;
@@ -1481,7 +1501,7 @@ function render(){
     barsWrap.className = "bars";
     bars.forEach(bi=>{
       const tmp = document.createElement("div");
-      tmp.innerHTML = renderBar(bi);
+      tmp.innerHTML = renderBar(bi, visVerses);
       barsWrap.appendChild(tmp.firstElementChild);
     });
     body.appendChild(gutter);

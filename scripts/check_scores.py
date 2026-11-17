@@ -85,6 +85,19 @@ def check_score(path: Path, score: dict, ids: set[str]) -> None:
             if not isinstance(t, str):
                 err(f"{rel}: lyrics[{i}][{j}] not string")
 
+    collapse = score.get("lyricCollapse", False)
+    if "lyricCollapse" in score and not isinstance(collapse, bool):
+        err(f"{rel}: lyricCollapse must be boolean")
+        collapse = False
+    if collapse:
+        if len(lyrics) < 2:
+            err(f"{rel}: lyricCollapse=true but only {len(lyrics)} lyric row")
+        else:
+            base = lyrics[0]
+            if all(all((row[i] if i < len(row) else "") == (base[i] if i < len(base) else "")
+                       for i in range(lyric_len)) for row in lyrics[1:]):
+                err(f"{rel}: lyricCollapse=true but all verses are identical")
+
     voices = score.get("voices")
     if voices is None:
         voices = ["S", "A", "T", "B"]
@@ -161,6 +174,15 @@ def check_score(path: Path, score: dict, ids: set[str]) -> None:
             notes.append(evs[i][2])
         if len(notes) == 2 and notes[0] != notes[1]:
             err(f"{rel}: tie pitches differ {pair!r} ({notes})")
+
+    dc = score.get("dc")
+    if dc is not None:
+        if not isinstance(dc, dict) or not isinstance(dc.get("from"), int) or not isinstance(dc.get("to"), int):
+            err(f"{rel}: dc must be {{from:int,to:int}} (got {dc!r})")
+        elif not (0 <= dc["to"] < dc["from"] < len(bars)):
+            err(f"{rel}: dc from/to invalid: {dc!r} (bars={len(bars)})")
+        elif dc["from"] != len(bars) - 1:
+            err(f"{rel}: D.C. al Fine must start from the last bar (dc.from={dc['from']}, last={len(bars)-1})")
 
     phrases = score.get("phrases", [])
     if not isinstance(phrases, list) or not phrases:

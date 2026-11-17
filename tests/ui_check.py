@@ -111,7 +111,32 @@ def main() -> int:
             fail("lz020 page errors: " + " | ".join(errs[:4]))
         ctx.close()
 
+        # jt/017: verses share the opening text; print one row until they diverge (bar 17)
         ctx, page, frame, errs = open_score(browser, "jt/017")
+        for i in range(0, 15):
+            n = frame.locator(f'.bar[data-bar="{i}"] .lrow').count()
+            if n != 1:
+                fail(f"jt017 bar{i+1}: {n} lyric rows, expected 1 (shared opening)")
+                break
+        for i in range(16, 32):
+            n = frame.locator(f'.bar[data-bar="{i}"] .lrow').count()
+            if n != 3:
+                fail(f"jt017 bar{i+1}: {n} lyric rows, expected 3 after divergence")
+                break
+        g = frame.locator(".line").first.locator(".gutter .g-lyr").count()
+        if g != 1:
+            fail(f"jt017 first line gutter lyric labels {g}, expected 1")
+        dc = frame.locator('.bar[data-bar="31"] .dc-mark').inner_text()
+        fine = frame.locator('.bar[data-bar="15"] .dc-mark').inner_text()
+        if dc != "D.C. al Fine":
+            fail(f"jt017 last bar mark {dc!r}, expected 'D.C. al Fine'")
+        if fine != "Fine":
+            fail(f"jt017 bar16 mark {fine!r}, expected 'Fine'")
+        head_dc = frame.locator(".score-head .dc-tag").count()
+        if head_dc != 0:
+            fail(f"jt017: D.C. mark leaked into score head ({head_dc})")
+        if errs:
+            fail("jt017 page errors: " + " | ".join(errs[:4]))
         tail = frame.locator("body").evaluate("""() => {
           const bar = document.querySelector('.bar[data-bar="2"]');
           const t = bar.querySelector('.vrow[data-vrow="T"] .cell:last-child .num');
