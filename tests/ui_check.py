@@ -117,12 +117,12 @@ def main() -> int:
         # jt/017: verses share the opening text; print one row until they diverge (bar 17)
         ctx, page, frame, errs = open_score(browser, "jt/017")
         for i in range(0, 15):
-            n = frame.locator(f'.bar[data-bar="{i}"] .lrow').count()
+            n = frame.locator(f'.bar[data-bar="{i}"] .lrow:not(.hum-row)').count()
             if n != 1:
                 fail(f"jt017 bar{i+1}: {n} lyric rows, expected 1 (shared opening)")
                 break
         for i in range(16, 32):
-            n = frame.locator(f'.bar[data-bar="{i}"] .lrow').count()
+            n = frame.locator(f'.bar[data-bar="{i}"] .lrow:not(.hum-row)').count()
             if n != 3:
                 fail(f"jt017 bar{i+1}: {n} lyric rows, expected 3 after divergence")
                 break
@@ -296,10 +296,12 @@ def main() -> int:
                 needed = [[2,'A',2,3],[2,'A',2,4],[2,'B',2,3],[2,'S',2,3],[2,'S',2,4],
                           [2,'T',2,3],[2,'T',2,4],[6,'A',2,3],[6,'B',2,3],[6,'S',2,3],[6,'T',2,3],
                           [10,'A',2,3],[10,'B',2,3],[10,'S',2,3],[10,'T',2,3],
-                          [12,'S',1,2],[14,'S',0,1],[14,'S',0,2],[19,'S',0,0],[23,'S',0,0],[27,'S',0,0]]
+                          [12,'S',1,2],[14,'S',0,1],[14,'S',0,2],[19,'S',0,20,'S',0],[23,'S',0,24,'S',0],[27,'S',0,28,'S',0],[15,'T',0,16,'T',0]]
                 missing = [x for x in needed if x not in score.get("slurs", [])]
                 if missing:
                     fail(f"jt/017: missing slurs {missing}")
+                if [[15,'B',0],[16,'B',0]] not in score.get("ties", []):
+                    fail("jt/017: missing tie 16B->17B")
                 bn = frame.locator("body").evaluate("""() => {
                   const bar = document.querySelector('.bar[data-bar="1"]');
                   const num = bar.querySelector('.bnum');
@@ -344,12 +346,19 @@ def main() -> int:
                     if "linear-gradient" not in st["bg"]:
                         fail("jt017 bar2: barline background missing")
             if key == "jt/017":
-                l15 = " ".join(frame.locator('.bar[data-bar="14"] .lrow').first.inner_text().split())
-                l16 = " ".join(frame.locator('.bar[data-bar="15"] .lrow').first.inner_text().split())
+                l15 = " ".join(frame.locator('.bar[data-bar="14"] .lrow:not(.hum-row)').first.inner_text().split())
+                l16 = " ".join(frame.locator('.bar[data-bar="15"] .lrow:not(.hum-row)').first.inner_text().split())
                 if l15 != "耶 路 撒" or "冷" in l15:
                     fail(f"jt017 bar15 lyrics {l15!r}, expected '耶 路 撒' with 路 on beat 3")
                 if l16 != "冷":
                     fail(f"jt017 bar16 lyrics {l16!r}, expected '冷'")
+                h18 = " ".join(frame.locator('.bar[data-bar="17"] .hum-row').inner_text().split())
+                h19 = " ".join(frame.locator('.bar[data-bar="18"] .hum-row').inner_text().split())
+                if h18 != "呜" or h19:
+                    fail(f"jt017 hum bars: bar18={h18!r}, bar19={h19!r} (expected 呜 then blank)")
+                n_hum = frame.locator('.hum-row').evaluate_all("els=>els.filter(e=>e.textContent.trim()==='呜').length")
+                if n_hum != 7:
+                    fail(f"jt017: hum count {n_hum}, expected 7 (bars 18,20,22,24,26,28,30)")
                 cross = frame.locator("body").evaluate("""() => {
                   const lines = [...document.querySelectorAll('.line')];
                   const l1 = lines.findIndex(l=>l.querySelector('.bar[data-bar="25"]'));

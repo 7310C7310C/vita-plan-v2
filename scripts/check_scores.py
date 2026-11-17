@@ -119,6 +119,8 @@ def check_score(path: Path, score: dict, ids: set[str]) -> None:
             err(f"{where}: bad beats {beats!r}"); continue
         if "meter" in bar and not re.fullmatch(r"\d+/\d+", str(bar["meter"])):
             err(f"{where}: bad bar.meter {bar['meter']!r}")
+        if "hum" in bar and not isinstance(bar["hum"], str):
+            err(f"{where}: hum must be a string")
         chords = bar.get("chords", [])
         if not isinstance(chords, list):
             err(f"{where}: chords not list"); chords = []
@@ -152,14 +154,21 @@ def check_score(path: Path, score: dict, ids: set[str]) -> None:
     if not isinstance(slurs, list):
         err(f"{rel}: slurs not list"); slurs = []
     for s in slurs:
-        if not isinstance(s, list) or len(s) != 4:
+        if not isinstance(s, list) or len(s) not in (4, 6):
             err(f"{rel}: bad slur {s!r}"); continue
-        b, v, a, z = s
-        if not (isinstance(b, int) and 0 <= b < len(bars) and v in voices and isinstance(a, int) and isinstance(z, int)):
-            err(f"{rel}: slur target invalid {s!r}"); continue
-        evs = bars[b].get("V", {}).get(v, [])
-        if not (0 <= a < len(evs) and 0 <= z < len(evs) and a <= z):
-            err(f"{rel}: slur indices out of range {s!r} (voice has {len(evs)})")
+        if len(s) == 4:
+            b, v, a, z = s
+            b2, v2 = b, v
+        else:
+            b, v, a, b2, v2, z = s
+        if not (isinstance(b, int) and 0 <= b < len(bars) and v in voices and isinstance(a, int)):
+            err(f"{rel}: slur start invalid {s!r}"); continue
+        if not (isinstance(b2, int) and 0 <= b2 < len(bars) and v2 in voices and isinstance(z, int)):
+            err(f"{rel}: slur end invalid {s!r}"); continue
+        evs1 = bars[b].get("V", {}).get(v, [])
+        evs2 = bars[b2].get("V", {}).get(v2, [])
+        if not (0 <= a < len(evs1) and 0 <= z < len(evs2)):
+            err(f"{rel}: slur indices out of range {s!r}")
     ties = score.get("ties", [])
     if not isinstance(ties, list):
         err(f"{rel}: ties not list"); ties = []

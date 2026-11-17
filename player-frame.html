@@ -132,6 +132,7 @@
   .g-chord{height:calc(1.45 * var(--em));font-size:calc(.64 * var(--em))}
   .g-voice{height:calc(2.15 * var(--em));color:var(--accent);font-weight:700;font-size:calc(.68 * var(--em))}
   .g-lyr{height:calc(1.45 * var(--em));font-family:var(--lyric-font);font-size:calc(.64 * var(--em))}
+  .g-hum{height:calc(1.45 * var(--em))}
   .g-cell.dim{opacity:.32}
   .kt{font-size:1.05em;color:var(--score-ink);font-weight:600;letter-spacing:0;font-family:"Noto Sans TC",system-ui,sans-serif}
 
@@ -1351,7 +1352,7 @@ function fixChordOverlaps(){
     }
   });
 }
-function renderBar(bi, verseIdxs){
+function renderBar(bi, verseIdxs, hasHum){
   const bar = SCORE.bars[bi], n = bar.beats;
   const tripCells = new Set();
   VOICES.forEach(v=>layoutVoice(bar,v).forEach((c,i)=>{ if (c.type==="triplet") tripCells.add(i); }));
@@ -1457,6 +1458,13 @@ function renderBar(bi, verseIdxs){
     h += r + `</div>`;
   });
   if (SHOW_VOICES.indexOf("T")>=0) h += voiceRow("T");
+  if (hasHum){
+    const txt = bar.hum ? escHtml(bar.hum) : "";
+    let r = `<div class="lrow hum-row" style="grid-template-columns:repeat(${n},minmax(0,1fr))">`;
+    r += `<div class="cell"><span>${txt}</span></div>`;
+    for (let k=1;k<n;k++) r += `<div class="cell"></div>`;
+    h += r + `</div>`;
+  }
   if (SHOW_VOICES.indexOf("B")>=0) h += voiceRow("B");
   return h + `</div>`;
 }
@@ -1523,18 +1531,20 @@ function render(){
     let gh = `<div class="g-cell g-chord"></div>`;
     if (SHOW_VOICES.length>1 && SHOW_VOICES.indexOf("S")>=0) gh += `<div class="g-cell g-voice" data-gv="S">S</div>`;
     if (SHOW_VOICES.length>1 && SHOW_VOICES.indexOf("A")>=0) gh += `<div class="g-cell g-voice" data-gv="A">A</div>`;
+    const hasHum = bars.some(bi=>!!SCORE.bars[bi].hum);
     const visVerses = SCORE.lyrics.map((_,vi)=>vi)
       .filter(vi=>vi===0 || LYRIC_SPLIT<0 || bars.some(bi=>barVerseSplit(bi)));
     const showVerseLabels = visVerses.length > 1;
     gh += visVerses.map(vi=>`<div class="g-cell g-lyr">${showVerseLabels?VERSE_LABELS[vi]:""}</div>`).join("");
     if (SHOW_VOICES.length>1 && SHOW_VOICES.indexOf("T")>=0) gh += `<div class="g-cell g-voice" data-gv="T">T</div>`;
+    if (hasHum) gh += `<div class="g-cell g-hum"></div>`;
     if (SHOW_VOICES.length>1 && SHOW_VOICES.indexOf("B")>=0) gh += `<div class="g-cell g-voice" data-gv="B">B</div>`;
     gutter.innerHTML = gh;
     const barsWrap = document.createElement("div");
     barsWrap.className = "bars";
     bars.forEach((bi,idx)=>{
       const tmp = document.createElement("div");
-      tmp.innerHTML = renderBar(bi, visVerses);
+      tmp.innerHTML = renderBar(bi, visVerses, hasHum);
       const el = tmp.firstElementChild;
       if (idx === 0) el.classList.add("line-first");
       barsWrap.appendChild(el);
@@ -1669,7 +1679,10 @@ function drawSlurs(){
   const NS = "http://www.w3.org/2000/svg";
   const lineEls = Array.prototype.slice.call(document.querySelectorAll(".line"));
   const pairs = [];
-  SLURS.forEach(([bi,v,i1,i2])=>pairs.push([bi,v,i1,bi,v,i2]));
+  SLURS.forEach(s=>{
+    if (s.length === 6) pairs.push([s[0],s[1],s[2],s[3],s[4],s[5]]);
+    else pairs.push([s[0],s[1],s[2],s[0],s[1],s[3]]);
+  });
   TIES.forEach(([a,z])=>pairs.push([a[0],a[1],a[2],z[0],z[1],z[2]]));
   const items = [];
   pairs.forEach(([b1,v1,i1,b2,v2,i2])=>{
