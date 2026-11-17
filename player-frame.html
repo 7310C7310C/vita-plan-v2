@@ -163,8 +163,13 @@
   /* 行首反复：系统括号已提供粗线，小节左边线为细线，只画点 */
   .bar.repeat-start.line-first::before{
     background:
-      radial-gradient(circle at 6px 34%, var(--ink-2) 0 1.5px, transparent 1.7px),
-      radial-gradient(circle at 6px 54%, var(--ink-2) 0 1.5px, transparent 1.7px);
+      radial-gradient(circle at .613em 34%, var(--ink-2) 0 1.5px, transparent 1.7px),
+      radial-gradient(circle at .613em 54%, var(--ink-2) 0 1.5px, transparent 1.7px),
+      linear-gradient(to right, var(--barline) 0 1.3px, transparent 1.3px),
+      linear-gradient(to right, currentColor 0 .2em, transparent .2em);
+    background-repeat:no-repeat;
+    background-size:100% 100%,100% 100%,1.3px calc(100% - var(--staff-top)),.2em calc(100% - var(--staff-top));
+    background-position:0 0,0 0,.34em var(--staff-top),0 var(--staff-top);
   }
   .bar.repeat-end::before{
     content:"";position:absolute;right:.5em;top:0;bottom:0;width:4px;z-index:3;pointer-events:none;
@@ -176,19 +181,19 @@
   .bar.repeat-end:not(.final)::after{
     content:"";position:absolute;top:var(--staff-top);bottom:0;right:0;width:.42em;
     background:linear-gradient(90deg,
-      var(--barline) 0 .08em,
-      transparent .08em .22em,
+      var(--barline) 0 1.3px,
+      transparent 1.3px .22em,
       currentColor .22em .42em);
-    opacity:.9;
+    opacity:1;
   }
   .bar.final{background-image:linear-gradient(to right,var(--barline) 0 1.3px,transparent 1.3px)}
   .bar.final::after{
     content:"";position:absolute;top:var(--staff-top);bottom:0;right:0;width:.42em;
     background:linear-gradient(90deg,
-      var(--barline) 0 .08em,
-      transparent .08em .22em,
+      var(--barline) 0 1.3px,
+      transparent 1.3px .22em,
       currentColor .22em .42em);
-    opacity:.9;
+    opacity:1;
   }
   .bar.sel{background:transparent}
   .sel-band{
@@ -1609,7 +1614,7 @@ function drawSystemBrackets(){
   const fs = parseFloat(getComputedStyle(scoreEl).fontSize) || 16;
   const bw = Math.max(2.4, fs*0.2);      /* 粗竖线宽 */
   const ext = fs*0.7;                    /* 端部弯钩向右伸出 */
-  const gap = fs*0.16;                   /* 粗线右缘到首小节细线 */
+  const gap = fs*0.14;                   /* 粗线右缘到首小节细线（与行末反复一致） */
   const NS = "http://www.w3.org/2000/svg";
   document.querySelectorAll(".line").forEach(line=>{
     const bar = line.querySelector(".bar");
@@ -1622,8 +1627,9 @@ function drawSystemBrackets(){
     const br = bar.getBoundingClientRect();
     /* 行首反复所在行：括号改为与行末反复同高的直粗线，保证左右对称 */
     const rs = bar.classList.contains("repeat-start");
-    const inset = rs ? 0 : fs*0.55;
-    const rise = rs ? 0 : fs*0.32;
+    if (rs) return;   /* 行首反复行不画系统括号，反复记号自带粗线，才能与行末对称 */
+    const inset = fs*0.55;
+    const rise = fs*0.32;
     const x = br.left - lb.left;
     const top = (rb.top - lb.top) + inset - rise;
     const h = (eb.bottom - rb.top) - inset*2 + rise*2;
