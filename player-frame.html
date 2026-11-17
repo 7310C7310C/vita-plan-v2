@@ -279,7 +279,9 @@
   .tail.on::before{background:rgba(58,43,10,.88);background:color-mix(in srgb,var(--hl-ink) 88%,transparent)}
 
   .slur-layer{position:absolute;left:0;top:0;pointer-events:none;overflow:visible;color:var(--ink-2);opacity:.85}
-  .score.nowrap{overflow-x:auto;scrollbar-width:thin;padding-bottom:.4em}
+  /* 关闭自动换行时 #score 成为滚动容器，会裁掉首行小节上方 top:-1.3em 的拍号；
+     用 padding-top 留出绘制空间并以负 margin 抵消，视觉位置不变 */
+  .score.nowrap{overflow-x:auto;scrollbar-width:thin;padding-top:1.5em;margin-top:-1.5em;padding-bottom:.4em}
   .score.nowrap .line{min-width:min-content}
   .score.nowrap .bar{min-width:5.2em}
   body.scroll-locked{position:fixed;left:0;right:0;width:100%;overflow:hidden}
@@ -1487,8 +1489,7 @@ function renderBar(bi, verseIdxs, hasHum){
 
 /* 依可用宽度自动换行：DP 最小化留白、尽量在乐句起点断行、避免孤行 */
 function layoutRows(){
-  /* 关闭自动换行：整曲单行，超出宽度由 .score.nowrap 横向滚动（乐句只在自动换行时作为断点参考） */
-  if (!autowrap) return [SCORE.bars.map((_,i)=>i)];
+  if (!autowrap) return PHRASES.map(g=>g.slice());
   const fs = parseFloat(getComputedStyle(scoreEl).fontSize) || 16;
   const width = scoreEl.clientWidth || 800;
   const avail = Math.max(160, width - 2.5*fs - 4);

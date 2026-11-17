@@ -81,42 +81,44 @@ def main() -> int:
         if display != "none":
             fail(f"cl001: single-voice menu 声部 row display={display!r}, expected none")
         page.click("#v2MenuClose")
-        wrap_on = frame.locator("body").evaluate("""() => ({
-          wrap: window.__hymn.autowrap,
-          lines: [...document.querySelectorAll('.line')].map(l=>l.querySelectorAll('.bar').length),
-          total: document.querySelectorAll('#score .bar').length,
-          nowrap: document.querySelector('#score').classList.contains('nowrap')
-        })""")
-        frame.locator("body").evaluate("()=>document.getElementById('wrapBtn').click()")
-        page.wait_for_timeout(400)
-        wrap_off = frame.locator("body").evaluate("""() => ({
-          wrap: window.__hymn.autowrap,
-          lines: [...document.querySelectorAll('.line')].map(l=>l.querySelectorAll('.bar').length),
-          total: document.querySelectorAll('#score .bar').length,
-          nowrap: document.querySelector('#score').classList.contains('nowrap')
-        })""")
-        if not wrap_on["wrap"] or wrap_on["nowrap"] or len(wrap_on["lines"]) < 2:
-            fail(f"cl001: autowrap on must wrap into >=2 lines: {wrap_on}")
-        if wrap_off["wrap"] or not wrap_off["nowrap"] or wrap_off["lines"] != [wrap_off["total"]]:
-            fail(f"cl001: autowrap off must render one row with all bars: {wrap_off}")
-        page.set_viewport_size({"width": 640, "height": 900})
-        page.wait_for_timeout(500)
-        narrow = frame.locator("body").evaluate("""() => {
-          const s=document.querySelector('#score');
-          return {lines:[...document.querySelectorAll('.line')].map(l=>l.querySelectorAll('.bar').length),
-                  sw:s.scrollWidth, cw:s.clientWidth};
+        meters_on = frame.locator("body").evaluate(r"""() => {
+          const sc=document.querySelector('#score'), sr=sc.getBoundingClientRect();
+          return {nowrap:sc.classList.contains('nowrap'),
+                  lines:[...document.querySelectorAll('.line')].map(l=>l.querySelectorAll('.bar').length),
+                  meters:[...document.querySelectorAll('.bar-meter')].map(m=>{
+                    const r=m.getBoundingClientRect();
+                    return {txt:m.textContent.replace(/\s+/g,''), top:r.top-sr.top, bottom:r.bottom-sr.top, h:sr.height};
+                  })};
         }""")
-        if narrow["lines"] != [8] or narrow["sw"] <= narrow["cw"] + 2:
-            fail(f"cl001: nowrap at narrow width must scroll horizontally: {narrow}")
-        page.set_viewport_size({"width": 1280, "height": 900})
+        frame.locator("body").evaluate("()=>document.getElementById('wrapBtn').click()")
+        page.wait_for_timeout(500)
+        meters_off = frame.locator("body").evaluate(r"""() => {
+          const sc=document.querySelector('#score'), sr=sc.getBoundingClientRect();
+          return {wrap:window.__hymn.autowrap, nowrap:sc.classList.contains('nowrap'),
+                  lines:[...document.querySelectorAll('.line')].map(l=>l.querySelectorAll('.bar').length),
+                  meters:[...document.querySelectorAll('.bar-meter')].map(m=>{
+                    const r=m.getBoundingClientRect();
+                    return {txt:m.textContent.replace(/\s+/g,''), top:r.top-sr.top, bottom:r.bottom-sr.top, h:sr.height};
+                  })};
+        }""")
+        expected_meters = ["24","34","24","34","24","34","44"]
+        if meters_on["nowrap"] or sum(meters_on["lines"]) != 8 or [m["txt"] for m in meters_on["meters"]] != expected_meters:
+            fail(f"cl001: autowrap on layout/meters changed: {meters_on}")
+        if meters_off["wrap"] or not meters_off["nowrap"] or meters_off["lines"] != [4,4]:
+            fail(f"cl001: autowrap off must keep phrase rows: {meters_off}")
+        if [m["txt"] for m in meters_off["meters"]] != expected_meters:
+            fail(f"cl001: nowrap lost meter elements: {meters_off['meters']}")
+        bad = [m for m in meters_off["meters"] if m["top"] < -0.5 or m["bottom"] > m["h"] + 0.5]
+        if bad:
+            fail(f"cl001: nowrap clips meter elements: {bad}")
         frame.locator("body").evaluate("()=>document.getElementById('wrapBtn').click()")
         page.wait_for_timeout(400)
-        wrap_back = frame.locator("body").evaluate("""() => ({
-          lines: [...document.querySelectorAll('.line')].map(l=>l.querySelectorAll('.bar').length),
-          nowrap: document.querySelector('#score').classList.contains('nowrap')
+        meters_back = frame.locator("body").evaluate("""() => ({
+          nowrap: document.querySelector('#score').classList.contains('nowrap'),
+          lines: [...document.querySelectorAll('.line')].map(l=>l.querySelectorAll('.bar').length)
         })""")
-        if wrap_back["nowrap"] or wrap_back["lines"] != wrap_on["lines"]:
-            fail(f"cl001: toggling autowrap back must restore wrapped layout: {wrap_back} vs {wrap_on['lines']}")
+        if meters_back["nowrap"] or meters_back["lines"] != meters_on["lines"]:
+            fail(f"cl001: autowrap toggle back did not restore wrapped layout: {meters_back}")
         if errs:
             fail("cl001 page errors: " + " | ".join(errs[:4]))
         ctx.close()
