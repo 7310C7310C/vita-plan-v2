@@ -257,6 +257,27 @@ def main() -> int:
                     bg = rs.evaluate("el=>getComputedStyle(el,'::before').backgroundImage")
                     if "linear-gradient" in bg:
                         fail(f"{key}: line-start repeat draws an extra thick/thin line over the bracket")
+            if key == "cl/001":
+                bn = frame.locator(".bar .bnum").count()
+                bars = frame.locator(".bar").count()
+                if bn != bars:
+                    fail(f"cl001: {bn} bar numbers for {bars} bars (meter changes must not hide numbers)")
+            if key == "cl/002":
+                g = frame.locator("body").evaluate("""() => {
+                  const bar = document.querySelector('.bar[data-bar="1"]');
+                  const num = bar.querySelector('.bnum');
+                  const chord = bar.querySelector('.chordrow');
+                  if (!num || !chord) return null;
+                  return {nb: num.getBoundingClientRect().bottom, cb: chord.getBoundingClientRect().bottom,
+                          bg: getComputedStyle(bar).backgroundImage};
+                }""")
+                if not g:
+                    fail("cl002 bar2: number band missing")
+                else:
+                    if g["nb"] > g["cb"] + 1:
+                        fail(f"cl002 bar2: bar number extends below its band ({g['nb']:.1f} > {g['cb']:.1f})")
+                    if "linear-gradient" not in g["bg"]:
+                        fail("cl002 bar2: barline background missing")
             if key == "jt/017":
                 bn = frame.locator("body").evaluate("""() => {
                   const bar = document.querySelector('.bar[data-bar="1"]');
@@ -307,6 +328,27 @@ def main() -> int:
                 rs = frame.locator('.bar[data-bar="8"].repeat-start.line-first')
                 if not rs.count():
                     fail("lz019 bar9: repeat-start line-first marker missing")
+                rgeo = frame.locator("body").evaluate("""() => {
+                  const line = [...document.querySelectorAll('.line')].find(l=>l.querySelector('.bar[data-bar="8"]'));
+                  const sv = line && line.querySelector('.sys-bracket');
+                  const bar = line && line.querySelector('.bar[data-bar="8"]');
+                  if (!sv || !bar) return null;
+                  const rect = sv.querySelector('rect').getBoundingClientRect();
+                  const rows = bar.querySelectorAll('.vrow');
+                  const a = rows[0].getBoundingClientRect(), z = rows[rows.length-1].getBoundingClientRect();
+                  return {paths: sv.querySelectorAll('path').length,
+                          top: a.top - rect.top, bottom: rect.bottom - z.bottom,
+                          w: rect.width};
+                }""")
+                if not rgeo:
+                    fail("lz019 bar9: repeat-start system bracket missing")
+                else:
+                    if rgeo["paths"] != 0:
+                        fail(f"lz019 bar9: repeat-start bracket still has {rgeo['paths']} hooks")
+                    if abs(rgeo["top"]) > 2 or abs(rgeo["bottom"]) > 2:
+                        fail(f"lz019 bar9: repeat thick line not aligned to notes ({rgeo})")
+                    if rgeo["w"] < 2:
+                        fail(f"lz019 bar9: repeat thick line too thin ({rgeo['w']:.1f}px)")
             if errs:
                 fail(f"{key} page errors: " + " | ".join(errs[:3]))
             ctx.close()
