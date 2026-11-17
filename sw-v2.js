@@ -1,5 +1,5 @@
 /* Vita Plan v2 service worker: pre-cache shell + all JSON scores after first paint. */
-const SHELL_CACHE = 'v2-shell-114';
+const SHELL_CACHE = 'v2-shell-115';
 const JSON_CACHE = 'v2-json-v2';
 const SHELL = [
   'index.html',
@@ -157,7 +157,7 @@ async function navigationFirst(req){
 
 async function networkFirst(req){
   try{
-    const res = await fetch(req);
+    const res = await fetch(req, {cache:'no-store'});
     if (res && res.ok){
       const cache = await caches.open(SHELL_CACHE);
       cache.put(req, res.clone());
