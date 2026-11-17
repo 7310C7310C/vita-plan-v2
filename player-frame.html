@@ -714,11 +714,11 @@ function midiToJianpu(m){
 function noteHTML(jp,{underline=0,dot=0,beam=false,beamLast=false,noOctDot=false}={}){
   let dots = "";
   const n = noOctDot ? 0 : Math.min(Math.abs(jp.oct),2);
-  const lowTop = underline ? 0.28 : 0.12;
+  const lowTop = underline ? 0.22 : 0.07;
   for (let k=0;k<n;k++){
     dots += jp.oct>0
-      ? `<i class="dot above" style="bottom:calc(100% + ${0.1 + k*0.23}em)"></i>`
-      : `<i class="dot below" style="top:calc(100% + ${lowTop + k*0.23}em)"></i>`;
+      ? `<i class="dot above" style="bottom:calc(100% + ${0.05 + k*0.2}em)"></i>`
+      : `<i class="dot below" style="top:calc(100% + ${lowTop + k*0.2}em)"></i>`;
   }
   const acc = jp.acc ? `<span class="acc">${jp.acc}</span>` : "";
   const u = underline ? `<i class="u1${beam?' beam':''}${beamLast?' last':''}"></i>` : "";

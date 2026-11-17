@@ -318,6 +318,9 @@ def main() -> int:
                 missing = [x for x in needed if x not in score.get("slurs", [])]
                 if missing:
                     fail(f"jt/017: missing slurs {missing}")
+                bad7 = [x for x in score.get("slurs", []) if x[:3] in ([6,'S',1],[6,'A',1],[6,'T',1],[6,'B',1]) and x[3]==2]
+                if bad7:
+                    fail(f"jt/017: bar7 first pair is a beam, not a slur: {bad7}")
                 needed_ties = [[[15,'B',0],[16,'B',0]],
                                [[17,'T',0],[18,'T',0]],[[19,'T',0],[20,'T',0]],[[21,'T',0],[22,'T',0]],
                                [[25,'T',0],[26,'T',0]],[[27,'T',0],[28,'T',0]],[[29,'T',0],[30,'T',0]],

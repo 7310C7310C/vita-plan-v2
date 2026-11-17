@@ -44,6 +44,7 @@ python3 tests/ui_check.py http://127.0.0.1:8080/
 7g. `bar.hum` 在小节 T/B 之间加哼唱歌词（如“呜”）；同一条线只要有一小节有 hum，整行所有小节都保留空 hum 行以对齐。跨行 slur/tie 必须自动拆成上行半条、下行半条（按 `LINE_OF_BAR` 判断）。
 8. 任何新增/修改分数后运行 `python3 scripts/generate_v2_manifest.py`；`check_scores.py` 会校验 manifest 与 mapping。乐谱 JSON 必须网络优先（`networkFirstJson` + `cache:'no-store'`），不得 cache-first，否则用户刷新会一直看到旧谱；改谱后至少实测一次刷新能载入新数据。
 9. 曲号沿用既有编号，永不重排；删歌留空号。
+10. slur/tie 必须逐条对照原图；修改者与 Reviewer 都必须抽查原图，不得只依据 JSON/测试断言。每个谱的 Dolce OMR 输出应保存到 `docs/omr/<曲号>/`；旧谱没有记录时，下次改动前先补。
 
 ## 资源/部署
 - 改前端资源或 `player-frame.html` 后：同步升 `?v=`、`sw-v2.js` 的 `SHELL_CACHE`，并把 `index.html` 复制为 `404.html`；`check_scores.py` 会检查 SW 是否引用当前版本。

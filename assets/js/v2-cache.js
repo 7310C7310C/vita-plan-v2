@@ -35,14 +35,6 @@
       localStorage.setItem(key, manifest.version);
     }catch(e){}
   }
-  if ('serviceWorker' in navigator){
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener('controllerchange', function(){
-      if (refreshing) return;
-      refreshing = true;
-      location.reload();
-    });
-  }
   if (document.readyState === 'complete') setTimeout(register, 2500);
   else window.addEventListener('load', function(){ setTimeout(register, 2500); }, {once:true});
 })();
