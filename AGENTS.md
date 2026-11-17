@@ -41,7 +41,7 @@ python3 tests/ui_check.py http://127.0.0.1:8080/
 7d. 普通小节线与曲末双线从音符行顶开始，不得上穿和弦行或小节序号；无和弦谱从行顶开始。所有小节线用纯黑（#000），不得用灰色或半透明色。
 7e. 空拍（无音符、无延音）必须显示 `0`，与原谱一致。若原谱某音符不带八度点而按音高本应带（如 jt017 首节 T 的 7），在事件第 6 项写 `"nodot"` 抑制该点的显示，不得改动音高。
 7f. 歌词正文用纯黑 #000（不得用灰色）；反复记号双点须以反复竖线的实际跨度为基准垂直居中（不是整小节高度的 50%）。
-8. 任何新增/修改分数后运行 `python3 scripts/generate_v2_manifest.py`；`check_scores.py` 会校验 manifest 与 mapping。
+8. 任何新增/修改分数后运行 `python3 scripts/generate_v2_manifest.py`；`check_scores.py` 会校验 manifest 与 mapping。乐谱 JSON 必须网络优先（`networkFirstJson` + `cache:'no-store'`），不得 cache-first，否则用户刷新会一直看到旧谱；改谱后至少实测一次刷新能载入新数据。
 9. 曲号沿用既有编号，永不重排；删歌留空号。
 
 ## 资源/部署

@@ -1,5 +1,5 @@
 /* Vita Plan v2 service worker: pre-cache shell + all JSON scores after first paint. */
-const SHELL_CACHE = 'v2-shell-104';
+const SHELL_CACHE = 'v2-shell-105';
 const JSON_CACHE = 'v2-json-v2';
 const SHELL = [
   'index.html',
@@ -25,7 +25,7 @@ self.addEventListener('install', event => {
       if (manifest && Array.isArray(manifest.files)){
         await Promise.all(manifest.files.map(f => {
           const url = new URL(f.path, self.registration.scope).href;
-          return jsonCache.add(url).catch(() => null);
+          return jsonCache.add(new Request(url, {cache:'reload'})).catch(() => null);
         }));
       }
     }catch(e){}
@@ -57,7 +57,8 @@ self.addEventListener('fetch', event => {
     return;
   }
   if (path.indexOf('/data/scores/') !== -1) {
-    event.respondWith(cacheFirst(req));
+    /* 乐谱数据必须网络优先：否则改谱后用户刷新仍看到旧 JSON */
+    event.respondWith(networkFirstJson(req));
     return;
   }
   if (path.endsWith('/data/v2-scores.json') || path.endsWith('/data/v2-manifest.json')) {
@@ -90,6 +91,19 @@ async function cacheFirstShell(req){
   const res = await fetch(req);
   if (res && res.ok) cache.put(req, res.clone());
   return res;
+}
+
+async function networkFirstJson(req){
+  try{
+    const res = await fetch(req, {cache:'no-store'});
+    if (res && res.ok){
+      const cache = await caches.open(JSON_CACHE);
+      cache.put(req, res.clone());
+    }
+    return res;
+  }catch(e){
+    return (await caches.match(req, {ignoreSearch:true})) || Response.error();
+  }
 }
 
 async function cacheFirst(req){
