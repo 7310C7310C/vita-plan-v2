@@ -390,6 +390,12 @@ def main() -> int:
                     if "linear-gradient" not in selbg:
                         fail("selected bar lost its barline background image")
                     frame.locator('body').evaluate("()=>document.querySelector('.bar').classList.remove('sel')")
+                    capo_val = page.locator("#v2Capo").input_value() if page.locator("#v2Capo").count() else "0"
+                    if capo_val != "0":
+                        fail(f"jt017: capo must default to 0, got {capo_val}")
+                    capo_badge = frame.locator("#scoreCapo").inner_text().strip()
+                    if capo_badge:
+                        fail(f"jt017: capo badge should be empty by default, got {capo_badge!r}")
                     a11 = frame.locator('.bar[data-bar="10"] .vrow[data-vrow="A"] .note').first.inner_text().strip()
                     if a11 != "1":
                         fail(f"jt017 bar11 A first note {a11!r}, expected 1")
