@@ -764,10 +764,25 @@ def main() -> int:
             fail(f"cl001?v=b: expected 12 fret marks, got {b1['marks']}")
         if b1["clickable"]:
             fail(f"cl001?v=b: fret marks must not open the chord popup ({b1['clickable']})")
-        if b1["chords"][:2] != ["2X", "3X"] or "3.2" not in b1["chords"]:
-            fail(f"cl001?v=b: marks {b1['chords'][:4]} != ['2X','3X',...,'3.2']")
+        if b1["chords"][:2] != ["2x", "3x"] or "3.2" not in b1["chords"]:
+            fail(f"cl001?v=b: marks {b1['chords'][:4]} != ['2x','3x',...,'3.2']")
+        if any("X" in x for x in b1["chords"]):
+            fail(f"cl001?v=b: x must be lowercase: {b1['chords']}")
         if b1["bars"] != 8:
             fail(f"cl001?v=b: expected 8 bars, got {b1['bars']}")
+        # 贝司记号随变调夹保音高换算：Capo 3 后 2x→3.2、3x→4.2、4.3→4x
+        page.click("#v2MenuBtn"); page.wait_for_timeout(250)
+        page.select_option("#v2Capo", "3"); page.wait_for_timeout(900)
+        conv = frame.locator("body").evaluate("""() => [...document.querySelectorAll('.fret-mark')]
+              .map(s=>s.textContent.trim()).filter(Boolean)""")
+        want3 = ["3.2", "4.2", "4.4", "4x", "4.2", "4.2", "4.2", "4x", "4x", "4.2", "4.2", "3.2"]
+        if conv != want3:
+            fail(f"cl001?v=b capo 3: marks {conv} != {want3}")
+        page.select_option("#v2Capo", "0"); page.wait_for_timeout(600)
+        back = frame.locator("body").evaluate("""() => [...document.querySelectorAll('.fret-mark')]
+              .map(s=>s.textContent.trim()).filter(Boolean)""")
+        if back != b1["chords"]:
+            fail(f"cl001?v=b capo 0 restore: {back} != {b1['chords']}")
         if errs:
             fail("cl001?v=b page errors: " + " | ".join(errs[:3]))
         ctx.close()
@@ -812,6 +827,15 @@ def main() -> int:
                     fail(f"cl002?v=b: expected 40 fret marks and no clickable chords ({info})")
                 if info["chords"] and info["chords"][0] != "3.3":
                     fail(f"cl002?v=b: first mark {info['chords'][:2]} != '3.3'")
+                if any("X" in x for x in info["chords"]):
+                    fail(f"cl002?v=b: x must be lowercase: {info['chords'][:6]}")
+                page.click("#v2MenuBtn"); page.wait_for_timeout(250)
+                page.select_option("#v2Capo", "3"); page.wait_for_timeout(900)
+                c3 = frame.locator("body").evaluate("""() => [...document.querySelectorAll('.fret-mark')]
+                      .map(s=>s.textContent.trim()).filter(Boolean)""")
+                if len(c3) != 40 or c3[:5] != ["3x", "3x", "3x", "4.1", "4x"]:
+                    fail(f"cl002?v=b capo 3: {c3[:6]} (n={len(c3)})")
+                page.select_option("#v2Capo", "0"); page.wait_for_timeout(500)
             if info["capo"]:
                 fail(f"cl002?v={vkey}: capo must default to 0 (badge {info['capo']!r})")
             if errs:
@@ -851,6 +875,26 @@ def main() -> int:
         if capo["first"] != "Am" or "Capo 3" not in capo["badge"]:
             fail(f"capo 3 should show the printed capo-3 shape (Am) with badge, got {capo}")
         page.select_option("#v2Capo", "0"); page.wait_for_timeout(500)
+        ctx.close()
+
+        # 优先显示贝司但曲目没有贝司版时，应回落到吉他版；有贝司仍用贝司；无版本用原谱
+        ctx, page, frame, errs = open_score(browser, "jt/017")
+        for cat, sid, path, want in (("领主咏", "008", "lz/008", "吉他"),
+                                     ("垂怜曲", "001", "cl/001", "贝司"),
+                                     ("进堂咏", "017", "jt/017", "原谱")):
+            page.evaluate("() => { currentState.preferredVersion = '贝司'; }")
+            page.evaluate("""([cat, id]) => {
+              showSong(cat, Object.assign({}, songsData.categories[cat].songs[id], {id}));
+            }""", [cat, sid])
+            page.wait_for_timeout(1800)
+            got = page.evaluate("currentState.currentVersion")
+            if got != want:
+                fail(f"preferred 贝司 on {path}: currentVersion {got!r} != {want!r}")
+            want_v = {"吉他": "?v=g", "贝司": "?v=b", "原谱": ""}[want]
+            if want_v not in page.url:
+                fail(f"preferred 贝司 on {path}: URL {page.url} missing {want_v!r}")
+        if errs:
+            fail("preferred fallback page errors: " + " | ".join(errs[:3]))
         ctx.close()
 
         browser.close()

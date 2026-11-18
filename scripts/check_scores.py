@@ -137,6 +137,8 @@ def check_score(path: Path, score: dict, ids: set[str]) -> None:
         for mk in marks:
             if not isinstance(mk, list) or len(mk) != 2 or not is_num(mk[0]) or not isinstance(mk[1], str) or not mk[1]:
                 err(f"{where}: bad mark {mk!r}")
+            elif not re.fullmatch(r"[1-4](?:\.\d{1,2}|x)", mk[1]):
+                err(f"{where}: bad mark format {mk[1]!r} (want 3.3 / 3x, x lowercase)")
             elif not (-1e-6 <= mk[0] < beats + 1e-6):
                 err(f"{where}: mark beat out of bar: {mk!r}")
         if score.get("markMode") and not marks and not chords:

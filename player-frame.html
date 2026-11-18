@@ -1309,7 +1309,30 @@ function transposeChordText(text, semitones){
     return transposeChord(c, semitones, flat);
   }).join(' · ');
 }
+/* 贝司「弦.品」记号随变调夹保音高换算：同弦减 capo，0 写 x，
+   品数不够时换低音弦的等效位置，x 一律小写。 */
+const MARK_OPEN = {1:43, 2:38, 3:33, 4:28};   // G2 / D2 / A1 / E1
+function transposeMark(mark, capo){
+  const t = String(mark || '').trim();
+  const m = /^([1-4])(?:\.(\d+)|x)$/i.exec(t);
+  if (!m) return t.replace(/X/g, 'x');
+  if (!capo) return t.replace(/X/g, 'x');
+  const str = +m[1], fret = m[2] ? +m[2] : 0;
+  const pitch = MARK_OPEN[str] + fret;
+  /* 变调夹只会升高音高，故只能往更低音的弦（编号更大）找等效位置，不能跳高八度 */
+  for (let s = str; s <= 4; s++){
+    const r = pitch - MARK_OPEN[s] - capo;
+    if (Number.isFinite(r) && r >= 0 && r <= 24){
+      return String(s) + (r === 0 ? 'x' : '.' + r);
+    }
+  }
+  /* 原音低于「Capo + 最低弦空弦」时无法按原音高演奏，保留原记号 */
+  return t.replace(/X/g, 'x');
+}
 function applyCapo(){
+  document.querySelectorAll('#score .fret-mark[data-mark]').forEach(el=>{
+    el.textContent = transposeMark(el.getAttribute('data-mark'), capo);
+  });
   document.querySelectorAll('#score .chordrow span[data-chord]').forEach(el=>{
     const disp = transposeChordText(el.getAttribute('data-chord'), capo);
     el.textContent = disp; el.title = disp;
@@ -1409,7 +1432,7 @@ function renderBar(bi, verseIdxs, hasHum){
   const tripCells = new Set();
   VOICES.forEach(v=>layoutVoice(bar,v).forEach((c,i)=>{ if (c.type==="triplet") tripCells.add(i); }));
   const chordCells = Array.from({length:n},()=>"");
-  /* 贝司版：原图在音符上方标「弦.品」（3.3 等），不写和弦名，也不随变调夹移调 */
+  /* 贝司版：原图在音符上方标「弦.品」（3.3 等），不写和弦名；随变调夹保音高换算 */
   const markMode = !!SCORE.markMode;
   (bar.chords||[]).forEach(([b,label])=>{
     const c = Math.min(n-1,Math.max(0,Math.round(b)));
@@ -1441,7 +1464,7 @@ function renderBar(bi, verseIdxs, hasHum){
   h += `<div class="chordrow" style="grid-template-columns:repeat(${n},minmax(0,1fr))">`;
   chordCells.forEach((c,ci)=>{
     if (markMode){
-      h += `<span class="fret-mark${ci===0 && c ? ' chord-first' : ''}">${escHtml(c)}</span>`;
+      h += `<span class="fret-mark${ci===0 && c ? ' chord-first' : ''}" data-mark="${escHtml(c)}">${escHtml(transposeMark(c, capo))}</span>`;
       return;
     }
     const disp = transposeChordText(c, capo);

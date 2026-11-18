@@ -1161,6 +1161,15 @@ function versionCode(version) {
     return ({ '原谱': 'o', '贝司': 'b', '吉他': 'g', '备选': 'a' })[version] || 'o';
 }
 
+// 实际优先版本：首选不在该曲目里时，贝司偏好回落到吉他，其余回落原谱
+function effectivePreferredVersion(song) {
+    const pref = currentState.preferredVersion;
+    const avail = ['原谱', ...(song.versions || [])];
+    if (avail.includes(pref)) return pref;
+    if (pref === '贝司' && avail.includes('吉他')) return '吉他';
+    return '原谱';
+}
+
 function showSong(categoryName, song) {
     loadingOverlay.style.display = 'none';
     loadingIndicator.style.display = 'none';
@@ -1252,12 +1261,8 @@ if (weeklyView.style.display === 'block') {
     currentState.totalPages = song.pages;
     currentState.availableVersions = ['原谱', ...(song.versions || [])];
     
-    // 根据偏好设置当前版本
-    if (song.versions && song.versions.includes(currentState.preferredVersion)) {
-        currentState.currentVersion = currentState.preferredVersion;
-    } else {
-        currentState.currentVersion = '原谱';
-    }
+    // 根据偏好设置当前版本（无贝司版时贝司偏好优先看吉他版）
+    currentState.currentVersion = effectivePreferredVersion(song);
     // 分享链接里的 ?v=o|b|g|a 直接指定版本
     try {
         const qv = new URLSearchParams(location.search).get('v');
@@ -2357,14 +2362,8 @@ function preloadWeeklySongs() {
         const song = category.songs[item.id];
         if (!song) return;
         
-        // 确定优先显示版本
-        let preferredVersion = currentState.preferredVersion;
-        
-        // 检查歌曲是否支持优先显示版本
-        const availableVersions = ['原谱', ...(song.versions || [])];
-        if (!availableVersions.includes(preferredVersion)) {
-            preferredVersion = '原谱'; // 如果不支持，默认使用原谱
-        }
+        // 确定优先显示版本（贝司偏好无贝司版时回落吉他版）
+        const preferredVersion = effectivePreferredVersion(song);
         
         let pageLoadCount = 0;
         const totalPages = song.pages;
