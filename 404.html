@@ -3,21 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <script>(function(){var b=location.pathname.indexOf('/vita-plan-v2/')===0?'/vita-plan-v2/':'/';document.write('<base href="'+b+'">');})();</script>
-    <script>/* v1 -> v2 cutover: a v1 /sw.js controller would serve stale v1 assets
-       (v2 HTML + v1 JS). Clear its caches, unregister it and reload once. */
+    <script>/* v1 -> v2 cutover: purge the old origin SW's caches/DB exactly once.
+       Awaiting the IndexedDB deletion matters: a fire-and-forget delete loses the
+       race with unregister()+reload() and leaves the v1 offline DB behind. */
     (function(){try{
       if(!('serviceWorker' in navigator))return;
-      var FLAG='vp-sw-migrated';
+      var FLAG='vp-sw-v1-purged';
+      if(sessionStorage.getItem(FLAG))return;
+      sessionStorage.setItem(FLAG,'1');
+
+      function dropV1DB(){
+        if(!('indexedDB' in window))return Promise.resolve();
+        return new Promise(function(resolve){
+          var settled=false;
+          function fin(){ if(!settled){settled=true;resolve();} }
+          try{
+            var req=indexedDB.deleteDatabase('vita_plan_offline');
+            req.onsuccess=fin; req.onerror=fin;
+            /* onblocked: give other tabs a grace period, then stop waiting */
+            setTimeout(fin,3000);
+          }catch(e){ fin(); }
+        });
+      }
+      function purgeCaches(){
+        if(!('caches' in window))return Promise.resolve();
+        return caches.keys().then(function(ks){
+          return Promise.all(ks.filter(function(k){return k.indexOf('v2-')!==0;})
+            .map(function(k){return caches.delete(k);}));
+        }).catch(function(){});
+      }
+
       navigator.serviceWorker.getRegistration().then(function(r){
         var a=r&&r.active;
-        if(!a||!/\/sw\.js$/.test(a.scriptURL))return;
-        if(sessionStorage.getItem(FLAG))return;
-        sessionStorage.setItem(FLAG,'1');
-        var purge=('caches' in window)?caches.keys().then(function(ks){
-          return Promise.all(ks.map(function(k){return caches.delete(k);}));
-        }):Promise.resolve();
-        Promise.all([purge,r.unregister()]).then(function(){location.reload();})
-          .catch(function(){location.reload();});
+        var old = !!(a && /\/sw\.js$/.test(a.scriptURL));
+        var unreg = old ? r.unregister().catch(function(){}) : Promise.resolve();
+        return unreg.then(function(){
+          return Promise.all([purgeCaches(), dropV1DB()]);
+        }).then(function(){
+          if(old) location.reload();
+        });
       }).catch(function(){});
     }catch(e){}})();</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
