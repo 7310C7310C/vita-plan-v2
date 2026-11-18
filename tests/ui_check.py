@@ -39,6 +39,43 @@ def main() -> int:
     with sync_playwright() as p:
         browser = p.chromium.launch(args=["--no-sandbox"])
 
+        # 分类页按返回：URL 回到首页，且不重载页面
+        ctx = browser.new_context(viewport={"width": 1280, "height": 900}, service_workers="block")
+        page = ctx.new_page()
+        p_errs: list[str] = []
+        page.on("pageerror", lambda e: p_errs.append(str(e)))
+        page.goto(BASE, wait_until="load", timeout=60000)
+        page.wait_for_timeout(1800)
+        if page.locator('#version-modal').is_visible():
+            page.locator('#modalVersionBtnList .primary-version-btn').click()
+            page.wait_for_timeout(250)
+        page.evaluate("window.__navMarker = 'alive'")
+        page.locator('#categoriesContainer .category-card').first.click()
+        page.wait_for_timeout(700)
+        cat_url = page.url
+        if cat_url.rstrip('/') == BASE.rstrip('/'):
+            fail(f"category click did not change URL: {cat_url}")
+        page.click('#backButton')
+        page.wait_for_timeout(700)
+        if page.url.rstrip('/') != BASE.rstrip('/'):
+            fail(f"category back: URL {page.url} != home {BASE}")
+        if page.evaluate("window.__navMarker") != "alive":
+            fail("category back: page reloaded (nav marker lost)")
+        if p_errs:
+            fail("category back page errors: " + " | ".join(p_errs[:3]))
+        # 本周歌曲返回同样应回到首页 URL 且不重载
+        page.click('#weeklyButton')
+        page.wait_for_timeout(600)
+        if not page.url.rstrip('/').endswith('/weekly'):
+            fail(f"weekly route: {page.url} not /weekly")
+        page.click('#backButtonWeekly')
+        page.wait_for_timeout(600)
+        if page.url.rstrip('/') != BASE.rstrip('/'):
+            fail(f"weekly back: URL {page.url} != home {BASE}")
+        if page.evaluate("window.__navMarker") != "alive":
+            fail("weekly back: page reloaded (nav marker lost)")
+        ctx.close()
+
         # single-voice cl001
         ctx, page, frame, errs = open_score(browser, "cl/001")
         if frame.locator("#score .g-voice").count() != 0:

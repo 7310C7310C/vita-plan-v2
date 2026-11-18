@@ -457,6 +457,14 @@ function initApp() {
     if (!isV2DeepLink()) showVersionModal();
 }
 
+// 页面内返回首页时同步 URL（replaceState，不刷新、不留下重复历史记录）
+function setHomeUrl() {
+    try {
+        const base = (window.VP2UI && VP2UI.basePath) ? VP2UI.basePath() : '/';
+        history.replaceState(null, null, base || '/');
+    } catch (e) {}
+}
+
 function isV2DeepLink() {
     try {
         let p = location.pathname;
@@ -1705,6 +1713,7 @@ function setupEventListeners() {
             // 返回主界面时显示历史按钮和语言切换按钮
             historyButton.style.display = 'flex';
             document.getElementById('languageButton').style.display = 'flex';
+            setHomeUrl();
         }
     });
     
@@ -1715,6 +1724,7 @@ function setupEventListeners() {
         // 返回主界面时显示历史按钮和语言切换按钮
         historyButton.style.display = 'flex';
         document.getElementById('languageButton').style.display = 'flex';
+        setHomeUrl();
     });
 
     // 关闭查看器按钮
