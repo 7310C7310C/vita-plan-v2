@@ -74,6 +74,32 @@ def main() -> int:
             fail(f"weekly back: URL {page.url} != home {BASE}")
         if page.evaluate("window.__navMarker") != "alive":
             fail("weekly back: page reloaded (nav marker lost)")
+        # 复合流程：分类→歌曲→关闭→页内返回→浏览器后退，网址与视图必须一致
+        page.locator('#categoriesContainer .category-card').first.click()
+        page.wait_for_timeout(600)
+        cat_path = page.url
+        page.locator('#songsContainer .song-item').first.click()
+        page.wait_for_timeout(2200)
+        if page.url == BASE:
+            fail("compound: song click did not change URL")
+        page.click('#close-viewer')
+        page.wait_for_timeout(700)
+        if page.url.rstrip('/') != cat_path.rstrip('/'):
+            fail(f"compound: closeViewer URL {page.url} != {cat_path}")
+        # 直接按浏览器后退：应回到首页网址并同步显示首页视图
+        page.go_back()
+        page.wait_for_timeout(800)
+        views = page.evaluate("""() => ({
+          cat: getComputedStyle(document.getElementById('category-view')).display,
+          main: getComputedStyle(document.getElementById('main-view')).display })""")
+        if page.url.rstrip('/') != BASE.rstrip('/'):
+            fail(f"compound: popstate URL {page.url} != home {BASE}")
+        if views["main"] != "block" or views["cat"] != "none":
+            fail(f"compound: popstate URL {page.url} but views {views}")
+        if page.evaluate("window.__navMarker") != "alive":
+            fail("compound flow: page reloaded (nav marker lost)")
+        if p_errs:
+            fail("compound flow page errors: " + " | ".join(p_errs[:3]))
         ctx.close()
 
         # single-voice cl001
@@ -834,6 +860,8 @@ def main() -> int:
           wrap: getComputedStyle(document.getElementById('v2WrapBarBtn')).display })""")
         if not bar["imgMode"] or not bar["imgLoaded"]:
             fail(f"lz/009: should be a plain image score, got {bar}")
+        if not page.evaluate("VP2UI.isImage()"):
+            fail("lz/009: VP2UI.isImage() should be true for an image-only score")
         if not bar["cls"] or bar["annot"] != "none" or bar["wrap"] != "none":
             fail(f"lz/009: bottom bar must hide 标注/自动换行: {bar}")
         # JSON 谱则应正常显示这两个按钮
@@ -940,6 +968,32 @@ def main() -> int:
         if capo["first"] != "Am" or "Capo 3" not in capo["badge"]:
             fail(f"capo 3 should show the printed capo-3 shape (Am) with badge, got {capo}")
         page.select_option("#v2Capo", "0"); page.wait_for_timeout(500)
+        ctx.close()
+
+        # 英文模式：音色选单的群组和选项都应是英文
+        ctx, page, frame, errs = open_score(browser, "cl/001")
+        page.evaluate("localStorage.setItem('fhj_language','en')")
+        page.reload(wait_until="load", timeout=60000)
+        page.wait_for_function("() => document.querySelectorAll('#v2Timbre option').length > 0", timeout=20000)
+        page.wait_for_timeout(500)
+        en_list = page.evaluate(r"""() => ({
+          groups: [...document.querySelectorAll('#v2Timbre optgroup')].map(g => g.label),
+          opts: [...document.querySelectorAll('#v2Timbre option')].map(o => o.textContent) })""")
+        cjk = r"[\u4e00-\u9fff]"
+        import re as _re
+        bad = [x for x in en_list["groups"] + en_list["opts"] if _re.search(cjk, x)]
+        if bad or not en_list["opts"]:
+            fail(f"English timbre list should contain no Chinese: {bad[:5]} (n={len(en_list['opts'])})")
+        if not any("Piano" in g for g in en_list["groups"]):
+            fail(f"English timbre group names missing: {en_list['groups'][:4]}")
+        page.evaluate("localStorage.setItem('fhj_language','zh')")
+        page.reload(wait_until="load", timeout=60000)
+        page.wait_for_function("() => document.querySelectorAll('#v2Timbre option').length > 0", timeout=20000)
+        zh_first = page.evaluate("() => document.querySelector('#v2Timbre optgroup').label")
+        if zh_first != "钢琴":
+            fail(f"Chinese timbre list should return to 钢琴, got {zh_first!r}")
+        if errs:
+            fail("timbre i18n page errors: " + " | ".join(errs[:3]))
         ctx.close()
 
         # 优先显示贝司但曲目没有贝司版时，应回落到吉他版；有贝司仍用贝司；无版本用原谱

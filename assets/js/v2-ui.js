@@ -151,6 +151,12 @@
     document.title = '复活计划乐队';
     state.cat = null; state.song = null; state.score = null;
   }
+  /* 无 JSON 的纯图片谱：VP2UI 已 leave()，但仍需让 isImage() 与画面一致 */
+  function setExternalImageMode(on){
+    state.image = !!on;
+    document.body.classList.toggle('v2-image-mode', !!on);
+    document.body.classList.toggle('v2-json-mode', false);
+  }
   function setImageMode(on){
     if (!state.active) return;
     if (on) setAnnot(false);
@@ -267,19 +273,30 @@
     const b = document.getElementById('v2LangBtn');
     if (b) b.textContent = state.lang === 't' ? '繁' : '简';
   }
+  const GM_GROUP_EN = {
+    '钢琴':'Piano', '半音打击':'Chromatic Percussion', '风琴':'Organ', '吉他':'Guitar',
+    '低音':'Bass', '弦乐':'Strings', '合奏':'Ensemble', '铜管':'Brass', '簧管':'Reed',
+    '笛管':'Pipe', '合成主音':'Synth Lead', '合成背景':'Synth Pad',
+    '合成效果':'Synth Effects', '民族':'Ethnic'
+  };
+  function gmEn(id){
+    return String(id || '').replace(/_+/g, ' ').replace(/\b[a-z]/g, function(c){ return c.toUpperCase(); });
+  }
   function buildTimbres(list){
     if (!Array.isArray(list) || !list.length) return;
     state.timbres = list;
     const sel = document.getElementById('v2Timbre');
     if (!sel) return;
     sel.textContent = '';
+    const en = state.uiLang === 'en';
     list.forEach(function(g){
       const og = document.createElement('optgroup');
-      og.label = g.name || '';
+      og.label = en ? (GM_GROUP_EN[g.name] || g.name || '') : (g.name || '');
       (g.items || []).forEach(function(it){
         if (!Array.isArray(it) || it.length < 2) return;
         const o = document.createElement('option');
-        o.value = it[0]; o.textContent = it[1];
+        o.value = it[0];
+        o.textContent = en ? gmEn(it[0]) : it[1];
         og.appendChild(o);
       });
       sel.appendChild(og);
@@ -374,6 +391,7 @@
       if (el){ const t = en ? x[2] : x[1]; el.title = t; el.setAttribute('aria-label', t); }
     });
     if (menuBtn) menuBtn.textContent = en ? 'Menu' : '菜单';
+    if (state.timbres) buildTimbres(state.timbres);
     setPlayUI(state.playing);
   }
 
@@ -626,7 +644,7 @@
   }
 
   window.VP2UI = {
-    has, scoreFor, versionScore, enter, leave, setImageMode, isActive:()=>state.active, isImage:()=>state.image,
+    has, scoreFor, versionScore, enter, leave, setImageMode, setExternalImageMode, isActive:()=>state.active, isImage:()=>state.image,
     pushRoute, setVersionQuery, routeFor, routeForCategory, pushPath, handleRoute, basePath, post, setUILang: applyUILang,
     get state(){ return state; }
   };

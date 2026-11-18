@@ -457,12 +457,60 @@ function initApp() {
     if (!isV2DeepLink()) showVersionModal();
 }
 
-// 页面内返回首页时同步 URL（replaceState，不刷新、不留下重复历史记录）
-function setHomeUrl() {
+/* ---- 统一的视图/历史导航：网址与视图始终一致（tech debt #1） ---- */
+let v2SyncingFromUrl = false;
+
+function v2BasePath() {
+    try { return (window.VP2UI && VP2UI.basePath) ? VP2UI.basePath() : '/'; }
+    catch (e) { return '/'; }
+}
+function v2Depth() {
+    try { return (history.state && typeof history.state.depth === 'number') ? history.state.depth : 0; }
+    catch (e) { return 0; }
+}
+function v2Push(url, view) {
+    history.pushState({v2: true, view: view, depth: v2Depth() + 1}, '', url);
+}
+function v2Replace(url, view) {
+    history.replaceState({v2: true, view: view, depth: v2Depth()}, '', url);
+}
+function v2CloseViewerUI() {
+    if (window.VP2UI) VP2UI.leave();
+    viewerView.style.display = 'none';
+    doodleCanvas.style.display = 'none';
+    loadingOverlay.style.display = 'none';
+    loadingIndicator.style.display = 'none';
+    cancelWeeklyPreloadTimer();
+}
+function showHomeView() {
+    v2CloseViewerUI();
+    categoryView.style.display = 'none';
+    weeklyView.style.display = 'none';
+    mainView.style.display = 'block';
+    historyButton.style.display = 'flex';
+    document.getElementById('languageButton').style.display = 'flex';
+    if (document.body.classList.contains('christmas-theme')) showChristmasDecorations();
+    currentState.openedFrom = null;
+    currentState.isSearchActive = false;
+    document.title = '复活计划乐队';
+}
+/* 页内返回：优先用浏览器 back 收回本 app 推入的历史；深链进入则 replace 回首頁 */
+function goHome() {
+    if (v2Depth() > 0) { history.back(); return; }
+    v2Replace(v2BasePath(), 'home');
+    showHomeView();
+}
+function syncViewFromUrl() {
+    v2SyncingFromUrl = true;
     try {
-        const base = (window.VP2UI && VP2UI.basePath) ? VP2UI.basePath() : '/';
-        history.replaceState(null, null, base || '/');
-    } catch (e) {}
+        v2CloseViewerUI();
+        const handled = (window.VP2UI && VP2UI.handleRoute) ? VP2UI.handleRoute(songsData) : false;
+        if (!handled) showHomeView();
+    } catch (e) {
+        showHomeView();
+    } finally {
+        v2SyncingFromUrl = false;
+    }
 }
 
 function isV2DeepLink() {
@@ -1014,8 +1062,8 @@ function renderVersionPreference() {
 function showCategory(categoryName) {
     const category = songsData.categories[categoryName];
     if (!category) return;
-    if (window.VP2UI && VP2UI.routeForCategory) {
-        try { history.pushState({v2:true}, '', VP2UI.routeForCategory(categoryName)); } catch (e) {}
+    if (window.VP2UI && VP2UI.routeForCategory && !v2SyncingFromUrl) {
+        try { v2Push(VP2UI.routeForCategory(categoryName), 'category'); } catch (e) {}
     }
 
     // 对"答唱咏（朱健仁）"卡片进行特殊处理
@@ -1112,7 +1160,7 @@ function showCategory(categoryName) {
 
 // 显示本周歌曲
 function showWeeklySongs() {
-    if (window.VP2UI && VP2UI.pushPath) VP2UI.pushPath('weekly');
+    if (!v2SyncingFromUrl) v2Push(v2BasePath() + 'weekly', 'weekly');
     currentState.openedFrom = null;
     updateDate.textContent = `${t('updateDate')}${songsData.weeklySongs.updateDate}`;
     weeklySongsContainer.innerHTML = '';
@@ -1290,8 +1338,9 @@ if (weeklyView.style.display === 'block') {
         VP2UI.enter(categoryName, song, currentState.v2Score, versionCode(currentState.currentVersion));
     } else {
         if (window.VP2UI) VP2UI.leave();
-        /* 纯图片谱：沿用 v2-image-mode 让底栏的「标注」「自动换行」保持隐藏 */
+        /* 纯图片谱：沿用 v2-image-mode 隐藏底栏按钮，并让 isImage() 与画面一致 */
         document.body.classList.add('v2-image-mode');
+        if (window.VP2UI && VP2UI.setExternalImageMode) VP2UI.setExternalImageMode(true);
         loadImage(currentState.currentPage);
     }
     document.title = song.title || '复活计划乐队';
@@ -1322,9 +1371,13 @@ if (weeklyView.style.display === 'block') {
     // 滚动到顶部
     document.querySelector('.viewer-content').scrollTop = 0;
     
-    // 添加历史记录（v2 用可分享路由）
-    if (window.VP2UI) VP2UI.pushRoute(categoryName, song.id, currentState.currentVersion);
-    else history.pushState({viewingSheet: true}, null);
+    // 添加历史记录（v2 用可分享路由）；从 popstate 还原时不再推入
+    if (!v2SyncingFromUrl) {
+        const before = v2Depth();
+        if (window.VP2UI) VP2UI.pushRoute(categoryName, song.id, currentState.currentVersion);
+        else history.pushState({v2: true}, '', v2BasePath());
+        try { history.replaceState({v2: true, view: 'song', depth: before + 1}, ''); } catch (e) {}
+    }
 }
 
 // 加载乐谱图片
@@ -1413,6 +1466,7 @@ function renderVersionButtons() {
                     currentState.v2ImageMode = true;
                     document.body.classList.add('v2-image-mode');
                     if (base && VP2UI.isActive()) VP2UI.setImageMode(true);
+                    else if (window.VP2UI && VP2UI.setExternalImageMode) VP2UI.setExternalImageMode(true);
                     loadImage(currentState.currentPage);
                     updatePageIndicator();
                 }
@@ -1684,8 +1738,13 @@ function closeViewer() {
             backUrl = VP2UI.basePath() + 'weekly';
         }
     }
+    const backView = currentState.openedFrom === 'weekly' ? 'weekly'
+                   : (currentState.openedFrom === 'category' ? 'category' : 'home');
     currentState.openedFrom = null;
-    history.replaceState(null, null, backUrl);
+    /* 关闭乐谱时优先退回上一笔历史（分类/本周），避免堆出重复的网址；
+       深链直接进歌曲时没有上一笔 app 历史，才用 replaceState 回退网址 */
+    if (v2Depth() > 0) history.back();
+    else v2Replace(backUrl, backView);
     // 退出时恢复图片适应模式为宽度适应
     isFitHeight = false;
     updateSheetFitMode();
@@ -1713,7 +1772,7 @@ function setupEventListeners() {
             // 返回主界面时显示历史按钮和语言切换按钮
             historyButton.style.display = 'flex';
             document.getElementById('languageButton').style.display = 'flex';
-            setHomeUrl();
+            goHome();
         }
     });
     
@@ -1724,7 +1783,7 @@ function setupEventListeners() {
         // 返回主界面时显示历史按钮和语言切换按钮
         historyButton.style.display = 'flex';
         document.getElementById('languageButton').style.display = 'flex';
-        setHomeUrl();
+        goHome();
     });
 
     // 关闭查看器按钮
@@ -1829,49 +1888,9 @@ function setupEventListeners() {
         toggleLanguage();
     });
 
-    // 监听返回键（针对移动设备）
-    window.addEventListener('popstate', function(event) {
-        if (viewerView.style.display === 'flex') {
-            // 如果正在查看乐谱，则关闭查看器而不退出页面
-            closeViewer();
-            // 阻止默认的返回行为
-            history.pushState(null, null, document.URL);
-            event.preventDefault();
-        } else if (categoryView.style.display === 'block') {
-            // 检查是否在子分类视图
-            if (currentState.isSubCategoryView) {
-                // 返回上级分类，而不是返回首页
-                currentState.isSubCategoryView = false;
-                showCategory(currentState.parentCategory);
-            } else {
-                // 如果在分类视图，返回主视图
-                categoryView.style.display = 'none';
-                mainView.style.display = 'block';
-                // 返回主界面时显示历史按钮
-                historyButton.style.display = 'flex';
-                document.getElementById('languageButton').style.display = 'flex';
-            }
-            history.pushState(null, null, document.URL);
-            event.preventDefault();
-        } else if (weeklyView.style.display === 'block') {
-            // 如果在本周歌曲视图，返回主视图
-            weeklyView.style.display = 'none';
-            mainView.style.display = 'block';
-            // 返回主界面时显示历史按钮
-            historyButton.style.display = 'flex';
-            history.pushState(null, null, document.URL);
-            event.preventDefault();
-        } else if (currentState.isSearchActive && searchResults.classList.contains('show')) {
-            // 如果在搜索结果视图，清除搜索并返回主视图
-            searchInput.value = '';
-            searchResults.classList.remove('show');
-            categoriesContainer.style.display = '';
-            weeklyButton.style.display = '';
-            versionPreferenceContainer.style.display = '';
-            currentState.isSearchActive = false;
-            history.pushState(null, null, document.URL);
-            event.preventDefault();
-        }
+    // 浏览器后退/前进：一律按当前网址还原视图，不再 pushState(document.URL)
+    window.addEventListener('popstate', function () {
+        syncViewFromUrl();
     });
 
     // 上一页函数
