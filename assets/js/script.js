@@ -1382,8 +1382,7 @@ function renderVersionButtons() {
             if (version !== currentState.currentVersion) {
                 currentState.currentVersion = version;
                 currentState.currentPage = 1;
-                const codes = { '原谱': 'o', '贝司': 'b', '吉他': 'g', '备选': 'a' };
-                const vKey = codes[version] || 'o';
+                const vKey = versionCode(version);
                 const base = (window.VP2UI && VP2UI.has(currentState.currentCategory, currentState.currentSong.id))
                     ? VP2UI.scoreFor(currentState.currentCategory, currentState.currentSong.id) : null;
                 const entry = base ? VP2UI.versionScore(currentState.currentCategory, currentState.currentSong.id, vKey) : null;

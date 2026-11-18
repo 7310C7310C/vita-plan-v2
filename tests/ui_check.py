@@ -737,7 +737,7 @@ def main() -> int:
         page.select_option("#v2Capo", "3"); page.wait_for_timeout(900)
         shapes = frame.locator("body").evaluate("""() => [...document.querySelectorAll('.chordrow span')]
               .map(s=>s.textContent.trim()).filter(Boolean)""")
-        want = ["C", "G/F", "C/E", "G/D", "C", "G/B", "C", "Am", "D/F#", "G",
+        want = ["C", "G/F", "C/E", "G/D", "C", "G/B", "C", "Am7", "D/F#", "G",
                 "C/E", "F/A", "C/G", "F6", "Bb/F", "C/E", "F/A", "C", "G", "C"]
         if shapes != want:
             fail(f"lz008 吉他 capo 3: shapes {shapes} != printed chart {want}")
@@ -776,7 +776,11 @@ def main() -> int:
         ctx, page, frame, errs = open_score(browser, "cl/002")
         page.evaluate("VP2UI.versionScore = () => null")
         page.click(".version-toggle-button"); page.wait_for_timeout(250)
-        page.click('.version-button:has-text("吉他")'); page.wait_for_timeout(1800)
+        page.click('.version-button:has-text("吉他")')
+        try:
+            page.wait_for_function("VP2UI.isImage() === true", timeout=8000)
+        except Exception:
+            fail("version fallback: image mode never became active")
         fb = page.evaluate("""() => ({
           image: VP2UI.isImage(),
           src: (document.getElementById('sheet-image') || {}).getAttribute ? document.getElementById('sheet-image').getAttribute('src') : '' })""")

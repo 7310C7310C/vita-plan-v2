@@ -52,3 +52,4 @@
 - [ ] 吉他：原图若写 `Capo: N`，JSON 和弦写实际音高（原调），不写 Capo 默认值；原图形状 +N 半音 = JSON 和弦。
 - [ ] 贝司：`markMode:true` + 每小节 `marks`；`3.3`=3弦3品、`4.1`=4弦1品，`2x/3x/3X` 为原图重复/空弦记号，照抄。
 - [ ] 版本文件必须登记在 `data/v2-scores.json` 的 `versions`，`versionCode` 一致；没有 JSON 的版本才回落图片。
+- [ ] `check_scores.py` 会自动比对版本谱与原谱：除 `chords`/`marks`/版本元信息外，所有小节与顶层字段必须一致（含旋律、歌词、slur/tie、拍号）。

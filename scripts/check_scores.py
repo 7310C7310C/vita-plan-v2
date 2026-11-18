@@ -234,6 +234,39 @@ def check_score(path: Path, score: dict, ids: set[str]) -> None:
             err(f"{rel}: phrases do not cover every bar exactly once")
 
 
+VERSION_TOP_IGNORE = {
+    "id", "credit", "versions", "versionCode",
+    "versionLabel", "capo", "markMode", "bars",
+}
+VERSION_BAR_IGNORE = {"chords", "marks"}
+
+
+def check_version_parity(base_path: Path, version_path: Path, code: str) -> None:
+    """版本谱必须与原谱同旋律/歌词/连音线/拍号，只允许和弦或记号行不同（AGENTS 11）。"""
+    base = load(base_path)
+    ver = load(version_path)
+    if not isinstance(base, dict) or not isinstance(ver, dict):
+        return
+    rel = version_path.relative_to(ROOT).as_posix()
+    btop = {k: v for k, v in base.items() if k not in VERSION_TOP_IGNORE}
+    vtop = {k: v for k, v in ver.items() if k not in VERSION_TOP_IGNORE}
+    if btop != vtop:
+        err(f"{rel}: version {code} differs from base score beyond chords/marks (top-level)")
+    bb, vb = base.get("bars"), ver.get("bars")
+    if not isinstance(bb, list) or not isinstance(vb, list):
+        return
+    if len(bb) != len(vb):
+        err(f"{rel}: version {code} has {len(vb)} bars, base has {len(bb)}")
+        return
+    for i, (bar0, bar1) in enumerate(zip(bb, vb)):
+        if not isinstance(bar0, dict) or not isinstance(bar1, dict):
+            continue
+        d0 = {k: v for k, v in bar0.items() if k not in VERSION_BAR_IGNORE}
+        d1 = {k: v for k, v in bar1.items() if k not in VERSION_BAR_IGNORE}
+        if d0 != d1:
+            err(f"{rel}: version {code} bar {i+1} differs from base beyond chords/marks")
+
+
 def main() -> int:
     mapping_path = DATA / "v2-scores.json"
     mapping = load(mapping_path)
@@ -292,6 +325,9 @@ def main() -> int:
                         err(f"{vent['file']}: versionCode {vs.get('versionCode')!r} != mapping code {code!r}")
                     if not vs.get("versionLabel"):
                         err(f"{vent['file']}: missing versionLabel")
+                    bf = ROOT / ent["file"]
+                    if bf.exists() and bf != vf:
+                        check_version_parity(bf, vf, code)
     for path in sorted(SCORES.rglob("*.json")):
         rel = path.relative_to(ROOT).as_posix()
         if rel not in referenced:
