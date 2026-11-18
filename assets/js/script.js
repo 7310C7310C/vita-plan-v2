@@ -22,11 +22,14 @@ function loadSongsData() {
             songsData = data;
             // 数据加载完成后，调用所有初始化函数
             initApp();
-            /* 首次深链路由只还原视图，不要再 push 一条同网址历史；
-               否则 closeViewer/goHome 的 history.back() 会退回同址条目而卡死 */
+            /* 深链载入：先把当前条目标记为锚点，再让 handleRoute 正常 push 路由条目。
+               这样 × / 页内返回 / 浏览器后退都会先落到锚点，由 syncViewFromUrl 转成首页，
+               既不会卡在同址条目，也不会直接离站。 */
             if (window.VP2UI && VP2UI.handleRoute) {
-                v2SyncingFromUrl = true;
-                try { VP2UI.handleRoute(data); } finally { v2SyncingFromUrl = false; }
+                try {
+                    if (isV2DeepLink()) history.replaceState({v2: true, view: 'anchor', depth: 0}, '');
+                } catch (e) {}
+                VP2UI.handleRoute(data);
             }
         })
         .catch(error => {
@@ -506,6 +509,14 @@ function goHome() {
     showHomeView();
 }
 function syncViewFromUrl() {
+    /* 深链锚点：后退到最初条目时改写成首页，不按深链网址重开同一视图 */
+    try {
+        if (history.state && history.state.view === 'anchor') {
+            v2Replace(v2BasePath(), 'home');
+            showHomeView();
+            return;
+        }
+    } catch (e) {}
     v2SyncingFromUrl = true;
     try {
         v2CloseViewerUI();

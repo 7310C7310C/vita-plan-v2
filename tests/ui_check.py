@@ -119,6 +119,20 @@ def main() -> int:
                 fail(f"deep link {path}: views after close/back {v}")
             if page.evaluate("window.__deepMarker") != "alive":
                 fail(f"deep link {path}: page reloaded")
+        # 深链后按浏览器后退：应留站内并回到首页，不得 about:blank / 离站
+        for path in ("cl/001", "cl", "weekly"):
+            page.goto(BASE + path, wait_until="load", timeout=60000)
+            page.wait_for_timeout(2600)
+            page.evaluate("window.__deepBackMarker = 'alive'")
+            page.go_back()
+            page.wait_for_timeout(900)
+            if page.url.rstrip('/') != BASE.rstrip('/'):
+                fail(f"deep link {path}: browser back left site or wrong URL {page.url}")
+            if page.evaluate("window.__deepBackMarker") != "alive":
+                fail(f"deep link {path}: browser back reloaded/left the app")
+            v = page.evaluate("() => getComputedStyle(document.getElementById('main-view')).display")
+            if v != "block":
+                fail(f"deep link {path}: browser back did not show home view ({v})")
         ctx.close()
 
         # single-voice cl001
