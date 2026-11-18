@@ -1049,6 +1049,58 @@ def main() -> int:
             fail("preferred fallback page errors: " + " | ".join(errs[:3]))
         ctx.close()
 
+        # 弥撒时段防误触：播放键/点音符在时段内须先确认，非时段不弹确认
+        def mass_ctx(fake_iso):
+            c = browser.new_context(viewport={"width": 1280, "height": 900}, service_workers="block")
+            c.add_init_script(
+                "const __R=Date; class __F extends __R { constructor(...a){ "
+                "if(a.length===0) super('" + fake_iso + "'); else super(...a); } "
+                "static now(){ return new __F().getTime(); } } window.Date=__F;"
+            )
+            return c
+
+        # 周一至周六 07:30–08:30（2026-11-18 是周三）
+        cases = [
+            ("weekday 07:45", "2026-11-18T07:45:00", True, True, "#v2QuickPauseBtn"),
+            ("sunday 09:15", "2026-11-22T09:15:00", True, True, ".note"),
+            ("sunday 20:15", "2026-11-22T20:15:00", True, True, "#v2QuickPauseBtn"),
+            ("weekday 08:30 boundary", "2026-11-18T08:30:00", False, False, "#v2QuickPauseBtn"),
+            ("weekday noon", "2026-11-18T12:00:00", False, False, "#v2QuickPauseBtn"),
+        ]
+        for name, iso, quiet, want_dialog, sel in cases:
+            ctx = mass_ctx(iso)
+            page = ctx.new_page()
+            dialogs: list[str] = []
+            page.on("dialog", lambda d: (dialogs.append(d.message), d.accept()))
+            page.goto(BASE + "cl/001", wait_until="load", timeout=60000)
+            page.wait_for_timeout(3000)
+            fr = page.frame_locator("#v2Frame")
+            got = fr.locator("body").evaluate("() => window.__hymn.isMassQuietHour()")
+            if got != quiet:
+                fail(f"mass guard {name}: isMassQuietHour={got} != {quiet}")
+            if sel == ".note":
+                fr.locator(sel).first.click(timeout=8000)
+            else:
+                page.locator(sel).click(timeout=8000)
+            page.wait_for_timeout(1000)
+            if bool(dialogs) != want_dialog:
+                fail(f"mass guard {name}: dialogs={dialogs} want_dialog={want_dialog}")
+            if quiet and dialogs and "彌撒" not in dialogs[0]:
+                fail(f"mass guard {name}: unexpected confirm text {dialogs[0]!r}")
+            ctx.close()
+
+        # 取消确认：不得开始播放
+        ctx = mass_ctx("2026-11-18T07:45:00")
+        page = ctx.new_page()
+        page.on("dialog", lambda d: d.dismiss())
+        page.goto(BASE + "cl/001", wait_until="load", timeout=60000)
+        page.wait_for_timeout(3000)
+        page.locator("#v2QuickPauseBtn").click(timeout=8000)
+        page.wait_for_timeout(900)
+        if page.frame_locator("#v2Frame").locator("body").evaluate("() => window.__hymn.engine.playing"):
+            fail("mass guard: dismissed confirm must not start playback")
+        ctx.close()
+
         browser.close()
 
     if errors:

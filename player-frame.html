@@ -561,7 +561,9 @@ document.addEventListener("visibilitychange", ()=>{
     if (engine && engine.playing){ resumeOnVisible = true; engine.pause(); setPlayUI(false); }
   } else if (resumeOnVisible){
     resumeOnVisible = false;
-    if (!annotMode) engine.play(engine.anchorBeat, true).then(()=>setPlayUI(engine.playing));
+    /* 切回页面时的自动续播不是用户操作，弥撒时段直接不续播，避免误出声 */
+    if (!annotMode && !isMassQuietHour()) engine.play(engine.anchorBeat, true).then(()=>setPlayUI(engine.playing));
+    else setPlayUI(false);
   }
 });
 {
@@ -2079,6 +2081,28 @@ function playNoteEl(el){
   playFrom(beat, keep);
 }
 
+/* ---------- 弥撒时段防误触：任何开始播放都先向用户确认 ----------
+   使用使用者装置的本地时间：周一至周六 07:30–08:30、主日 09:00–10:30 与 20:00–21:30 */
+const MASS_QUIET_WINDOWS = [
+  {days:[1,2,3,4,5,6], from:7*60+30, to:8*60+30},
+  {days:[0], from:9*60, to:10*60+30},
+  {days:[0], from:20*60, to:21*60+30}
+];
+function isMassQuietHour(d){
+  try{
+    const now = d || new Date();
+    const mins = now.getHours()*60 + now.getMinutes();
+    return MASS_QUIET_WINDOWS.some(function(w){
+      return w.days.indexOf(now.getDay()) >= 0 && mins >= w.from && mins < w.to;
+    });
+  }catch(e){ return false; }
+}
+function confirmPlayInQuietHour(){
+  if (!isMassQuietHour()) return true;
+  const msg = '目前為彌撒時段（週一至六 07:30–08:30；主日 09:00–10:30、20:00–21:30）。確定要播放嗎？\nPlay now during Mass quiet hours?';
+  try{ return window.confirm(msg); }catch(e){ return false; }
+}
+
 /* ---------- 播放 ---------- */
 function setPlayUI(playing){
   const btn = $("#playBtn");
@@ -2089,6 +2113,7 @@ function setPlayUI(playing){
 }
 async function playFrom(beat, keepRepeat){
   if (annotMode) return;
+  if (!confirmPlayInQuietHour()){ setPlayUI(false); return; }
   await engine.play(beat, keepRepeat);
   setPlayUI(engine.playing);
 }
@@ -2652,7 +2677,7 @@ window.__hymn = {
   get sel(){ return sel; }, get follow(){ return follow; },
   get theme(){ return theme; }, get lyricFont(){ return lyricFont; }, get scale(){ return scale; },
   get lang(){ return lang; }, get bold(){ return bold; }, get autowrap(){ return autowrap; }, get lineOfBar(){ return LINE_OF_BAR; },
-  selectAndLoop, clearSelection, playFrom, togglePlay, saveSettings,
+  selectAndLoop, clearSelection, playFrom, togglePlay, saveSettings, isMassQuietHour,
   version:"4.0.0"
 };
 </script>
@@ -2832,6 +2857,7 @@ document.addEventListener('keydown', function(e){ if (e.key==='Escape') closeCho
         case 'warmup': preload(); break;
         case 'play':
           if (annotMode) break;
+          if (!confirmPlayInQuietHour()){ vp2Send(); break; }
           preload();
           if (!engine.playing){
             const seq = ++playSeq;
