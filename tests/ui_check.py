@@ -100,6 +100,25 @@ def main() -> int:
             fail("compound flow: page reloaded (nav marker lost)")
         if p_errs:
             fail("compound flow page errors: " + " | ".join(p_errs[:3]))
+        # 深链进入：× 关闭 / 页内返回必须能回到首页网址与视图（B1 回归）
+        for path, closer in (("cl/001", "#close-viewer"), ("jt", "#backButton"), ("weekly", "#backButtonWeekly")):
+            page.goto(BASE + path, wait_until="load", timeout=60000)
+            page.wait_for_timeout(2600)
+            page.evaluate("window.__deepMarker = 'alive'")
+            if not page.url.rstrip('/').endswith('/' + path):
+                fail(f"deep link {path}: unexpected URL {page.url}")
+            page.click(closer)
+            page.wait_for_timeout(800)
+            if page.url.rstrip('/') != BASE.rstrip('/'):
+                fail(f"deep link {path}: after close/back URL {page.url} != home {BASE}")
+            v = page.evaluate("""() => ({
+              main: getComputedStyle(document.getElementById('main-view')).display,
+              viewer: getComputedStyle(document.getElementById('viewer-view')).display,
+              cat: getComputedStyle(document.getElementById('category-view')).display })""")
+            if v["main"] != "block" or v["viewer"] != "none" or v["cat"] != "none":
+                fail(f"deep link {path}: views after close/back {v}")
+            if page.evaluate("window.__deepMarker") != "alive":
+                fail(f"deep link {path}: page reloaded")
         ctx.close()
 
         # single-voice cl001

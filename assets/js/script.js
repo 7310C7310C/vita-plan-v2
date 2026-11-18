@@ -22,7 +22,12 @@ function loadSongsData() {
             songsData = data;
             // 数据加载完成后，调用所有初始化函数
             initApp();
-            if (window.VP2UI) VP2UI.handleRoute(data);
+            /* 首次深链路由只还原视图，不要再 push 一条同网址历史；
+               否则 closeViewer/goHome 的 history.back() 会退回同址条目而卡死 */
+            if (window.VP2UI && VP2UI.handleRoute) {
+                v2SyncingFromUrl = true;
+                try { VP2UI.handleRoute(data); } finally { v2SyncingFromUrl = false; }
+            }
         })
         .catch(error => {
             console.error('加载歌曲数据失败:', error);
