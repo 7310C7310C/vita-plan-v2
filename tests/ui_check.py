@@ -1101,6 +1101,15 @@ def main() -> int:
             fail("mass guard: dismissed confirm must not start playback")
         ctx.close()
 
+        # 光荣颂三首原谱 JSON：能进入 JSON 播放器，不回落图片
+        for path in ("gr/001", "gr/002", "gr/003"):
+            ctx, page, frame, errs = open_score(browser, path)
+            if page.evaluate("VP2UI.isImage()"):
+                fail(f"{path}: should load JSON score, not fall back to image")
+            if frame.locator(".bar").count() < 10:
+                fail(f"{path}: too few bars rendered")
+            ctx.close()
+
         browser.close()
 
     if errors:
