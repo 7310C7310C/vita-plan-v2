@@ -1,5 +1,5 @@
 {
-  "version": "bd233e094adaf49e",
+  "version": "f01ee719da91a60a",
   "files": [
     {
       "path": "data/scores/cl/001-b.json",
@@ -13,13 +13,13 @@
     },
     {
       "path": "data/scores/cl/002-b.json",
-      "hash": "a96bbc7f6a8bc3d09274ce3b0f94b1bf55948f086dd74e02a97dd9ac51995fc9",
-      "size": 9552
+      "hash": "8530d61d6aacde3577a1a61cda34d4880a2f04f810a5869f0f7314bc7246692d",
+      "size": 9550
     },
     {
       "path": "data/scores/cl/002-g.json",
-      "hash": "f3c8197ed74ef19ff9cdaa2e9dd9e11d30119a106d3c74e9e93bd3ac7117964e",
-      "size": 9188
+      "hash": "5c7ebf7a8cde8c3a7b323b60790c0c5a527220b4489da61810212e19881b4a05",
+      "size": 9186
     },
     {
       "path": "data/scores/cl/002.json",

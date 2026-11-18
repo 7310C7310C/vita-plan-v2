@@ -325,8 +325,8 @@ def main() -> int:
                         err(f"{vent['file']}: versionCode {vs.get('versionCode')!r} != mapping code {code!r}")
                     if not vs.get("versionLabel"):
                         err(f"{vent['file']}: missing versionLabel")
-                    bf = ROOT / ent["file"]
-                    if bf.exists() and bf != vf:
+                    bf = ROOT / ent["file"] if ent.get("file") else None
+                    if bf is not None and bf.exists() and bf != vf:
                         check_version_parity(bf, vf, code)
     for path in sorted(SCORES.rglob("*.json")):
         rel = path.relative_to(ROOT).as_posix()
