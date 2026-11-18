@@ -787,6 +787,29 @@ def main() -> int:
             fail("cl001?v=b page errors: " + " | ".join(errs[:3]))
         ctx.close()
 
+        # 纯图片谱（无 JSON 原谱）底栏不应有「标注」「自动换行」
+        ctx, page, frame, errs = open_score(browser, "lz/009")
+        bar = page.evaluate("""() => ({
+          imgMode: !VP2UI.isActive(),
+          imgLoaded: (document.getElementById('sheet-image')||{}).naturalWidth > 0,
+          cls: document.body.classList.contains('v2-image-mode'),
+          annot: getComputedStyle(document.getElementById('v2AnnotBarBtn')).display,
+          wrap: getComputedStyle(document.getElementById('v2WrapBarBtn')).display })""")
+        if not bar["imgMode"] or not bar["imgLoaded"]:
+            fail(f"lz/009: should be a plain image score, got {bar}")
+        if not bar["cls"] or bar["annot"] != "none" or bar["wrap"] != "none":
+            fail(f"lz/009: bottom bar must hide 标注/自动换行: {bar}")
+        # JSON 谱则应正常显示这两个按钮
+        page.goto(BASE + "cl/001", wait_until="load", timeout=60000); page.wait_for_timeout(2600)
+        vis = page.evaluate("""() => ({
+          annot: getComputedStyle(document.getElementById('v2AnnotBarBtn')).display,
+          wrap: getComputedStyle(document.getElementById('v2WrapBarBtn')).display })""")
+        if vis["annot"] == "none" or vis["wrap"] == "none":
+            fail(f"cl/001 JSON: bottom bar should show 标注/自动换行: {vis}")
+        if errs:
+            fail("image-score bar page errors: " + " | ".join(errs[:3]))
+        ctx.close()
+
         # 版本没有 JSON 的模式：把 versionScore 临时置空，点「吉他」应回落图片谱
         ctx, page, frame, errs = open_score(browser, "cl/002")
         page.evaluate("VP2UI.versionScore = () => null")
@@ -801,6 +824,11 @@ def main() -> int:
           src: (document.getElementById('sheet-image') || {}).getAttribute ? document.getElementById('sheet-image').getAttribute('src') : '' })""")
         if not fb["image"] or "垂怜曲_002" not in fb["src"] or "吉他" not in fb["src"]:
             fail(f"version without JSON: should fall back to the version image, got {fb}")
+        hb = page.evaluate("""() => ({
+          annot: getComputedStyle(document.getElementById('v2AnnotBarBtn')).display,
+          wrap: getComputedStyle(document.getElementById('v2WrapBarBtn')).display })""")
+        if hb["annot"] != "none" or hb["wrap"] != "none":
+            fail(f"version image fallback: bottom bar must hide 标注/自动换行: {hb}")
         if errs:
             fail("version fallback page errors: " + " | ".join(errs[:3]))
         ctx.close()

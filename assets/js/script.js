@@ -1282,6 +1282,8 @@ if (weeklyView.style.display === 'block') {
         VP2UI.enter(categoryName, song, currentState.v2Score, versionCode(currentState.currentVersion));
     } else {
         if (window.VP2UI) VP2UI.leave();
+        /* 纯图片谱：沿用 v2-image-mode 让底栏的「标注」「自动换行」保持隐藏 */
+        document.body.classList.add('v2-image-mode');
         loadImage(currentState.currentPage);
     }
     document.title = song.title || '复活计划乐队';
@@ -1401,6 +1403,7 @@ function renderVersionButtons() {
                 } else {
                     currentState.v2Score = base;
                     currentState.v2ImageMode = true;
+                    document.body.classList.add('v2-image-mode');
                     if (base && VP2UI.isActive()) VP2UI.setImageMode(true);
                     loadImage(currentState.currentPage);
                     updatePageIndicator();
