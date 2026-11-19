@@ -1097,7 +1097,7 @@ function buildSongItemHTML(catName, id, song) {
     return `<div class="song-item" data-id="${escapeHTML(id)}" data-cat="${escapeHTML(catName)}">
         <div class="song-item-num">#${escapeHTML(id)}</div>
         <div class="song-item-title">${escapeHTML(song.title)}</div>
-        <div class="song-item-meta">${meta}</div>
+        <div class="song-item-meta">${escapeHTML(meta)}</div>
         <div class="song-item-actions">
             <button class="preview-song-btn" data-id="${escapeHTML(id)}" data-cat="${escapeHTML(catName)}" title="预览乐谱">👁️</button>
             <button class="edit-song-btn" data-id="${escapeHTML(id)}" data-cat="${escapeHTML(catName)}" title="编辑">✏️</button>
@@ -2743,6 +2743,18 @@ async function executePublish(commitMsg, newVersion) {
             }
         }
 
+        // 2. index.html / script.js 也必须与打开后台时一致，避免旧快照覆盖新发布
+        const [latestIndex, latestScript] = await Promise.all([
+            github.getFile('index.html'),
+            github.getFile('assets/js/script.js')
+        ]);
+        if ((latestIndex && latestIndex.sha !== appState.originalIndexHtmlSha) ||
+            (latestScript && latestScript.sha !== appState.originalScriptJsSha)) {
+            showToast('index.html 或 script.js 已被其他发布修改，请刷新后台后重试', 'error');
+            $('publishBtn').disabled = false;
+            return;
+        }
+
         await doActualPublish(commitMsg, newVersion, appState.originalSongsJsonSha);
     } catch (e) {
         showToast('发布失败: ' + e.message, 'error');
@@ -2753,6 +2765,16 @@ async function executePublish(commitMsg, newVersion) {
 async function doActualPublish(commitMsg, newVersion, latestSha) {
     try {
         if (!/^\d{14}$/.test(newVersion)) throw new Error('版本号格式错误');
+
+        const namesToCheck = [
+            ...Object.keys(appState.workingSongsData.categories || {}),
+            ...appState.existingVersions
+        ];
+        for (const name of namesToCheck) {
+            if (typeof name !== 'string' || /['"\\\r\n]/.test(name)) {
+                throw new Error(`分类/版本名含非法字符: ${name}`);
+            }
+        }
 
         // 1. 更新 assets/js/script.js 中的版本号
         let scriptContent = appState.workingScriptJs;
@@ -2871,38 +2893,31 @@ function syncTranslations(scriptContent) {
     const catNames = Object.keys(appState.workingSongsData.categories);
     const allVersions = [...appState.existingVersions];
 
-    // 检查是否有缺失的翻译
-    const missingCatTranslations = [];
-    const missingVerTranslations = [];
-
-    // 简单检查：在 scriptContent 中搜索 translations 的 categories 部分
-    catNames.forEach(name => {
-        if (!scriptContent.includes(`'${name}':`)) {
-            missingCatTranslations.push(name);
-        }
-    });
-    allVersions.forEach(name => {
-        if (name !== '原谱' && !scriptContent.includes(`'${name}':`)) {
-            missingVerTranslations.push(name);
-        }
-    });
+    // 检查是否有缺失的翻译（兼容单/双引号 key）
+    const hasTranslation = (name) => {
+        const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return new RegExp(`(['"])${escaped}\\1\\s*:`).test(scriptContent);
+    };
+    const missingCatTranslations = catNames.filter(name => !hasTranslation(name));
+    const missingVerTranslations = allVersions.filter(name => name !== '原谱' && !hasTranslation(name));
 
     if (missingCatTranslations.length > 0 || missingVerTranslations.length > 0) {
-        // 尝试自动注入缺失的翻译条目
-        // 在 translations 的 categories 对象中插入
+        // 尝试自动注入缺失的翻译条目；JSON.stringify 同时处理引号/反斜杠
         missingCatTranslations.forEach(name => {
-            const placeholder = `'${name}': '${name}',`;
-            // 在 categories 对象末尾插入
+            const key = JSON.stringify(name);
+            const placeholder = `${key}: ${key}`;
+            // 在 categories 对象末尾插入（用函数替换，避免 $ 被当成替换模式）
             scriptContent = scriptContent.replace(
-                /('其他':\s*'[^']*')/,
-                `$1,\n            ${placeholder}`
+                /(['"]其他['"]\s*:\s*['"][^'"]*['"])(,?)/,
+                (match, p1, p2) => `${p1},\n            ${placeholder},`
             );
         });
         missingVerTranslations.forEach(name => {
-            const placeholder = `'${name}': '${name}',`;
+            const key = JSON.stringify(name);
+            const placeholder = `${key}: ${key}`;
             scriptContent = scriptContent.replace(
-                /('备选':\s*'[^']*')/,
-                `$1,\n            ${placeholder}`
+                /(['"]备选['"]\s*:\s*['"][^'"]*['"])(,?)/,
+                (match, p1, p2) => `${p1},\n            ${placeholder},`
             );
         });
     }

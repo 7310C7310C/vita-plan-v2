@@ -1,0 +1,49 @@
+name: Pages whitelist build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assemble runtime-only site
+        run: |
+          mkdir -p _site
+          rsync -a \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='.gitignore' \
+            --exclude='admin' \
+            --exclude='scripts' \
+            --exclude='tests' \
+            --exclude='docs' \
+            --exclude='AGENTS.md' \
+            --exclude='CLAUDE.md' \
+            --exclude='README.md' \
+            --exclude='sw.js' \
+            ./ _site/
+          for f in admin scripts tests docs AGENTS.md CLAUDE.md README.md sw.js; do
+            test ! -e "_site/$f" || { echo "private path leaked: $f"; exit 1; }
+          done
+          test -f _site/index.html
+          test -f _site/404.html
+          test -f _site/sw-v2.js
+          test -f _site/assets/player/player-main.js
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - uses: actions/deploy-pages@v4

@@ -1,6 +1,6 @@
 /* Vita Plan v2 service worker: pre-cache shell + all JSON scores after first paint. */
 const SHELL_CACHE = 'v2-shell-145';
-const JSON_CACHE = 'v2-json-v2';
+const JSON_CACHE = 'v2-json-v3';
 const SHELL = [
   'index.html',
   'favicon.ico',
@@ -30,6 +30,14 @@ self.addEventListener('install', event => {
         await Promise.all(manifest.files.map(f => {
           const url = new URL(f.path, self.registration.scope).href;
           return jsonCache.add(new Request(url, {cache:'reload'})).catch(() => null);
+        }));
+        /* Drop cached score files that are no longer in the manifest. */
+        const keep = new Set(manifest.files.map(f => new URL(f.path, self.registration.scope).pathname));
+        const keys = await jsonCache.keys();
+        await Promise.all(keys.map(req => {
+          const path = new URL(req.url).pathname;
+          if (path.indexOf('/data/scores/') !== -1 && !keep.has(path)) return jsonCache.delete(req);
+          return null;
         }));
       }
     }catch(e){}
