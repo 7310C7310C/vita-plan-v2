@@ -425,8 +425,8 @@ def main() -> int:
             want = f"data/songs.json?v={sm.group(1)}"
             if f"'{want}'" not in sw:
                 err(f"sw-v2.js: SHELL does not reference current {want}")
-    if "staleWhileRevalidateJson(req, event)" not in sw or "/data/scores/" not in sw:
-        err("sw-v2.js: score JSON must use staleWhileRevalidateJson (instant cached open + background update)")
+    if "cacheFirstJson(req)" not in sw or "revalidateJson(req)" not in sw or "/data/scores/" not in sw:
+        err("sw-v2.js: score JSON must use cacheFirstJson (instant open) + revalidateJson (manifest sync)")
     # The SW, page loader and background sync must share one JSON cache bucket.
     cache_names = set()
     for rel in ("sw-v2.js", "assets/js/v2-ui.js", "assets/js/v2-cache.js"):

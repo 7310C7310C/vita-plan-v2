@@ -1,6 +1,6 @@
 /* Vita Plan v2 service worker: pre-cache the shell; score JSON is synced by
    assets/js/v2-cache.js into the same JSON_CACHE bucket. */
-const SHELL_CACHE = 'v2-shell-147';
+const SHELL_CACHE = 'v2-shell-148';
 const JSON_CACHE = 'v2-json-v3';
 const SHELL = [
   'index.html',
@@ -65,8 +65,9 @@ self.addEventListener('fetch', event => {
     return;
   }
   if (path.indexOf('/data/scores/') !== -1) {
-    /* 已缓存秒开；后台 no-store 拉新版写回缓存，下次打开即新 */
-    event.respondWith(staleWhileRevalidateJson(req, event));
+    /* 已缓存→直接返回，不再逐谱后台请求；只有 manifest 同步带
+       X-VP2-Revalidate 时才强制拉新并写回。 */
+    event.respondWith(req.headers.get('x-vp2-revalidate') ? revalidateJson(req) : cacheFirstJson(req));
     return;
   }
   if (path.endsWith('/data/v2-scores.json') || path.endsWith('/data/v2-manifest.json')) {
@@ -101,32 +102,21 @@ async function cacheFirstShell(req){
   return res;
 }
 
-async function staleWhileRevalidateJson(req, event){
-  const cache = await caches.open(JSON_CACHE);
-  if (req.headers.get('x-vp2-revalidate')){
-    const res = await fetch(req, {cache:'no-store'});
-    if (res && res.ok) await cache.put(req, res.clone());
-    return res;
-  }
-  const hit = await cache.match(req, {ignoreSearch:true});
-  const network = fetch(req, {cache:'no-store'}).then(async res=>{
-    if (res && res.ok) await cache.put(req, res.clone());
-    return res;
-  }).catch(()=>null);
-  if (hit){
-    if (event && event.waitUntil) event.waitUntil(network);
-    return hit;
-  }
-  const res = await network;
-  return res || Response.error();
-}
-
-async function cacheFirst(req){
+async function cacheFirstJson(req){
   const cache = await caches.open(JSON_CACHE);
   const hit = await cache.match(req, {ignoreSearch:true});
   if (hit) return hit;
-  const res = await fetch(req);
-  if (res && res.ok) cache.put(req, res.clone());
+  const res = await fetch(req, {cache:'no-store'});
+  if (res && res.ok) await cache.put(req, res.clone());
+  return res || Response.error();
+}
+
+async function revalidateJson(req){
+  const res = await fetch(req, {cache:'no-store'});
+  if (res && res.ok){
+    const cache = await caches.open(JSON_CACHE);
+    await cache.put(req, res.clone());
+  }
   return res;
 }
 

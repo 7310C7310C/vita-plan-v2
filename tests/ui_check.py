@@ -641,7 +641,7 @@ def main() -> int:
             if single:
                 if n_brackets:
                     fail(f"{key}: single-voice score draws {n_brackets} system brackets")
-                bw = frame.locator(".gutter").first.evaluate("el=>getComputedStyle(el).borderRightWidth")
+                bw = css_value(page, frame.locator(".gutter").first, "el=>getComputedStyle(el).borderRightWidth")
                 if bw not in ("0px", "0"):
                     fail(f"{key}: single-voice gutter still draws bracket line ({bw})")
                 fl = frame.locator("body").evaluate("""() => {
@@ -718,7 +718,7 @@ def main() -> int:
                     fail(f"{key}: bar {fr_['bi']} play frame right edge must sit on the bar edge ({fr_})")
 
             if key == "cl/001":
-                mc = frame.locator(".bar-meter").first.evaluate("el=>getComputedStyle(el).color")
+                mc = css_value(page, frame.locator(".bar-meter").first, "el=>getComputedStyle(el).color")
                 if mc != "rgb(0, 0, 0)":
                     fail(f"cl001: bar meter must be pure black, got {mc}")
                 bn = frame.locator(".bar .bnum").count()
@@ -845,7 +845,7 @@ def main() -> int:
                     if s_last.locator(".dot").count() != 1:
                         fail("jt017 bar1 S 7: low octave dot missing")
                     frame.locator('body').evaluate("()=>document.querySelector('.bar').classList.add('sel')")
-                    selbg = frame.locator('.bar').first.evaluate("el=>getComputedStyle(el).backgroundImage")
+                    selbg = css_value(page, frame.locator('.bar').first, "el=>getComputedStyle(el).backgroundImage")
                     if "linear-gradient" not in selbg:
                         fail("selected bar lost its barline background image")
                     frame.locator('body').evaluate("()=>document.querySelector('.bar').classList.remove('sel')")
