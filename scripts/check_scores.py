@@ -244,7 +244,7 @@ VERSION_BAR_IGNORE = {"chords", "marks"}
 
 
 def check_version_parity(base_path: Path, version_path: Path, code: str) -> None:
-    """版本谱必须与原谱同旋律/歌词/连音线/拍号，只允许和弦或记号行不同（AGENTS 11）。"""
+    """版本谱必须与原谱同旋律/歌词/连音线/拍号，只允许和弦或记号行不同（见 docs/omr-checklist.md）。"""
     base = load(base_path)
     ver = load(version_path)
     if not isinstance(base, dict) or not isinstance(ver, dict):
