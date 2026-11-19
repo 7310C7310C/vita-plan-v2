@@ -26,7 +26,7 @@
 | `scripts/` | 校验与生成脚本 | dev |
 | `tests/` | Playwright UI 检查与本地静态服务器 | dev |
 | `docs/` | 制谱核对清单、本结构说明 | dev |
-| `tools/` | 独立小工具（storage-test、转调、随机音符） | standalone |
+| `tools/` | 独立小工具：`storage-test.html`、`transpose/`、`random-notes/` | standalone |
 | `key/`、`random/` | 旧工具路径的重定向 stub，仅用于兼容旧链接 | legacy stub |
 | `.github/workflows/` | CI 校验与 VPS 部署 | infra |
 
