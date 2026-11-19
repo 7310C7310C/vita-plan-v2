@@ -75,3 +75,4 @@ jobs:
             cd /var/www/vita-plan-v2
             git pull origin main
             chown -R www-data:www-data .
+            bash scripts/deploy-edge.sh
