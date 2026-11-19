@@ -48,8 +48,35 @@ def wait_score_ready(page, timeout: int = 20000) -> None:
         }""",
         timeout=timeout,
     )
-    # Let the player's resize/autowrap RAF/debounce settle before layout assertions.
-    page.wait_for_timeout(250)
+    # Let web fonts finish: the player re-renders once document.fonts is ready.
+    try:
+        page.evaluate("""() => {
+          const f = document.getElementById('v2Frame');
+          const w = f && f.contentWindow;
+          return (w && w.document && w.document.fonts && w.document.fonts.ready)
+            ? w.document.fonts.ready.then(() => true)
+            : true;
+        }""")
+    except Exception:
+        pass
+    # Wait for the player's resize/font reflow to settle (two stable animation frames).
+    try:
+        page.evaluate("""() => new Promise(resolve => {
+          const d = document.getElementById('v2Frame').contentWindow.document;
+          const el = d.getElementById('score');
+          if (!el) return resolve(false);
+          let last = '', stable = 0, frames = 0;
+          const tick = () => {
+            const sig = el.clientWidth + 'x' + el.clientHeight + '|' + d.querySelectorAll('.line').length;
+            if (sig === last) stable++; else { stable = 0; last = sig; }
+            if (stable >= 2 || ++frames >= 40) resolve(true);
+            else d.defaultView.requestAnimationFrame(tick);
+          };
+          tick();
+        })""")
+    except Exception:
+        pass
+    page.wait_for_timeout(100)
 
 
 def wait_score_reload(page, timeout: int = 20000) -> None:
@@ -533,7 +560,17 @@ def main() -> int:
         cls = mb.get_attribute("class") or ""
         if "repeat-start" not in cls or "line-first" in cls:
             fail(f"lz019@900: bar9 classes {cls!r}, expected mid-line repeat-start")
-        mbg = mb.evaluate("el=>getComputedStyle(el,'::before').backgroundImage")
+        try:
+            page.wait_for_function("""() => {
+              const d = document.getElementById('v2Frame').contentWindow.document;
+              const b = d.querySelector('.bar[data-bar="8"]');
+              if (!b || !b.classList.contains('repeat-start') || b.classList.contains('line-first')) return false;
+              const bg = getComputedStyle(b, '::before').backgroundImage;
+              return bg.split('linear-gradient').length - 1 >= 2 && bg.includes('rgb(36, 31, 26)');
+            }""", timeout=5000)
+        except Exception:
+            pass
+        mbg = css_value(page, mb, "el=>getComputedStyle(el,'::before').backgroundImage")
         if mbg.count("linear-gradient") != 2:
             fail("lz019@900: mid-line repeat sign missing thick/thin lines")
         if "rgb(36, 31, 26)" not in mbg:
@@ -938,6 +975,17 @@ def main() -> int:
                 }""")
 
             if key == "lz/019":
+                try:
+                    page.wait_for_function("""() => {
+                      const d = document.getElementById('v2Frame').contentWindow.document;
+                      const row = d.querySelector('.bar[data-bar="0"] .vrow[data-vrow="S"]');
+                      if (!row) return false;
+                      if (row.querySelectorAll('.group-beam').length !== 1) return false;
+                      return [...row.querySelectorAll('.note .u1')]
+                        .every(u => getComputedStyle(u).display === 'none');
+                    }""", timeout=5000)
+                except Exception:
+                    pass
                 row = frame.locator('.bar[data-bar="0"] .vrow[data-vrow="S"]')
                 nb = row.locator('.group-beam').count()
                 if nb != 1:
