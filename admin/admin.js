@@ -17,17 +17,22 @@ const IS_LOCALHOST = location.hostname === 'localhost' || location.hostname === 
 // ==================== Image tree helpers ====================
 function imageOpPath(op) {
     if (!op) return '';
+    let path = '';
     if (op.type === 'delete' && op.oldPath) {
-        return String(op.oldPath).replace(/^\/+/, '');
+        path = String(op.oldPath);
+    } else {
+        let filename = String(op.filename || '');
+        if (!filename || filename.indexOf('..') !== -1) return '';
+        if (filename.indexOf('img/') !== 0) {
+            filename = filename.split('/').pop();
+            path = 'img/' + filename.split('_')[0] + '/' + filename;
+        } else {
+            path = filename;
+        }
     }
-    let filename = String(op.filename || '').replace(/^\/+/, '');
-    if (!filename) return '';
-    if (filename.indexOf('img/') === 0) return filename;
-    if (filename.indexOf('/') !== -1) {
-        filename = filename.split('/').pop();
-    }
-    const category = filename.split('_')[0];
-    return 'img/' + category + '/' + filename;
+    path = path.replace(/^\/+/, '');
+    if (path.indexOf('..') !== -1 || !/^img\/[^/]+\/[^/]+$/.test(path)) return '';
+    return path;
 }
 
 async function buildTreeItemsForOps(ops, createBlobFn) {
@@ -2747,8 +2752,13 @@ async function executePublish(commitMsg, newVersion) {
 
 async function doActualPublish(commitMsg, newVersion, latestSha) {
     try {
+        if (!/^\d{14}$/.test(newVersion)) throw new Error('版本号格式错误');
+
         // 1. 更新 assets/js/script.js 中的版本号
         let scriptContent = appState.workingScriptJs;
+        if (!/const jsonVersion = '[^']*'/.test(scriptContent)) {
+            throw new Error('script.js 缺少 jsonVersion，无法自动同步');
+        }
         scriptContent = scriptContent.replace(/const jsonVersion = '[^']*'/, `const jsonVersion = '${newVersion}'`);
 
         // 2. 更新 assets/js/script.js 中的 translations（同步分类和版本翻译）
@@ -2767,13 +2777,13 @@ async function doActualPublish(commitMsg, newVersion, latestSha) {
         // 4. 同步 sw-v2.js 的 SHELL 版本号，保证 CI 的 index/SHELL 一致性检查通过
         const swFile = await github.getFile('sw-v2.js');
         if (!swFile || !swFile.content) throw new Error('无法加载 sw-v2.js');
-        if (!/assets\/js\/script\.js\?v=[^']*/.test(swFile.content) ||
-            !/assets\/css\/style\.css\?v=[^']*/.test(swFile.content)) {
-            throw new Error('sw-v2.js SHELL 版本格式不符，无法自动同步');
-        }
         let swContent = swFile.content;
-        swContent = swContent.replace(/assets\/js\/script\.js\?v=[^']*/g, `assets/js/script.js?v=${newVersion}`);
-        swContent = swContent.replace(/assets\/css\/style\.css\?v=[^']*/g, `assets/css/style.css?v=${newVersion}`);
+        for (const asset of ['assets/js/script.js', 'assets/css/style.css', 'data/songs.json']) {
+            const escaped = asset.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const re = new RegExp(`^(\\s*'${escaped}\\?v=)[^'\\r\\n]*(')`, 'm');
+            if (!re.test(swContent)) throw new Error(`sw-v2.js SHELL 缺少 ${asset} 版本号`);
+            swContent = swContent.replace(re, (m, head, tail) => head + newVersion + tail);
+        }
 
         // 5. 更新 index.html 圣诞主题
         if (appState.christmasTheme) {

@@ -3,7 +3,6 @@ name: Vita Plan v2 Validate and Deploy
 on:
   push:
     branches: [main]
-  pull_request:
 
 jobs:
   validate:
@@ -31,7 +30,10 @@ jobs:
       - name: Browser UI checks
         run: |
           python3 tests/serve.py 8080 &
-          sleep 1
+          for _ in $(seq 1 50); do
+            if curl -sf http://127.0.0.1:8080/ >/dev/null; then break; fi
+            sleep 0.2
+          done
           python3 tests/ui_check.py http://127.0.0.1:8080/
 
   deploy:

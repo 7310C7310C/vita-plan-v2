@@ -56,6 +56,16 @@ self.addEventListener('fetch', event => {
   if (url.origin !== location.origin) return;
   const path = url.pathname;
 
+  /* Standalone tool pages are outside the app shell. Let the network handle
+     them so nginx 301s / Pages stubs / tool HTML are not replaced by index.html. */
+  const scopePath = new URL(self.registration.scope).pathname;
+  const relPath = (path.indexOf(scopePath) === 0 ? path.slice(scopePath.length) : path).replace(/^\/+/, '');
+  if (relPath === 'key' || relPath.indexOf('key/') === 0 ||
+      relPath === 'random' || relPath.indexOf('random/') === 0 ||
+      relPath.indexOf('tools/') === 0) {
+    return;
+  }
+
   if (path.endsWith('/data/songs.json')) {
     event.respondWith(staleWhileRevalidate(req, event));
     return;

@@ -75,4 +75,4 @@
   python3 tests/serve.py 8080
   python3 tests/ui_check.py http://127.0.0.1:8080/
   ```
-- v1 的离线栈（`sw.js`、`offline.js`、`offline-manifest.json`）已从本仓库移除；v1 归档在 `v1.kcan.cc`，不要在本仓库恢复。
+- v1 离线栈中的 `offline.js`、`offline-manifest.json` 与生成脚本已移除；`sw.js` 仅保留退休墓碑（清 v1 缓存后自注销），满一个发布周期后再删。v1 归档在 `v1.kcan.cc`，不要在本仓库恢复完整离线栈。

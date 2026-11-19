@@ -415,6 +415,15 @@ def main() -> int:
         if not (ROOT / p).exists():
             err(f"index.html: referenced file missing: {ref}")
     sw = (ROOT / "sw-v2.js").read_text(encoding="utf-8")
+    script_js = ROOT / "assets/js/script.js"
+    if script_js.exists():
+        sm = re.search(r"const jsonVersion = '([^']*)'", script_js.read_text(encoding="utf-8"))
+        if not sm:
+            err("assets/js/script.js: jsonVersion not found")
+        else:
+            want = f"data/songs.json?v={sm.group(1)}"
+            if f"'{want}'" not in sw:
+                err(f"sw-v2.js: SHELL does not reference current {want}")
     if "staleWhileRevalidateJson(req, event)" not in sw or "/data/scores/" not in sw:
         err("sw-v2.js: score JSON must use staleWhileRevalidateJson (instant cached open + background update)")
     if "staleWhileRevalidate(req, event)" not in sw:
@@ -443,13 +452,13 @@ def main() -> int:
     pf = ROOT / "player-frame.html"
     if pf.exists():
         pf_text = pf.read_text(encoding="utf-8")
-        for ref in re.findall(r'(?:href|src)="(assets/[^"]+|data/[^"]+)"', pf_text):
+        for ref in re.findall(r'''(?:href|src)=["'](assets/[^"']+|data/[^"']+)["']''', pf_text):
             p = ref.split("?", 1)[0]
             if not (ROOT / p).exists():
                 err(f"player-frame.html: referenced file missing: {ref}")
             if f"'{ref}'" not in sw:
                 err(f"sw-v2.js: SHELL does not reference current {ref}")
-        if "<style>" in pf_text or "<script>" in pf_text:
+        if "<style" in pf_text or re.search(r"<script(?![^>]*\bsrc=)", pf_text, re.I):
             err("player-frame.html: inline <style>/<script> found (use assets/player/)")
 
     if errors:

@@ -11,11 +11,23 @@ for f in assets/js/v2-ui.js assets/js/v2-cache.js assets/js/script.js assets/pla
 done
 
 if [ "${1:-}" = "--ui" ]; then
-  python3 tests/serve.py 8080 &
+  PORT="${PORT:-8080}"
+  python3 tests/serve.py "$PORT" &
   server=$!
   trap 'kill "$server" 2>/dev/null || true' EXIT
-  sleep 1
-  python3 tests/ui_check.py http://127.0.0.1:8080/
+  for _ in $(seq 1 50); do
+    if curl -sf "http://127.0.0.1:${PORT}/" >/dev/null; then break; fi
+    if ! kill -0 "$server" 2>/dev/null; then
+      echo "ERROR: tests/serve.py failed to start on port ${PORT}" >&2
+      exit 1
+    fi
+    sleep 0.2
+  done
+  if ! curl -sf "http://127.0.0.1:${PORT}/" >/dev/null; then
+    echo "ERROR: tests/serve.py not ready on port ${PORT}" >&2
+    exit 1
+  fi
+  python3 tests/ui_check.py "http://127.0.0.1:${PORT}/"
 fi
 
 echo "OK: verify passed"
