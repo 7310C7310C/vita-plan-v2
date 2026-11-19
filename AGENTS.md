@@ -3,7 +3,7 @@
 本文件只放入口与流程规则，不放实现细节。可由代码或测试推导的事实，以 `scripts/check_scores.py`、`tests/ui_check.py` 为准。
 
 ## 开始前
-- 读 `docs/omr-checklist.md`（制谱核对与教训）。
+- 读 `docs/omr-checklist.md`（制谱核对与教训）与 `docs/STRUCTURE.md`（目录职责与运行时路径契约）。
 - 改谱或前端后运行 `python3 scripts/check_scores.py`；再开 `python3 tests/serve.py 8080`，跑 `python3 tests/ui_check.py http://127.0.0.1:8080/`。CI 未过不得部署。
 
 ## 流程
