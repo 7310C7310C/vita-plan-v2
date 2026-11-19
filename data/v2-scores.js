@@ -1,3 +1,4 @@
+/* AUTO-GENERATED from data/v2-scores.json by scripts/generate_v2_manifest.py. Do not edit. */
 window.VP2_DATA = {
   "schemaVersion": 1,
   "codes": {
