@@ -61,6 +61,18 @@ window.VP2_DATA = {
           "label": "贝司"
         }
       }
+    },
+    "gr/001": {
+      "file": "data/scores/gr/001.json",
+      "label": "原譜"
+    },
+    "gr/002": {
+      "file": "data/scores/gr/002.json",
+      "label": "原譜"
+    },
+    "gr/003": {
+      "file": "data/scores/gr/003.json",
+      "label": "原譜"
     }
   }
 };

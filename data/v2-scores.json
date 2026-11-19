@@ -1,66 +1,78 @@
 {
-  "schemaVersion": 1,
-  "codes": {
-    "进堂咏": "jt",
-    "垂怜曲": "cl",
-    "光荣颂": "gr",
-    "答唱咏（朱健仁）": "dc",
-    "福音前欢呼": "fy",
-    "奉献咏": "fx",
-    "天主经": "tz",
-    "领主咏": "lz",
-    "礼成咏": "lc",
-    "圣诞": "sd",
-    "圣神": "ss",
-    "备用": "by",
-    "其他": "qt"
+ "schemaVersion": 1,
+ "codes": {
+  "进堂咏": "jt",
+  "垂怜曲": "cl",
+  "光荣颂": "gr",
+  "答唱咏（朱健仁）": "dc",
+  "福音前欢呼": "fy",
+  "奉献咏": "fx",
+  "天主经": "tz",
+  "领主咏": "lz",
+  "礼成咏": "lc",
+  "圣诞": "sd",
+  "圣神": "ss",
+  "备用": "by",
+  "其他": "qt"
+ },
+ "scores": {
+  "jt/017": {
+   "file": "data/scores/jt/017.json",
+   "label": "四声部"
   },
-  "scores": {
-    "jt/017": {
-      "file": "data/scores/jt/017.json",
-      "label": "四声部"
-    },
-    "lz/020": {
-      "file": "data/scores/lz/020.json",
-      "label": "四声部"
-    },
-    "lz/019": {
-      "file": "data/scores/lz/019.json",
-      "label": "四声部"
-    },
-    "lz/008": {
-      "file": "data/scores/lz/008.json",
-      "label": "四声部",
-      "versions": {
-        "g": {
-          "file": "data/scores/lz/008-g.json",
-          "label": "吉他"
-        }
-      }
-    },
-    "cl/001": {
-      "file": "data/scores/cl/001.json",
-      "label": "旋律",
-      "versions": {
-        "b": {
-          "file": "data/scores/cl/001-b.json",
-          "label": "贝司"
-        }
-      }
-    },
-    "cl/002": {
-      "file": "data/scores/cl/002.json",
-      "label": "旋律",
-      "versions": {
-        "g": {
-          "file": "data/scores/cl/002-g.json",
-          "label": "吉他"
-        },
-        "b": {
-          "file": "data/scores/cl/002-b.json",
-          "label": "贝司"
-        }
-      }
+  "lz/020": {
+   "file": "data/scores/lz/020.json",
+   "label": "四声部"
+  },
+  "lz/019": {
+   "file": "data/scores/lz/019.json",
+   "label": "四声部"
+  },
+  "lz/008": {
+   "file": "data/scores/lz/008.json",
+   "label": "四声部",
+   "versions": {
+    "g": {
+     "file": "data/scores/lz/008-g.json",
+     "label": "吉他"
     }
+   }
+  },
+  "cl/001": {
+   "file": "data/scores/cl/001.json",
+   "label": "旋律",
+   "versions": {
+    "b": {
+     "file": "data/scores/cl/001-b.json",
+     "label": "贝司"
+    }
+   }
+  },
+  "cl/002": {
+   "file": "data/scores/cl/002.json",
+   "label": "旋律",
+   "versions": {
+    "g": {
+     "file": "data/scores/cl/002-g.json",
+     "label": "吉他"
+    },
+    "b": {
+     "file": "data/scores/cl/002-b.json",
+     "label": "贝司"
+    }
+   }
+  },
+  "gr/001": {
+   "file": "data/scores/gr/001.json",
+   "label": "原譜"
+  },
+  "gr/002": {
+   "file": "data/scores/gr/002.json",
+   "label": "原譜"
+  },
+  "gr/003": {
+   "file": "data/scores/gr/003.json",
+   "label": "原譜"
   }
+ }
 }
