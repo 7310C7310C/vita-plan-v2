@@ -1,14 +1,15 @@
 /* Vita Plan v2 service worker: pre-cache the shell; score JSON is synced by
    assets/js/v2-cache.js into the same JSON_CACHE bucket. */
-const SHELL_CACHE = 'v2-shell-148';
+const SHELL_CACHE = 'v2-shell-149';
 const JSON_CACHE = 'v2-json-v3';
+const IMG_CACHE = 'v2-img-v1';
 const SHELL = [
   'index.html',
   'favicon.ico',
   'player-frame.html',
   'assets/player/player.css?v=1',
   'assets/player/player-boot.js?v=1',
-  'assets/player/player-main.js?v=1',
+  'assets/player/player-main.js?v=2',
   'assets/player/player-chords.js?v=1',
   'data/songs.json?v=20261115185326',
   'assets/css/style.css?v=20261115185326',
@@ -30,7 +31,7 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys => Promise.all(keys.map(key => {
-      if (key === SHELL_CACHE || key === JSON_CACHE) return null;
+      if (key === SHELL_CACHE || key === JSON_CACHE || key === IMG_CACHE) return null;
       if (key.indexOf('v2-shell-') === 0) return caches.delete(key);
       if (key.indexOf('v2-json-') === 0) {
         /* Keep the old bucket for tabs still running v2-ui v25; new pages use v3. */
@@ -57,6 +58,13 @@ self.addEventListener('fetch', event => {
   if (relPath === 'key' || relPath.indexOf('key/') === 0 ||
       relPath === 'random' || relPath.indexOf('random/') === 0 ||
       relPath.indexOf('tools/') === 0) {
+    return;
+  }
+
+  /* 音色文件交给 smplr 的 CacheStorage 管理；不要塞进 shell 缓存 */
+  if (path.indexOf('/soundfonts/') !== -1) return;
+  if (path.indexOf('/img/') !== -1) {
+    event.respondWith(imageStaleWhileRevalidate(req, event));
     return;
   }
 
@@ -123,6 +131,21 @@ async function revalidateJson(req){
 async function staleWhileRevalidate(req, event){
   const cache = await caches.open(SHELL_CACHE);
   const hit = await cache.match(req);
+  const network = fetch(req, {cache:'no-store'}).then(res => {
+    if (res && res.ok) cache.put(req, res.clone());
+    return res;
+  }).catch(() => null);
+  if (hit){
+    if (event && event.waitUntil) event.waitUntil(network);
+    return hit;
+  }
+  return (await network) || Response.error();
+}
+
+/* 谱图按 URL 缓存；先返回已缓存的图，后台再更新，翻页/重开秒开 */
+async function imageStaleWhileRevalidate(req, event){
+  const cache = await caches.open(IMG_CACHE);
+  const hit = await cache.match(req, {ignoreSearch:true});
   const network = fetch(req, {cache:'no-store'}).then(res => {
     if (res && res.ok) cache.put(req, res.clone());
     return res;

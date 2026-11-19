@@ -401,16 +401,19 @@ class Engine{
     const def = TIMBRES[id];
     if (!def) return null;
     if (this.instName === id && this.inst) return this.inst;
-    if (this.sampleFailed) return null;
+    if (this.sampleFailed && this.instName === id) return null;
+    /* 切换音色时允许重试；同一音色连续失败仍保持合成音，避免反复拉大文件 */
+    if (this.sampleFailed) this.sampleFailed = false;
     if (this.loading){ try{ await this.loading; }catch(e){} }
     if (this.instName === id && this.inst) return this.inst;
     this.loading = (async ()=>{
       try{
-        const mod = await import("https://cdn.jsdelivr.net/npm/smplr@1.2.0/dist/index.mjs");
+        const mod = await import(new URL("assets/vendor/smplr/index.js", location.href).href)
+          .catch(()=>import("https://cdn.jsdelivr.net/npm/smplr@1.2.0/dist/index.mjs"));
         const ctx = this.ensureCtx();
         if (!ctx) return null;
-        const opts = {
-          instrument:id, kit:"MusyngKite", destination:this.instGain,
+        const baseOpts = {
+          destination:this.instGain,
           notesToLoad:{notes:SCORE_PITCHES, fallback:"nearest"},
           onLoadProgress:({loaded,total})=>{
             this.progress = {loaded,total,id};
@@ -418,10 +421,19 @@ class Engine{
           }
         };
         if (window.isSecureContext && mod.CacheStorage){
-          try{ opts.storage = mod.CacheStorage(); }catch(e){}
+          try{ baseOpts.storage = mod.CacheStorage(); }catch(e){}
         }
-        const inst = mod.Soundfont(ctx, opts);
-        await inst.ready;
+        let inst = null;
+        try{
+          /* 优先使用本站裁剪后的音色；失败再回退 GitHub Pages 原地址 */
+          inst = mod.Soundfont(ctx, {...baseOpts,
+            instrumentUrl:new URL(`soundfonts/MusyngKite/${id}-mp3.js?v=1`, location.href).href});
+          await inst.ready;
+        }catch(e){
+          if (inst && inst.dispose){ try{ inst.dispose(); }catch(_e){} }
+          inst = mod.Soundfont(ctx, {...baseOpts, instrument:id, kit:"MusyngKite"});
+          await inst.ready;
+        }
         if (this.instGain) this.instGain.gain.value = def.gain || 1;
         if (this.inst && this.inst.dispose){ try{ this.inst.dispose(); }catch(e){} }
         this.inst = inst; this.instName = id;
@@ -1745,7 +1757,10 @@ function loadScript(src){
 }
 async function ensureOpenCC(){
   if (window.OpenCC) return window.OpenCC;
-  if (!ocLoading) ocLoading = loadScript("https://cdn.jsdelivr.net/npm/opencc-js@1.4.2/dist/umd/full.js");
+  if (!ocLoading){
+    ocLoading = loadScript(new URL("assets/vendor/opencc/full.js", location.href).href)
+      .catch(()=>loadScript("https://cdn.jsdelivr.net/npm/opencc-js@1.4.2/dist/umd/full.js"));
+  }
   await ocLoading;
   return window.OpenCC;
 }
