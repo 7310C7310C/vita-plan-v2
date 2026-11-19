@@ -1,6 +1,7 @@
 # 项目结构 / 路径契约
 
-本仓库是**无构建**的静态 PWA：nginx 直接以仓库根目录为站点根，GitHub Pages 也以仓库根目录发布。  
+本仓库是**无构建**的静态 PWA：nginx 直接以仓库根目录为站点根，GitHub Pages 也以仓库根目录发布。
+
 因此 **文件路径就是线上 URL**。整理结构时，优先保持运行时路径不变。
 
 ## 目录职责
@@ -67,7 +68,7 @@
 - 新代码文件用 lowercase-kebab-case；不再新增 `v2-` 前缀（本仓库本身就是 v2）。
 - 生成物加 `AUTO-GENERATED` 头，禁止手改。
 - `data/songs.json` 与 `data/v2-scores.json` 的曲号/标题必须一致；新增可播放谱时两边一起改。
-- 改谱或前端后依次运行：
+- 改谱或前端后依次运行（也可直接 `bash scripts/verify.sh --ui`）：
   ```bash
   python3 scripts/check_scores.py
   python3 scripts/check_agents.py

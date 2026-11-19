@@ -14,6 +14,43 @@ const TARGET_IMG_SIZE_KB = 290;
 const ILLEGAL_CHARS = /[\\\/:*?"<>|]/;
 const IS_LOCALHOST = location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.hostname.startsWith('192.168.');
 
+// ==================== Image tree helpers ====================
+function imageOpPath(op) {
+    if (!op) return '';
+    if (op.type === 'delete' && op.oldPath) {
+        return String(op.oldPath).replace(/^\/+/, '');
+    }
+    let filename = String(op.filename || '').replace(/^\/+/, '');
+    if (!filename) return '';
+    if (filename.indexOf('img/') === 0) return filename;
+    if (filename.indexOf('/') !== -1) {
+        filename = filename.split('/').pop();
+    }
+    const category = filename.split('_')[0];
+    return 'img/' + category + '/' + filename;
+}
+
+async function buildTreeItemsForOps(ops, createBlobFn) {
+    const items = [];
+    for (const op of (ops || [])) {
+        if (!op) continue;
+        const path = imageOpPath(op);
+        if (!path) continue;
+        if (op.type === 'delete') {
+            // Git Data API: sha:null in a tree removes the path.
+            items.push({ path, mode: '100644', type: 'blob', sha: null });
+        } else if (op.type === 'add') {
+            if (op.data) {
+                const sha = await createBlobFn(op.data, 'base64');
+                items.push({ path, mode: '100644', type: 'blob', sha });
+            } else if (op.sha) {
+                items.push({ path, mode: '100644', type: 'blob', sha: op.sha });
+            }
+        }
+    }
+    return items;
+}
+// ==================== End image tree helpers ====================
 
 // UTF-8 安全解码 base64
 function decodeBase64UTF8(base64) {
@@ -2720,12 +2757,20 @@ async function doActualPublish(commitMsg, newVersion, latestSha) {
 
         // 3. 更新 index.html 中的版本号
         let indexContent = appState.workingIndexHtml;
+        if (!/assets\/js\/script\.js\?v=[^"]*/.test(indexContent) ||
+            !/assets\/css\/style\.css\?v=[^"]*/.test(indexContent)) {
+            throw new Error('index.html 版本号格式不符，无法自动同步');
+        }
         indexContent = indexContent.replace(/assets\/js\/script\.js\?v=[^"]*/, `assets/js/script.js?v=${newVersion}`);
         indexContent = indexContent.replace(/assets\/css\/style\.css\?v=[^"]*/, `assets/css/style.css?v=${newVersion}`);
 
         // 4. 同步 sw-v2.js 的 SHELL 版本号，保证 CI 的 index/SHELL 一致性检查通过
         const swFile = await github.getFile('sw-v2.js');
         if (!swFile || !swFile.content) throw new Error('无法加载 sw-v2.js');
+        if (!/assets\/js\/script\.js\?v=[^']*/.test(swFile.content) ||
+            !/assets\/css\/style\.css\?v=[^']*/.test(swFile.content)) {
+            throw new Error('sw-v2.js SHELL 版本格式不符，无法自动同步');
+        }
         let swContent = swFile.content;
         swContent = swContent.replace(/assets\/js\/script\.js\?v=[^']*/g, `assets/js/script.js?v=${newVersion}`);
         swContent = swContent.replace(/assets\/css\/style\.css\?v=[^']*/g, `assets/css/style.css?v=${newVersion}`);
