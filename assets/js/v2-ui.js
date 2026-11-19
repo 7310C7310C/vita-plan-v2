@@ -21,6 +21,7 @@
     cat: null,
     song: null,
     score: null,
+    scoreId: null,
     playing: false,
     tempo: 100,
     parts: {S:true, A:true, T:true, B:true},
@@ -145,6 +146,7 @@
     try{ data = await loadScore(score); }
     catch(e){ data = errorScore(song); }
     if (token !== state.loadToken || !state.active) return;
+    state.scoreId = (data && data.id) || null;
     try{ localStorage.setItem('v2.current.score', JSON.stringify(data)); }catch(e){}
     loadFrame(basePath() + 'player-frame.html');
     setTimeout(()=>{ if (!state.ready && token === state.loadToken) setLoading(false); }, 6000);
@@ -171,7 +173,7 @@
     }, 250);
     setLoading(false);
     document.title = '复活计划乐队';
-    state.cat = null; state.song = null; state.score = null;
+    state.cat = null; state.song = null; state.score = null; state.scoreId = null;
   }
   /* 无 JSON 的纯图片谱：VP2UI 已 leave()，但仍需让 isImage() 与画面一致 */
   function setExternalImageMode(on){
@@ -482,6 +484,13 @@
     } else if (m.type === 'vp2:annot'){
       updateAnnotTools(m);
     } else if (m.type === 'vp2:ready'){
+      if (!state.active) return;
+      if (frame && e.source && e.source !== frame.contentWindow) return;
+      try{
+        const w = frame && frame.contentWindow;
+        if (!w || !w.__SCORE) return;
+        if (state.scoreId && w.__SCORE.id !== state.scoreId) return;
+      }catch(err){ return; }
       ready(m);
     } else if (m.type === 'vp2:state'){
       setPlayUI(!!m.playing);

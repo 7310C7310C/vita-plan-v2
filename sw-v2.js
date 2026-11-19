@@ -1,6 +1,6 @@
 /* Vita Plan v2 service worker: pre-cache the shell; score JSON is synced by
    assets/js/v2-cache.js into the same JSON_CACHE bucket. */
-const SHELL_CACHE = 'v2-shell-146';
+const SHELL_CACHE = 'v2-shell-147';
 const JSON_CACHE = 'v2-json-v3';
 const SHELL = [
   'index.html',
@@ -13,9 +13,9 @@ const SHELL = [
   'data/songs.json?v=20261115185326',
   'assets/css/style.css?v=20261115185326',
   'assets/css/v2-ui.css?v=22',
-  'assets/js/v2-ui.js?v=26',
-  'assets/js/script.js?v=2026111911',
-  'assets/js/v2-cache.js?v=9',
+  'assets/js/v2-ui.js?v=27',
+  'assets/js/script.js?v=2026111921',
+  'assets/js/v2-cache.js?v=10',
   'data/v2-scores.js?v=6'
 ];
 
@@ -32,7 +32,11 @@ self.addEventListener('activate', event => {
     caches.keys().then(keys => Promise.all(keys.map(key => {
       if (key === SHELL_CACHE || key === JSON_CACHE) return null;
       if (key.indexOf('v2-shell-') === 0) return caches.delete(key);
-      if (key.indexOf('v2-json-') === 0) return caches.delete(key);
+      if (key.indexOf('v2-json-') === 0) {
+        /* Keep the old bucket for tabs still running v2-ui v25; new pages use v3. */
+        if (key === 'v2-json-v2') return null;
+        return caches.delete(key);
+      }
       if (key.indexOf('vita-plan-assets-') === 0) return caches.delete(key);
       return null;
     }))).then(() => self.clients.claim())

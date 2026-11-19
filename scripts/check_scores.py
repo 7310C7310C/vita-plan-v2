@@ -432,7 +432,9 @@ def main() -> int:
     for rel in ("sw-v2.js", "assets/js/v2-ui.js", "assets/js/v2-cache.js"):
         p = ROOT / rel
         if p.exists():
-            cache_names.update(re.findall(r"""['"](v2-json-v[0-9]+)['"]""", p.read_text(encoding="utf-8")))
+            m = re.search(r"""JSON_CACHE\s*=\s*['"](v2-json-v[0-9]+)['"]""", p.read_text(encoding="utf-8"))
+            if m:
+                cache_names.add(m.group(1))
     if len(cache_names) != 1:
         err(f"JSON cache name mismatch across sw-v2.js/v2-ui.js/v2-cache.js: {sorted(cache_names)}")
     if "staleWhileRevalidate(req, event)" not in sw:

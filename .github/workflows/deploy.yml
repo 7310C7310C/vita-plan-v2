@@ -37,7 +37,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-1.62.0
+          key: ${{ runner.os }}-playwright-${{ hashFiles('.github/workflows/deploy.yml') }}
       - name: Install Playwright
         run: |
           python3 -m pip install --quiet playwright==1.62.0

@@ -480,25 +480,36 @@ function v2Depth() {
    等 popstate 后再退一层（已在首页则不再退，避免退站）。 */
 let v2BackInFlight = false;
 let v2BackQueued = false;
+let v2BackRetried = false;
 let v2BackTimer = 0;
 function v2HistoryBack() {
     if (v2BackInFlight) { v2BackQueued = true; return false; }
     if (v2Depth() <= 0) return false;
+    const href = location.href;
+    const depth = v2Depth();
     v2BackInFlight = true;
     history.back();
-    /* 旧版本 iframe 条目可能吃掉一次 history.back 而不触发 popstate，
-       超时后释放锁，避免返回键永久失效。 */
+    /* 旧版本 iframe 条目可能吃掉一次 history.back 而不触发 popstate。
+       若 1.2s 后网址/层级完全没变，自动重试一次；仍失败则释放锁。 */
     v2BackTimer = setTimeout(function () {
         v2BackTimer = 0;
         if (!v2BackInFlight) return;
+        const unchanged = location.href === href && v2Depth() === depth;
         v2BackInFlight = false;
+        if (unchanged && !v2BackRetried) {
+            v2BackRetried = true;
+            v2HistoryBack();
+            return;
+        }
+        v2BackRetried = false;
         if (v2BackQueued) { v2BackQueued = false; v2HistoryBack(); }
-    }, 900);
+    }, 1200);
     return true;
 }
 function v2BackLanded() {
     if (v2BackTimer) { clearTimeout(v2BackTimer); v2BackTimer = 0; }
     v2BackInFlight = false;
+    v2BackRetried = false;
     const queued = v2BackQueued;
     v2BackQueued = false;
     syncViewFromUrl();

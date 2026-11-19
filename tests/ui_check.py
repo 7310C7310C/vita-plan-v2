@@ -78,6 +78,28 @@ def css_value(page, locator, expr: str, tries: int = 20) -> str:
     return value
 
 
+def manifest_paths(page) -> list[str]:
+    data = page.evaluate("""async () => {
+      const r = await fetch('data/v2-manifest.json', {cache: 'no-store'});
+      return await r.json();
+    }""")
+    return [f["path"] for f in data.get("files", [])]
+
+
+def wait_hashes(page, paths: list[str], timeout: int = 30000) -> None:
+    """Synchronous predicate: Playwright returns immediately for async ones."""
+    page.wait_for_function(
+        """(paths) => {
+          try {
+            const h = JSON.parse(localStorage.getItem('v2.score.hashes') || '{}');
+            return paths.every(p => !!h[p]);
+          } catch (e) { return false; }
+        }""",
+        arg=paths,
+        timeout=timeout,
+    )
+
+
 def open_score(browser, path: str, width: int = 1280):
     ctx = browser.new_context(viewport={"width": width, "height": 900}, service_workers="block")
     page = ctx.new_page()
@@ -169,26 +191,41 @@ def main() -> int:
             fail("compound flow: page reloaded (nav marker lost)")
         if p_errs:
             fail("compound flow page errors: " + " | ".join(p_errs[:3]))
-        # 谱内切歌后关闭：分类返回应一键回首页，不能重开上一首（017→018 回归）
-        page.locator('#categoriesContainer .category-card').first.click()
-        page.wait_for_timeout(600)
-        page.locator('#songsContainer .song-item', has_text="017").first.click()
+        # 谱内 JSON→JSON 切歌后关闭/浏览器后退：一次退一层，不能重开别的谱
+        page.locator('#categoriesContainer .category-card', has_text="垂怜曲").first.click()
+        page.wait_for_timeout(500)
+        page.locator('#songsContainer .song-item', has_text="001").first.click()
         wait_score_ready(page)
         page.keyboard.press("ArrowDown")
-        page.wait_for_timeout(1400)
-        if "/jt/018" not in page.url:
-            fail(f"song switch: expected /jt/018, got {page.url}")
+        wait_score_ready(page)
+        if "/cl/002" not in page.url:
+            fail(f"json song switch: expected /cl/002, got {page.url}")
+        sid = page.evaluate("() => document.getElementById('v2Frame').contentWindow.__SCORE.id")
+        if sid != "cl002":
+            fail(f"json song switch: frame shows {sid!r}")
         page.click('#close-viewer')
-        page.wait_for_timeout(700)
+        page.wait_for_function("() => location.pathname === '/cl'", timeout=10000)
         page.click('#backButton')
-        page.wait_for_timeout(800)
-        if page.url.rstrip('/') != BASE.rstrip('/'):
-            fail(f"song switch: category back URL {page.url} != home {BASE}")
+        page.wait_for_function("() => location.pathname === '/'", timeout=10000)
         vs = page.evaluate("""() => ({
           viewer: getComputedStyle(document.getElementById('viewer-view')).display,
           main: getComputedStyle(document.getElementById('main-view')).display })""")
         if vs["viewer"] != "none" or vs["main"] != "block":
-            fail(f"song switch: category back reopened a score {vs}")
+            fail(f"json song switch: category back reopened a score {vs}")
+        # 同样的 JSON→JSON 切歌后，浏览器后退也应一次回到分类
+        page.locator('#categoriesContainer .category-card', has_text="垂怜曲").first.click()
+        page.wait_for_timeout(500)
+        page.locator('#songsContainer .song-item', has_text="001").first.click()
+        wait_score_ready(page)
+        page.keyboard.press("ArrowDown")
+        wait_score_ready(page)
+        page.go_back()
+        page.wait_for_function("() => location.pathname === '/cl'", timeout=10000)
+        vv = page.evaluate("() => getComputedStyle(document.getElementById('viewer-view')).display")
+        if vv != "none":
+            fail(f"json song switch: browser back still shows viewer ({vv})")
+        page.click('#backButton')
+        page.wait_for_function("() => location.pathname === '/'", timeout=10000)
         # 深链进入：× 关闭 / 页内返回必须能回到首页网址与视图（B1 回归）
         for path, closer in (("cl/001", "#close-viewer"), ("jt", "#backButton"), ("weekly", "#backButtonWeekly")):
             page.goto(BASE + path, wait_until="load", timeout=60000)
@@ -438,36 +475,30 @@ def main() -> int:
             fail("jt017 page errors: " + " | ".join(errs[:4]))
         ctx.close()
 
-        # first visit prefetches all score JSON into v2-json-v3 in the background
+        # first visit prefetches every score JSON listed in the manifest
         ctx = browser.new_context(viewport={"width": 1280, "height": 900}, service_workers="block")
         page = ctx.new_page()
         page.goto(BASE, wait_until="load", timeout=60000)
-        n_scores = 0
-        for _ in range(12):
-            n_scores = page.evaluate("""async () => {
-              const c = await caches.open('v2-json-v3');
-              const keys = await c.keys();
-              return keys.filter(k => k.url.includes('/data/scores/')).length;
-            }""")
-            if n_scores >= 6:
-                break
-            page.wait_for_timeout(500)
-        if n_scores < 6:
-            fail(f"first-visit score prefetch incomplete: {n_scores}/6 cached")
+        paths = manifest_paths(page)
+        wait_hashes(page, paths)
+        n_scores = page.evaluate("""async () => {
+          const c = await caches.open('v2-json-v3');
+          const keys = await c.keys();
+          return keys.filter(k => k.url.includes('/data/scores/')).length;
+        }""")
+        if n_scores < len(paths):
+            fail(f"first-visit score prefetch incomplete: {n_scores}/{len(paths)} cached")
         ctx.close()
 
-        # 已缓存后重进：打开 JSON 谱不得再请求该谱（需等首轮同步完成）
+        # 已缓存后重进：打开 JSON 谱不得再请求该谱（含整页重进）
         ctx = browser.new_context(viewport={"width": 1280, "height": 900})
         page = ctx.new_page()
         score_reqs: list[str] = []
         page.on("request", lambda r: score_reqs.append(r.url) if "/data/scores/" in r.url else None)
         page.goto(BASE, wait_until="load", timeout=60000)
-        page.wait_for_function("""async () => {
-          try {
-            const c = await caches.open('v2-json-v3');
-            return !!(await c.match(new URL('data/scores/jt/017.json', document.baseURI).href));
-          } catch (e) { return false; }
-        }""", timeout=20000)
+        wait_app(page)
+        path_list = manifest_paths(page)
+        wait_hashes(page, path_list)
         if page.locator('#version-modal').is_visible():
             page.locator('#modalVersionBtnList .primary-version-btn').click()
             page.wait_for_timeout(250)
@@ -476,9 +507,13 @@ def main() -> int:
         score_reqs.clear()
         page.locator('#songsContainer .song-item', has_text="017").first.click()
         wait_score_ready(page)
+        sid = page.evaluate("() => document.getElementById('v2Frame').contentWindow.__SCORE.id")
+        if sid != "jintang017":
+            fail(f"cached score opened wrong JSON: {sid!r}")
         if score_reqs:
             fail(f"cached score still requested JSON: {score_reqs[:3]}")
-        # 重新进入首页后仍应走缓存
+        # 重新进入首页：从 goto 起就记录，整页重进也不能重下任何谱
+        score_reqs.clear()
         page.goto(BASE, wait_until="load", timeout=60000)
         wait_app(page)
         if page.locator('#version-modal').is_visible():
@@ -486,7 +521,6 @@ def main() -> int:
             page.wait_for_timeout(250)
         page.locator('#categoriesContainer .category-card').first.click()
         page.wait_for_timeout(500)
-        score_reqs.clear()
         page.locator('#songsContainer .song-item', has_text="017").first.click()
         wait_score_ready(page)
         if score_reqs:
