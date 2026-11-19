@@ -3,6 +3,7 @@ name: Vita Plan v2 Validate and Deploy
 on:
   push:
     branches: [main]
+  pull_request:
 
 jobs:
   validate:
@@ -20,7 +21,7 @@ jobs:
         run: python3 scripts/check_agents.py
       - name: JS syntax
         run: |
-          for f in assets/js/v2-ui.js assets/js/v2-cache.js assets/js/script.js assets/js/offline.js sw-v2.js sw.js admin/admin.js; do
+          for f in assets/js/v2-ui.js assets/js/v2-cache.js assets/js/script.js sw-v2.js sw.js admin/admin.js; do
             node --check "$f"
           done
       - name: Install Playwright
@@ -35,6 +36,7 @@ jobs:
 
   deploy:
     needs: validate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to VPS

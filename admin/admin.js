@@ -14,105 +14,6 @@ const TARGET_IMG_SIZE_KB = 290;
 const ILLEGAL_CHARS = /[\\\/:*?"<>|]/;
 const IS_LOCALHOST = location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.hostname.startsWith('192.168.');
 
-// ==================== Offline manifest helpers ====================
-// Keep this block self-contained: scripts/generate_offline_manifest.py mirrors it.
-const OFFLINE_MANIFEST_PATH = 'data/offline-manifest.json';
-const OFFLINE_SHELL_FILES = [
-    'index.html', 'assets/css/style.css', 'assets/js/script.js', 'assets/js/offline.js',
-    'data/songs.json', 'favicon.ico'
-];
-
-function isOfflineManifestPath(path) {
-    if (typeof path !== 'string' || !path) return false;
-    if (path.charAt(0) === '/' || path.indexOf('\\') !== -1) return false;
-    if (path.split('/').indexOf('..') !== -1) return false;
-    if (OFFLINE_SHELL_FILES.indexOf(path) !== -1) return true;
-    return path.indexOf('img/') === 0 && path.length > 4;
-}
-
-function offlineImagePath(op) {
-    if (!op) return '';
-    if (op.type === 'delete' && op.oldPath) {
-        return String(op.oldPath).replace(/^\/+/, '');
-    }
-    let filename = String(op.filename || '').replace(/^\/+/, '');
-    if (!filename) return '';
-    if (filename.indexOf('img/') === 0) return filename;
-    if (filename.indexOf('/') !== -1) {
-        filename = filename.split('/').pop();
-    }
-    const category = filename.split('_')[0];
-    return 'img/' + category + '/' + filename;
-}
-
-async function buildTreeItemsForOps(ops, createBlobFn) {
-    const items = [];
-    for (const op of (ops || [])) {
-        if (!op) continue;
-        const path = offlineImagePath(op);
-        if (!path) continue;
-        if (op.type === 'delete') {
-            // Git Data API: sha:null in a tree removes the path.
-            items.push({ path, mode: '100644', type: 'blob', sha: null });
-        } else if (op.type === 'add') {
-            if (op.data) {
-                const sha = await createBlobFn(op.data, 'base64');
-                items.push({ path, mode: '100644', type: 'blob', sha });
-            } else if (op.sha) {
-                items.push({ path, mode: '100644', type: 'blob', sha: op.sha });
-            }
-        }
-    }
-    return items;
-}
-
-function offlineManifestPathCompare(a, b) {
-    const enc = new TextEncoder();
-    const aa = enc.encode(a);
-    const bb = enc.encode(b);
-    const len = Math.min(aa.length, bb.length);
-    for (let i = 0; i < len; i++) {
-        if (aa[i] !== bb[i]) return aa[i] - bb[i];
-    }
-    return aa.length - bb.length;
-}
-
-function offlineManifestVersion(files) {
-    const paths = Object.keys(files).sort(offlineManifestPathCompare);
-    let canonical = '';
-    for (const path of paths) {
-        canonical += path + '\t' + files[path].hash + '\t' + files[path].size + '\n';
-    }
-    if (!crypto || !crypto.subtle) {
-        throw new Error('浏览器不支持 SHA-256，无法生成离线清单');
-    }
-    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(canonical)).then((digest) => {
-        return Array.prototype.map.call(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0'))
-            .join('').slice(0, 16);
-    });
-}
-
-async function buildOfflineManifest(tree) {
-    const files = {};
-    (tree || []).forEach((entry) => {
-        if (!entry || entry.type !== 'blob' || !isOfflineManifestPath(entry.path)) return;
-        files[entry.path] = {
-            hash: String(entry.sha || '').toLowerCase(),
-            size: Number(entry.size) || 0
-        };
-    });
-    const missing = OFFLINE_SHELL_FILES.filter((name) => !files[name]);
-    if (missing.length) {
-        throw new Error('离线清单缺少必要文件: ' + missing.join(', '));
-    }
-    const ordered = {};
-    Object.keys(files).sort(offlineManifestPathCompare).forEach((path) => {
-        ordered[path] = files[path];
-    });
-    const version = await offlineManifestVersion(ordered);
-    return { version, files: ordered };
-}
-// ==================== End offline manifest helpers ====================
 
 // UTF-8 安全解码 base64
 function decodeBase64UTF8(base64) {
@@ -359,13 +260,6 @@ const github = {
     async getCommitTree(commitSha) {
         const data = await this.request('GET', `/repos/${REPO_OWNER}/${REPO_NAME}/git/commits/${commitSha}`);
         return data.tree.sha;
-    },
-    async getTreeRecursive(treeSha) {
-        const data = await this.request('GET', `/repos/${REPO_OWNER}/${REPO_NAME}/git/trees/${treeSha}?recursive=1`);
-        if (data.truncated) {
-            throw new Error('Git tree 过大，无法生成完整离线清单；请缩小仓库后重试');
-        }
-        return Array.isArray(data.tree) ? data.tree : [];
     },
     async createBlob(content, encoding) {
         const data = await this.request('POST', `/repos/${REPO_OWNER}/${REPO_NAME}/git/blobs`, {
@@ -2751,6 +2645,8 @@ async function doPublish() {
         `  [修改] data/songs.json`,
         `  [修改] assets/js/script.js`,
         `  [修改] index.html`,
+        `  [修改] 404.html`,
+        `  [修改] sw-v2.js`,
         ...imgFiles
     ].filter(Boolean).join('\n');
 
@@ -2826,9 +2722,15 @@ async function doActualPublish(commitMsg, newVersion, latestSha) {
         let indexContent = appState.workingIndexHtml;
         indexContent = indexContent.replace(/assets\/js\/script\.js\?v=[^"]*/, `assets/js/script.js?v=${newVersion}`);
         indexContent = indexContent.replace(/assets\/css\/style\.css\?v=[^"]*/, `assets/css/style.css?v=${newVersion}`);
-        indexContent = indexContent.replace(/assets\/js\/offline\.js\?v=[^"]*/, `assets/js/offline.js?v=${newVersion}`);
 
-        // 4. 更新 index.html 圣诞主题
+        // 4. 同步 sw-v2.js 的 SHELL 版本号，保证 CI 的 index/SHELL 一致性检查通过
+        const swFile = await github.getFile('sw-v2.js');
+        if (!swFile || !swFile.content) throw new Error('无法加载 sw-v2.js');
+        let swContent = swFile.content;
+        swContent = swContent.replace(/assets\/js\/script\.js\?v=[^']*/g, `assets/js/script.js?v=${newVersion}`);
+        swContent = swContent.replace(/assets\/css\/style\.css\?v=[^']*/g, `assets/css/style.css?v=${newVersion}`);
+
+        // 5. 更新 index.html 圣诞主题
         if (appState.christmasTheme) {
             if (!indexContent.includes('christmas-theme')) {
                 indexContent = indexContent.replace('<body', '<body class="christmas-theme"');
@@ -2838,21 +2740,23 @@ async function doActualPublish(commitMsg, newVersion, latestSha) {
             indexContent = indexContent.replace(/class='christmas-theme'/g, '');
         }
 
-        // 5. 序列化 data/songs.json
+        // 6. 序列化 data/songs.json
         const songsContent = JSON.stringify(appState.workingSongsData, null, 2);
 
-        // 6. 获取当前 ref 和 tree
+        // 7. 获取当前 ref 和 tree
         const { refSha } = await github.getRefSha();
         const treeSha = await github.getCommitTree(refSha);
 
-        // 7. 创建 blobs
+        // 8. 创建 blobs（404.html 必须与 index.html 逐字节一致）
         const blobs = [
             { path: 'data/songs.json', content: songsContent, encoding: 'utf-8' },
             { path: 'assets/js/script.js', content: scriptContent, encoding: 'utf-8' },
-            { path: 'index.html', content: indexContent, encoding: 'utf-8' }
+            { path: 'index.html', content: indexContent, encoding: 'utf-8' },
+            { path: '404.html', content: indexContent, encoding: 'utf-8' },
+            { path: 'sw-v2.js', content: swContent, encoding: 'utf-8' }
         ];
 
-        // 8. 创建文本 blobs，并把图片 delete/rename/add/update 转成 tree items
+        // 9. 创建文本 blobs，并把图片 delete/rename/add/update 转成 tree items
         const treeItems = [];
         for (const b of blobs) {
             const sha = await github.createBlob(b.content, b.encoding);
@@ -2864,23 +2768,11 @@ async function doActualPublish(commitMsg, newVersion, latestSha) {
         );
         treeItems.push.apply(treeItems, imageTreeItems);
 
-        // 9. 创建新 tree
+        // 10. 创建新 tree
         const newTreeSha = await github.createTree(treeSha, treeItems);
 
-        // 10. 基于最终 tree 的递归清单生成离线 manifest，再加入 final tree
-        const recursiveTree = await github.getTreeRecursive(newTreeSha);
-        const offlineManifest = await buildOfflineManifest(recursiveTree);
-        const manifestContent = JSON.stringify(offlineManifest, null, 2) + '\n';
-        const manifestBlobSha = await github.createBlob(manifestContent, 'utf-8');
-        const finalTreeSha = await github.createTree(newTreeSha, [{
-            path: OFFLINE_MANIFEST_PATH,
-            mode: '100644',
-            type: 'blob',
-            sha: manifestBlobSha
-        }]);
-
         // 11. 创建 commit
-        const newCommitSha = await github.createCommit(finalTreeSha, refSha, commitMsg);
+        const newCommitSha = await github.createCommit(newTreeSha, refSha, commitMsg);
 
         // 12. 更新 ref
         await github.updateRef(newCommitSha);
