@@ -16,6 +16,8 @@ jobs:
           python-version: '3.12'
       - name: Validate score data / manifest / assets
         run: python3 scripts/check_scores.py
+      - name: Validate AGENTS.md indicator-only
+        run: python3 scripts/check_agents.py
       - name: JS syntax
         run: |
           for f in assets/js/v2-ui.js assets/js/v2-cache.js assets/js/script.js assets/js/offline.js sw-v2.js sw.js admin/admin.js; do

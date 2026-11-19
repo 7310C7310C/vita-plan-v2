@@ -1,62 +1,35 @@
 # AGENTS.md — Vita Plan v2 强制规则
 
-本文件优先于一般习惯。任何 agent/开发者改本仓库前先读；违反规则不得提交/部署。
+本文件为 agent/开发者指示入口，优先于一般习惯。改仓库前先读；违反规则不得提交/部署。可由代码推导的事实不写在此，以 `tests/check_scores.py` 与 `tests/ui_check.py` 为准。
 
 ## 必读
 - `README.md`：用户手册/生产口径。
-- `docs/omr-checklist.md`：OMR 制谱核对清单（每次新谱必须逐项过）。
+- `docs/omr-checklist.md`：OMR 制谱核对清单与经验教训。
 - `scripts/check_scores.py`、`tests/ui_check.py`：提交前必须跑。
-
-## OMR 工具（强制）
-1. 制谱前必须先用 **`lodebar2026/dolce`** 识别简谱：先用 `git fetch` 确认已是最新 tag/main（落后则 `pull --ff-only`），再按其仓库 README 安装/运行，输出 123 或结构化谱面，后转本仓库 JSON。
-2. 不得跳过 Dolce 直接手工抄谱；除非用户明确提供结构化谱面/数据，或明确说明无法使用该工具。
-3. Dolce 输出只作初稿；音高/时值/歌词/和弦之外，beam、slur/tie、歌词边界必须按原图核对。
-4. 不写死任何机器路径、账号或环境限制；任何接手者/设备按 `lodebar2026/dolce` 的通用文档执行。
-
-## 自维护（强制）
-- 任何问题只要根因在 **AI/agent 自身**（识别、转写、渲染、检查、文档、CI 配置），除修当前实例外，必须把可复用的防止措施回写到本文件、`docs/omr-checklist.md`、`tests/` 或 CI：能自动判定的加断言，不能的加核对项。
-- 每笔此类修复在 commit 说明中写清：根因 → 防再犯措施。
-- 若问题来自**用户提供的原谱/歌词/谱面本身写错**，不要把它当作 AI 规则缺陷去改提示词；向用户给出证据并等待更正，不擅自改源谱。
-- 任何接手者发现问题，一律按本文件要求修复，不得只报告或绕过检查。
 
 ## 强制检查（CI 不过则不能部署）
 ```bash
 python3 scripts/check_scores.py
-python3 tests/serve.py 8080 &          # 新终端或后台（支持 /cl/001 这类路由）
+python3 tests/serve.py 8080 &
 python3 tests/ui_check.py http://127.0.0.1:8080/
 ```
-`.github/workflows/deploy.yml` 的 `validate` job 会跑同一组检查；`deploy` 依赖 `validate`，失败不会上服务器。
+`.github/workflows/deploy.yml` 的 `validate` job 跑同一组检查；`deploy` 依赖 `validate`。
 
-## 乐谱/OMR
-1. Dolce OMR 只作为音高/时值/歌词/和弦初稿；**不直接信其视觉排版**。
-2. 每谱必须按 `docs/omr-checklist.md` 核对：拍号/小节数、各声部音高八度时值、beam 分组、slur/tie、歌词逐字起拍、和弦/斜杠低音/Capo、默认速度。变调夹不按图片/曲目自动默认：`capo` 默认 0，乐手手动选择；用户选择可按曲保存。吉他版 JSON 用原调写和弦，不得预设 Capo 3。
-2b. 同一区域有多条连音/延音线重叠或共用端点时，长线在上、短线在下（长在上短在下为固定原则）。
-3. 小节可加 `endbar:"thinThick"|"doubleThin"` 指定右侧结束线（thinThick=细+粗，doubleThin=双细；不加则曲末默认细+粗）。`ties` 第三项 `"playonly"` 表示只影响播放延音、不画线。连音线/延音线必须写入 `slurs`/`ties`，不能因为“听不出来”省略；同音高用 tie，不同音高用 slur。小节内 slur 写 `[小节,声部,起,迄]`；跨小节 slur 写 `[小节1,声部1,起,小节2,声部2,迄]`，不能把跨小节写成同一小节。
-4. 歌词以原图逐字对位为准；特别检查小节末与下一小节首、一字多音（melisma）。cl001 第7/8小节、jt017 第13/14小节是已发生过的反例。
-4b. 多段歌词共用开头时，原谱通常只印一行至首次分歧；用 `lyricCollapse:true` 自动判定分歧点，不得写死小节号，也不得把各段整曲重复印出（jt017 已发生反例）。单行显示时不得印段号，只有同时显示 2 行以上才标 `1./2./3.`。
-5. beam 分组按拍处理：同一拍内连成一条、拍与拍之间留缺口；复合拍（6/8、9/8、12/8）每 3 个八分音为一组，组内连续短音符用一条连续符槓，不得逐音下划线；不要把整小节八分音符连成一条。
-6. 单声部谱必须 `voices:["S"]`；菜单隐藏「声部」整行，谱面隐藏 S/A/T/B 标记。
-7. 升降号绝对定位，不得挤动音符数字；延音 dash 用置中线（与数字同宽、约 3px 厚），音符/dash/歌词中心对齐。
-7b. 曲末必须是结束符（细线+粗线）；仅当原谱该处有右反复记号时才画反复点。单声部谱不画每行左侧系统括号；多声部按 lz020 原谱样式画粗竖线+实心尖角弯钩（上下外扬），不得画成细线圆角钩。行首反复在行首时，只需在系统括号粗线+小节细线右侧补双点，不必与行末对称；行内反复才用粗线+细线+点的小节内镜像样式。
-7c. 小节序号与和弦同一行，序号居中于小节线；不得单独占一行。有拍号变更时序号让位给拍号，但 `bar.tag`（如“弱起”）保留。
-7d. 普通小节线与曲末双线从音符行顶开始，不得上穿和弦行或小节序号；无和弦谱从行顶开始。所有小节线用纯黑（#000），不得用灰色或半透明色。
-7e. 空拍（无音符、无延音）必须显示 `0`，与原谱一致。若原谱某音符不带八度点而按音高本应带（如 jt017 首节 T 的 7），在事件第 6 项写 `"nodot"` 抑制该点的显示，不得改动音高。
-7f. 歌词正文用纯黑 #000（不得用灰色）；夜间模式用主题色 `--score-ink`，不得硬编码黑导致不可见。反复记号双点须以反复竖线的实际跨度为基准垂直居中（不是整小节高度的 50%）。
-7g. `bar.hum` 在小节 T/B 之间加哼唱歌词（如“呜”）；同一条线只要有一小节有 hum，整行所有小节都保留空 hum 行以对齐。跨行 slur/tie 必须自动拆成上行半条、下行半条（按 `LINE_OF_BAR` 判断）。
-8. 任何新增/修改分数后运行 `python3 scripts/generate_v2_manifest.py`；`check_scores.py` 会校验 manifest 与 mapping。乐谱 JSON 用缓存优先 + 后台 revalidate（`staleWhileRevalidateJson`）：已缓存秒开，后台更新缓存；壳/列表用 SWR（缓存优先，后台更新）；manifest 用网络优先 `no-store` 供同步。
-9. 曲号沿用既有编号，永不重排；删歌留空号。
-10. slur/tie 必须逐条对照原图；修改者与 Reviewer 都必须抽查原图，不得只依据 JSON/测试断言。
-11. 版本谱（吉他/贝司/备选）必须也是 JSON，且与原谱同旋律的小节数/歌词/连音线一致；在 `data/v2-scores.json` 的曲目条目里加 `versions:{g|b|a:{file,label}}`，文件命名为 `<编号>-<g|b|a>.json`，`versionCode` 必须与映射一致。播放器按 `?v=g|b|a` 加载对应 JSON；该版本没有 JSON 时才回落到图片谱。
-11b. 吉他版和弦写**实际音高（原调）**，`capo` 默认 0；原图印的 Capo 3 形状需 +3 半音写入（如 Am→Cm、G/B→Bb/D），乐手手动设 Capo 3 时播放器自动显示回原图形状。不得写死 capo 或自动套用图片上的 Capo。
-11c. 贝司版和弦行改为原图的「弦.品」记号：小节写 `marks:[[拍,"3.3"],…]`，整谱 `markMode:true`，`chords` 留空；不弹和弦指法。记号随变调夹**按保音高换算**：同弦品数减 capo，0 写小写 `sx`，品数不足则换更低音弦的等效位置；原音低于「capo + 最低弦空弦」时保留原记号。原图的 `2X/3X` 等大写记号写入 JSON 时一律改小写 `2x/3x`。
-
-## 资源/部署
-- 改前端资源或 `player-frame.html` 后：同步升 `?v=`、`sw-v2.js` 的 `SHELL_CACHE`，并把 `index.html` 复制为 `404.html`；`check_scores.py` 会检查 SW 是否引用当前版本。
-- 提交中文说明；staging `v2.kcan.cc` 验收后再谈 root。
-- v2 不新增指向 v1 / GitHub Pages 的对外链接。
+## 高层不变量（不可由代码推导）
+- 制谱前按 `docs/omr-checklist.md` 使用 `lodebar2026/dolce` 作为初稿；Dolce 输出只作初稿，视觉排版与歌词边界按原图核对。
+- 曲号沿用既有编号，永不重排；删歌留空号。
+- 版本谱（g/b/a）必须与原谱同旋律的小节数/歌词/连音线一致；登记于 `data/v2-scores.json` 的 `versions`，`versionCode` 必须一致。
+- 改前端资源或 `player-frame.html` 后：同步升 `?v=`、`sw-v2.js` 的 `SHELL_CACHE`，并把 `index.html` 复制为 `404.html`。
+- 提交中文说明；staging `v2.kcan.cc` 验收后再谈 root；v2 不新增指向 v1/GitHub Pages 的对外链接。
 
 ## 评审
 - 任何 frozen diff 部署前由 Reviewer 独立审；高风险（auth/权限/支付/数据/secrets/对外暴露）加 Auditor。
 - Reviewer/Auditor 不改产品码；review 前后工作树必须 clean。
 
-12. 弥撒时段防误触：以使用者装置本地时间为准，周一至周六 07:30–08:30、主日 09:00–10:30 与 20:00–21:30，任何开始播放（播放键、点音符/小节、选段循环、空格键、菜单播放、父页播放指令）都须先 `window.confirm` 取得确认；取消则不出声。切回页面时的自动续播在该时段直接停用，不弹确认。
+## 维护约定
+- 新经验/教训只追加到 `docs/omr-checklist.md` 的「已知教训」；不得追加到本文件。
+- 可由代码推导的事实以 tests/check_scores.py 为准，不写入本文件。
+- 本文件结构/内容变更需 Reviewer PASS，并在 commit 说明写「AGENTS.md indicator change」。
+- 本文件不得包含 OMR 细则、JSON 格式、功能需求或实现细节。
+```<|end|><|start|>startup<|channel|>analysis <|constrain|>xml<|message|><rfl:parameter name="path">
+/root/work/vita-plan-v2/docs/omr-checklist.md
