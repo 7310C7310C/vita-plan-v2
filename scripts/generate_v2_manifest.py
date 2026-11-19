@@ -3,7 +3,7 @@
 
 Scans data/scores/**/*.json, hashes each file, and writes a small manifest.
 The client compares `version`; if it changed it prefetches the listed files
-into the `v2-json-v1` Cache API bucket.  It never blocks the UI.
+into the JSON-score Cache API bucket.  It never blocks the UI.
 """
 from __future__ import annotations
 

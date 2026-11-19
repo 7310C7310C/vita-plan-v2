@@ -22,6 +22,7 @@ FORBIDDEN_HEADINGS = {
     "## 数据格式",
 }
 FORBIDDEN_TOKENS = (
+    "README",
     "nodot",
     "thinThick",
     "doubleThin",
