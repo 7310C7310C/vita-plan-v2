@@ -3,7 +3,6 @@ window.VP2_DATA = {
   "codes": {
     "进堂咏": "jt",
     "垂怜曲": "cl",
-    "光荣颂": "gr",
     "答唱咏（朱健仁）": "dc",
     "福音前欢呼": "fy",
     "奉献咏": "fx",
@@ -61,18 +60,6 @@ window.VP2_DATA = {
           "label": "贝司"
         }
       }
-    },
-    "gr/001": {
-      "file": "data/scores/gr/001.json",
-      "label": "原譜"
-    },
-    "gr/002": {
-      "file": "data/scores/gr/002.json",
-      "label": "原譜"
-    },
-    "gr/003": {
-      "file": "data/scores/gr/003.json",
-      "label": "原譜"
     }
   }
 };

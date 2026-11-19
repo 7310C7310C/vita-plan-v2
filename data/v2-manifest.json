@@ -1,5 +1,5 @@
 {
-  "version": "e3a456b300140166",
+  "version": "4e0ee44d8affefd4",
   "files": [
     {
       "path": "data/scores/cl/001-b.json",
@@ -25,21 +25,6 @@
       "path": "data/scores/cl/002.json",
       "hash": "e94bd03ea99424df8244f0fa945a998171da004716c0daeec65d0b70d1deba16",
       "size": 7773
-    },
-    {
-      "path": "data/scores/gr/001.json",
-      "hash": "63692f705f7adbcc4b448105bb77bcd34e369977382a65e5bb3d41b75d72e6d5",
-      "size": 25695
-    },
-    {
-      "path": "data/scores/gr/002.json",
-      "hash": "64e699741ffc5f83e5526bdc968a9bce25a1859dc883e96628556f084b48b350",
-      "size": 16259
-    },
-    {
-      "path": "data/scores/gr/003.json",
-      "hash": "0f0260f5eb4702633306faa7a3c2a996b379113e4abdfbec23c25ca9e61b4704",
-      "size": 18556
     },
     {
       "path": "data/scores/jt/017.json",
