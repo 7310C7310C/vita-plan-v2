@@ -476,6 +476,34 @@ function v2Depth() {
     try { return (history.state && typeof history.state.depth === 'number') ? history.state.depth : 0; }
     catch (e) { return 0; }
 }
+/* 连点页内返回时只允许一个 history.back() 在途；第二次点击排队，
+   等 popstate 后再退一层（已在首页则不再退，避免退站）。 */
+let v2BackInFlight = false;
+let v2BackQueued = false;
+let v2BackTimer = 0;
+function v2HistoryBack() {
+    if (v2BackInFlight) { v2BackQueued = true; return false; }
+    if (v2Depth() <= 0) return false;
+    v2BackInFlight = true;
+    history.back();
+    /* 旧版本 iframe 条目可能吃掉一次 history.back 而不触发 popstate，
+       超时后释放锁，避免返回键永久失效。 */
+    v2BackTimer = setTimeout(function () {
+        v2BackTimer = 0;
+        if (!v2BackInFlight) return;
+        v2BackInFlight = false;
+        if (v2BackQueued) { v2BackQueued = false; v2HistoryBack(); }
+    }, 900);
+    return true;
+}
+function v2BackLanded() {
+    if (v2BackTimer) { clearTimeout(v2BackTimer); v2BackTimer = 0; }
+    v2BackInFlight = false;
+    const queued = v2BackQueued;
+    v2BackQueued = false;
+    syncViewFromUrl();
+    if (queued && v2Depth() > 0) v2HistoryBack();
+}
 function v2Push(url, view) {
     history.pushState({v2: true, view: view, depth: v2Depth() + 1}, '', url);
 }
@@ -504,7 +532,7 @@ function showHomeView() {
 }
 /* 页内返回：优先用浏览器 back 收回本 app 推入的历史；深链进入则 replace 回首頁 */
 function goHome() {
-    if (v2Depth() > 0) { history.back(); return; }
+    if (v2Depth() > 0) { v2HistoryBack(); return; }
     v2Replace(v2BasePath(), 'home');
     showHomeView();
 }
@@ -1243,6 +1271,7 @@ function effectivePreferredVersion(song) {
 }
 
 function showSong(categoryName, song) {
+    const viewerWasOpen = viewerView.style.display === 'flex';
     loadingOverlay.style.display = 'none';
     loadingIndicator.style.display = 'none';
     
@@ -1389,10 +1418,15 @@ if (weeklyView.style.display === 'block') {
     
     // 添加历史记录（v2 用可分享路由）；从 popstate 还原时不再推入
     if (!v2SyncingFromUrl) {
-        const before = v2Depth();
-        if (window.VP2UI) VP2UI.pushRoute(categoryName, song.id, currentState.currentVersion);
-        else history.pushState({v2: true}, '', v2BasePath());
-        try { history.replaceState({v2: true, view: 'song', depth: before + 1}, ''); } catch (e) {}
+        if (viewerWasOpen && window.VP2UI && VP2UI.replaceRoute) {
+            /* 谱内切上一首/下一首只替换当前条目，关闭时一次后退即回分类 */
+            VP2UI.replaceRoute(categoryName, song.id, currentState.currentVersion);
+        } else {
+            const before = v2Depth();
+            if (window.VP2UI) VP2UI.pushRoute(categoryName, song.id, currentState.currentVersion);
+            else history.pushState({v2: true}, '', v2BasePath());
+            try { history.replaceState({v2: true, view: 'song', depth: before + 1}, ''); } catch (e) {}
+        }
     }
 }
 
@@ -1759,7 +1793,7 @@ function closeViewer() {
     currentState.openedFrom = null;
     /* 关闭乐谱时优先退回上一笔历史（分类/本周），避免堆出重复的网址；
        深链直接进歌曲时没有上一笔 app 历史，才用 replaceState 回退网址 */
-    if (v2Depth() > 0) history.back();
+    if (v2Depth() > 0) v2HistoryBack();
     else v2Replace(backUrl, backView);
     // 退出时恢复图片适应模式为宽度适应
     isFitHeight = false;
@@ -1906,7 +1940,7 @@ function setupEventListeners() {
 
     // 浏览器后退/前进：一律按当前网址还原视图，不再 pushState(document.URL)
     window.addEventListener('popstate', function () {
-        syncViewFromUrl();
+        v2BackLanded();
     });
 
     // 上一页函数

@@ -21,6 +21,63 @@ def fail(msg: str) -> None:
     errors.append(msg)
 
 
+def wait_app(page, score: bool = False, timeout: int = 20000) -> None:
+    """Wait for songs.json/render instead of a fixed sleep."""
+    page.wait_for_selector("#categoriesContainer .category-card", state="attached", timeout=timeout)
+    if score:
+        wait_score_ready(page, timeout)
+    else:
+        page.wait_for_timeout(100)
+
+
+def wait_score_ready(page, timeout: int = 20000) -> None:
+    page.wait_for_function(
+        "() => window.VP2UI && VP2UI.state && VP2UI.state.ready",
+        timeout=timeout,
+    )
+    # The parent flag flips on postMessage; also require the player document itself
+    # to have reached its ready state so layout checks never run against about:blank.
+    page.wait_for_function(
+        """() => {
+          const f = document.getElementById('v2Frame');
+          try {
+            return !!(f && f.contentWindow && f.contentWindow.document &&
+              f.contentWindow.document.body &&
+              f.contentWindow.document.body.classList.contains('ready'));
+          } catch (e) { return false; }
+        }""",
+        timeout=timeout,
+    )
+    # Let the player's resize/autowrap RAF/debounce settle before layout assertions.
+    page.wait_for_timeout(250)
+
+
+def wait_score_reload(page, timeout: int = 20000) -> None:
+    """VP2UI.enter() sets ready=false, but a cached score can finish before the
+    first poll. Missing the transient false is fine: if ready is true after that,
+    the reloaded player has already signalled ready."""
+    try:
+        page.wait_for_function(
+            "() => window.VP2UI && VP2UI.state && VP2UI.state.ready === false",
+            timeout=1000,
+        )
+    except Exception:
+        pass
+    wait_score_ready(page, timeout)
+
+
+def css_value(page, locator, expr: str, tries: int = 20) -> str:
+    """Computed style can briefly come back empty while the player frame swaps
+    documents; re-resolve the locator until it yields a real value."""
+    value = ""
+    for _ in range(tries):
+        value = locator.evaluate(expr)
+        if value:
+            return value
+        page.wait_for_timeout(50)
+    return value
+
+
 def open_score(browser, path: str, width: int = 1280):
     ctx = browser.new_context(viewport={"width": width, "height": 900}, service_workers="block")
     page = ctx.new_page()
@@ -30,7 +87,19 @@ def open_score(browser, path: str, width: int = 1280):
     # real JS errors still surface via pageerror. Ignore resource 404 noise here.
     page.on("console", lambda m: errs.append("console: " + m.text + " @ " + ((m.location or {}).get("url") or "?")) if (m.type == "error" and "Failed to load resource" not in m.text) else None)
     page.goto(BASE + path, wait_until="load", timeout=60000)
-    page.wait_for_timeout(3200)
+    page.wait_for_selector("#categoriesContainer .category-card", state="attached", timeout=20000)
+    page.wait_for_function(
+        "() => getComputedStyle(document.getElementById('viewer-view')).display === 'flex'",
+        timeout=20000,
+    )
+    if page.evaluate("() => window.VP2UI && VP2UI.isActive()"):
+        wait_score_ready(page)
+    else:
+        page.wait_for_function(
+            "() => { const i = document.getElementById('sheet-image'); return !!(i && i.complete && i.naturalWidth > 0); }",
+            timeout=20000,
+        )
+        page.wait_for_timeout(100)
     frame = page.frame_locator("#v2Frame")
     return ctx, page, frame, errs
 
@@ -45,7 +114,7 @@ def main() -> int:
         p_errs: list[str] = []
         page.on("pageerror", lambda e: p_errs.append(str(e)))
         page.goto(BASE, wait_until="load", timeout=60000)
-        page.wait_for_timeout(1800)
+        wait_app(page)
         if page.locator('#version-modal').is_visible():
             page.locator('#modalVersionBtnList .primary-version-btn').click()
             page.wait_for_timeout(250)
@@ -100,10 +169,30 @@ def main() -> int:
             fail("compound flow: page reloaded (nav marker lost)")
         if p_errs:
             fail("compound flow page errors: " + " | ".join(p_errs[:3]))
+        # 谱内切歌后关闭：分类返回应一键回首页，不能重开上一首（017→018 回归）
+        page.locator('#categoriesContainer .category-card').first.click()
+        page.wait_for_timeout(600)
+        page.locator('#songsContainer .song-item', has_text="017").first.click()
+        wait_score_ready(page)
+        page.keyboard.press("ArrowDown")
+        page.wait_for_timeout(1400)
+        if "/jt/018" not in page.url:
+            fail(f"song switch: expected /jt/018, got {page.url}")
+        page.click('#close-viewer')
+        page.wait_for_timeout(700)
+        page.click('#backButton')
+        page.wait_for_timeout(800)
+        if page.url.rstrip('/') != BASE.rstrip('/'):
+            fail(f"song switch: category back URL {page.url} != home {BASE}")
+        vs = page.evaluate("""() => ({
+          viewer: getComputedStyle(document.getElementById('viewer-view')).display,
+          main: getComputedStyle(document.getElementById('main-view')).display })""")
+        if vs["viewer"] != "none" or vs["main"] != "block":
+            fail(f"song switch: category back reopened a score {vs}")
         # 深链进入：× 关闭 / 页内返回必须能回到首页网址与视图（B1 回归）
         for path, closer in (("cl/001", "#close-viewer"), ("jt", "#backButton"), ("weekly", "#backButtonWeekly")):
             page.goto(BASE + path, wait_until="load", timeout=60000)
-            page.wait_for_timeout(2600)
+            wait_app(page, score=("/" in path))
             page.evaluate("window.__deepMarker = 'alive'")
             if not page.url.rstrip('/').endswith('/' + path):
                 fail(f"deep link {path}: unexpected URL {page.url}")
@@ -122,7 +211,7 @@ def main() -> int:
         # 深链后按浏览器后退：应留站内并回到首页，不得 about:blank / 离站
         for path in ("cl/001", "cl", "weekly"):
             page.goto(BASE + path, wait_until="load", timeout=60000)
-            page.wait_for_timeout(2600)
+            wait_app(page, score=("/" in path))
             page.evaluate("window.__deepBackMarker = 'alive'")
             page.go_back()
             page.wait_for_timeout(900)
@@ -349,14 +438,14 @@ def main() -> int:
             fail("jt017 page errors: " + " | ".join(errs[:4]))
         ctx.close()
 
-        # first visit prefetches all score JSON into v2-json-v2 in the background
+        # first visit prefetches all score JSON into v2-json-v3 in the background
         ctx = browser.new_context(viewport={"width": 1280, "height": 900}, service_workers="block")
         page = ctx.new_page()
         page.goto(BASE, wait_until="load", timeout=60000)
         n_scores = 0
         for _ in range(12):
             n_scores = page.evaluate("""async () => {
-              const c = await caches.open('v2-json-v2');
+              const c = await caches.open('v2-json-v3');
               const keys = await c.keys();
               return keys.filter(k => k.url.includes('/data/scores/')).length;
             }""")
@@ -365,6 +454,43 @@ def main() -> int:
             page.wait_for_timeout(500)
         if n_scores < 6:
             fail(f"first-visit score prefetch incomplete: {n_scores}/6 cached")
+        ctx.close()
+
+        # 已缓存后重进：打开 JSON 谱不得再请求该谱（需等首轮同步完成）
+        ctx = browser.new_context(viewport={"width": 1280, "height": 900})
+        page = ctx.new_page()
+        score_reqs: list[str] = []
+        page.on("request", lambda r: score_reqs.append(r.url) if "/data/scores/" in r.url else None)
+        page.goto(BASE, wait_until="load", timeout=60000)
+        page.wait_for_function("""async () => {
+          try {
+            const c = await caches.open('v2-json-v3');
+            return !!(await c.match(new URL('data/scores/jt/017.json', document.baseURI).href));
+          } catch (e) { return false; }
+        }""", timeout=20000)
+        if page.locator('#version-modal').is_visible():
+            page.locator('#modalVersionBtnList .primary-version-btn').click()
+            page.wait_for_timeout(250)
+        page.locator('#categoriesContainer .category-card').first.click()
+        page.wait_for_timeout(500)
+        score_reqs.clear()
+        page.locator('#songsContainer .song-item', has_text="017").first.click()
+        wait_score_ready(page)
+        if score_reqs:
+            fail(f"cached score still requested JSON: {score_reqs[:3]}")
+        # 重新进入首页后仍应走缓存
+        page.goto(BASE, wait_until="load", timeout=60000)
+        wait_app(page)
+        if page.locator('#version-modal').is_visible():
+            page.locator('#modalVersionBtnList .primary-version-btn').click()
+            page.wait_for_timeout(250)
+        page.locator('#categoriesContainer .category-card').first.click()
+        page.wait_for_timeout(500)
+        score_reqs.clear()
+        page.locator('#songsContainer .song-item', has_text="017").first.click()
+        wait_score_ready(page)
+        if score_reqs:
+            fail(f"reloaded page still requested cached JSON: {score_reqs[:3]}")
         ctx.close()
 
         # mid-line repeat-start (narrow viewport wraps bar 9 inside a line)
@@ -398,17 +524,38 @@ def main() -> int:
             rep = score.get("repeat")
             expect_repeat = bool(rep and rep.get("to") == last)
             ctx, page, frame, errs = open_score(browser, key)
+            expected_id = score.get("id")
+            page.wait_for_function(
+                """(id) => {
+                  try {
+                    const w = document.getElementById('v2Frame').contentWindow;
+                    return !!(w && w.__SCORE && w.__SCORE.id === id);
+                  } catch (e) { return false; }
+                }""",
+                arg=expected_id,
+                timeout=20000,
+            )
             bar = frame.locator(f'.bar[data-bar="{last}"]')
             cls = (bar.get_attribute("class") or "").split()
             if ("repeat-end" in cls) != expect_repeat:
                 fail(f"{key}: last bar repeat-end={('repeat-end' in cls)}, expected {expect_repeat}")
-            dots = bar.evaluate("el=>getComputedStyle(el,'::before').backgroundImage")
+            dots = css_value(page, bar, "el=>getComputedStyle(el,'::before').backgroundImage")
             if expect_repeat and dots == "none":
                 fail(f"{key}: repeat end has no repeat dots")
             if not expect_repeat and dots != "none":
-                fail(f"{key}: last bar shows repeat dots but no repeat ends there")
+                dbg = frame.locator("body").evaluate("""() => {
+                  const bars = [...document.querySelectorAll('#score .bar')];
+                  const b = bars[bars.length - 1];
+                  return {scoreId: window.__SCORE && window.__SCORE.id,
+                          scoreRepeat: window.__SCORE && window.__SCORE.repeat,
+                          bars: bars.length,
+                          lastBar: b && b.dataset.bar,
+                          lastCls: b && b.className,
+                          before: b && getComputedStyle(b, '::before').backgroundImage};
+                }""")
+                fail(f"{key}: last bar shows repeat dots but no repeat ends there (dots={dots!r}, {dbg})")
             if "endbar" not in score["bars"][-1]:
-                endline = bar.evaluate("el=>getComputedStyle(el,'::after').backgroundImage")
+                endline = css_value(page, bar, "el=>getComputedStyle(el,'::after').backgroundImage")
                 if endline == "none":
                     fail(f"{key}: last bar has no final double barline")
             single = score.get("voices") == ["S"]
@@ -464,7 +611,7 @@ def main() -> int:
                         fail(f"{key}: bracket bar too thin ({geo['rectW']:.1f}px)")
                     if geo["reach"] < 3:
                         fail(f"{key}: bracket flags do not reach the staff ({geo['reach']:.1f}px)")
-                fl = frame.locator(".bar.line-first").first.evaluate("el=>getComputedStyle(el).backgroundImage")
+                fl = css_value(page, frame.locator(".bar.line-first").first, "el=>getComputedStyle(el).backgroundImage")
                 if "linear-gradient" not in fl:
                     fail(f"{key}: multi-voice first bar lost its thin barline")
 
@@ -807,7 +954,7 @@ def main() -> int:
         # lz008 吉他版：仍是四声部，只把和弦换成原图手写 Capo 3 形状 +3 半音的实际音高
         ctx, page, frame, errs = open_score(browser, "lz/008")
         page.click(".version-toggle-button"); page.wait_for_timeout(250)
-        page.click('.version-button:has-text("吉他")'); page.wait_for_timeout(2400)
+        page.click('.version-button:has-text("吉他")'); wait_score_reload(page)
         g8 = page.evaluate("VP2UI.isImage()")
         info8 = frame.locator("body").evaluate("""() => ({
           chords: [...document.querySelectorAll('.chordrow span')].filter(s=>s.textContent.trim()).map(s=>s.textContent),
@@ -840,7 +987,7 @@ def main() -> int:
         page.select_option("#v2Capo", "0"); page.wait_for_timeout(500)
         page.click("#v2MenuBtn"); page.wait_for_timeout(250)
         page.click(".version-toggle-button"); page.wait_for_timeout(250)
-        page.click('.version-button:has-text("原谱")'); page.wait_for_timeout(2400)
+        page.click('.version-button:has-text("原谱")'); wait_score_reload(page)
         if page.evaluate("VP2UI.isImage()"):
             fail("lz008: switching back to 原谱 should stay in JSON mode")
         if "v=" in page.url:
@@ -898,7 +1045,7 @@ def main() -> int:
         if not bar["cls"] or bar["annot"] != "none" or bar["wrap"] != "none":
             fail(f"lz/009: bottom bar must hide 标注/自动换行: {bar}")
         # JSON 谱则应正常显示这两个按钮
-        page.goto(BASE + "cl/001", wait_until="load", timeout=60000); page.wait_for_timeout(2600)
+        page.goto(BASE + "cl/001", wait_until="load", timeout=60000); wait_score_ready(page)
         vis = page.evaluate("""() => ({
           annot: getComputedStyle(document.getElementById('v2AnnotBarBtn')).display,
           wrap: getComputedStyle(document.getElementById('v2WrapBarBtn')).display })""")
@@ -971,7 +1118,7 @@ def main() -> int:
         # version switch in the UI: 原谱 -> 吉他 (chords change, URL ?v=g) -> 原谱 (chords gone)
         ctx, page, frame, errs = open_score(browser, "cl/002")
         page.click(".version-toggle-button"); page.wait_for_timeout(250)
-        page.click('.version-button:has-text("吉他")'); page.wait_for_timeout(2400)
+        page.click('.version-button:has-text("吉他")'); wait_score_reload(page)
         g = frame.locator("body").evaluate("""() => ({
           first: (document.querySelector('.chordrow span')||{}).textContent || '',
           marks: document.querySelectorAll('.fret-mark').length })""")
@@ -980,7 +1127,7 @@ def main() -> int:
         if "v=g" not in page.url:
             fail(f"cl002 version switch: URL missing ?v=g ({page.url})")
         page.click(".version-toggle-button"); page.wait_for_timeout(250)
-        page.click('.version-button:has-text("原谱")'); page.wait_for_timeout(2400)
+        page.click('.version-button:has-text("原谱")'); wait_score_reload(page)
         o = frame.locator("body").evaluate("""() => [...document.querySelectorAll('.chordrow span[data-chord]')]
               .filter(s=>s.textContent.trim()).length""")
         if o:
@@ -1038,7 +1185,7 @@ def main() -> int:
             page.evaluate("""([cat, id]) => {
               showSong(cat, Object.assign({}, songsData.categories[cat].songs[id], {id}));
             }""", [cat, sid])
-            page.wait_for_timeout(1800)
+            wait_score_reload(page)
             got = page.evaluate("currentState.currentVersion")
             if got != want:
                 fail(f"preferred 贝司 on {path}: currentVersion {got!r} != {want!r}")
@@ -1073,7 +1220,7 @@ def main() -> int:
             dialogs: list[str] = []
             page.on("dialog", lambda d: (dialogs.append(d.message), d.accept()))
             page.goto(BASE + "cl/001", wait_until="load", timeout=60000)
-            page.wait_for_timeout(3000)
+            wait_score_ready(page)
             fr = page.frame_locator("#v2Frame")
             got = fr.locator("body").evaluate("() => window.__hymn.isMassQuietHour()")
             if got != quiet:
@@ -1094,7 +1241,7 @@ def main() -> int:
         page = ctx.new_page()
         page.on("dialog", lambda d: d.dismiss())
         page.goto(BASE + "cl/001", wait_until="load", timeout=60000)
-        page.wait_for_timeout(3000)
+        wait_score_ready(page)
         page.locator("#v2QuickPauseBtn").click(timeout=8000)
         page.wait_for_timeout(900)
         if page.frame_locator("#v2Frame").locator("body").evaluate("() => window.__hymn.engine.playing"):

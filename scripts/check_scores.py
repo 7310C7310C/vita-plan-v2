@@ -427,6 +427,14 @@ def main() -> int:
                 err(f"sw-v2.js: SHELL does not reference current {want}")
     if "staleWhileRevalidateJson(req, event)" not in sw or "/data/scores/" not in sw:
         err("sw-v2.js: score JSON must use staleWhileRevalidateJson (instant cached open + background update)")
+    # The SW, page loader and background sync must share one JSON cache bucket.
+    cache_names = set()
+    for rel in ("sw-v2.js", "assets/js/v2-ui.js", "assets/js/v2-cache.js"):
+        p = ROOT / rel
+        if p.exists():
+            cache_names.update(re.findall(r"""['"](v2-json-v[0-9]+)['"]""", p.read_text(encoding="utf-8")))
+    if len(cache_names) != 1:
+        err(f"JSON cache name mismatch across sw-v2.js/v2-ui.js/v2-cache.js: {sorted(cache_names)}")
     if "staleWhileRevalidate(req, event)" not in sw:
         err("sw-v2.js: shell/list assets must use staleWhileRevalidate")
     shell_block = re.search(r"const SHELL = \[(.*?)\];", sw, re.S)

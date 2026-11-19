@@ -3,6 +3,8 @@
   'use strict';
 
   const $ = (s)=>document.querySelector(s);
+  /* Must match JSON_CACHE in sw-v2.js and v2-cache.js. */
+  const JSON_CACHE = 'v2-json-v3';
   const frame = document.getElementById('v2Frame');
   const headActions = document.getElementById('v2HeadActions');
   const imageBtn = document.getElementById('v2ImageBtn');
@@ -43,6 +45,7 @@
     loadToken: 0,
     version: 'o'
   };
+  let frameIdleTimer = 0;
 
   /* Runtime mapping is a tiny JS file loaded before this script (no sync XHR). */
   state.data = window.VP2_DATA || null;
@@ -70,6 +73,19 @@
     if (!frame || !frame.contentWindow) return;
     frame.contentWindow.postMessage(Object.assign({type:'vp2:cmd', cmd:cmd}, extra || {}), location.origin);
   }
+  /* iframe.src 会在浏览器 joint session history 里再压一条，导致页内返回
+     / history.back() 先吃掉 iframe 条目（表现为要按两次才退一层）。用
+     location.replace 只替换当前条目，不增加历史。 */
+  function loadFrame(url){
+    if (!frame) return;
+    try{
+      if (frame.contentWindow && frame.contentWindow.location){
+        frame.contentWindow.location.replace(url);
+        return;
+      }
+    }catch(e){}
+    frame.src = url;
+  }
   function setLoading(on){
     if (!loadingOverlay || !loadingIndicator) return;
     loadingOverlay.style.display = on ? 'block' : 'none';
@@ -88,29 +104,27 @@
     const path = String(score && score.file || '');
     if (!validScorePath(path)) throw new Error('invalid score path');
     const url = basePath() + path;
-    let cached = null;
-    try{
-      const cache = await caches.open('v2-json-v2');
-      const hit = await cache.match(url, {ignoreSearch:true});
-      if (hit) cached = await hit.json();
-    }catch(e){}
-    const refresh = fetch(url, {cache:'no-store', headers:{'X-VP2-Revalidate':'1'}}).then(async res=>{
-      if (!res || !res.ok) return null;
-      const data = await res.json();
+    let cache = null;
+    try{ cache = await caches.open(JSON_CACHE); }catch(e){}
+    if (cache){
       try{
-        const cache = await caches.open('v2-json-v2');
-        await cache.put(url, new Response(JSON.stringify(data), {headers:{'Content-Type':'application/json'}}));
+        const hit = await cache.match(url, {ignoreSearch:true});
+        if (hit) return await hit.json();   /* 全量预缓存的谱直接秒开，不再逐谱请求 */
       }catch(e){}
-      return data;
-    }).catch(()=>null);
-    if (cached) return cached;          /* cached score opens instantly; refresh updates cache in background */
-    const data = await refresh;         /* first visit for this score: wait once, then cache */
-    if (data) return data;
-    throw new Error('score unavailable');
+    }
+    const res = await fetch(url, {cache:'no-store'});
+    if (!res || !res.ok) throw new Error('score unavailable');
+    const copy = res.clone();
+    const data = await res.json();
+    if (cache){
+      try{ await cache.put(url, copy); }catch(e){}
+    }
+    return data;
   }
 
   async function enter(cat, song, score, versionCode){
     const token = ++state.loadToken;
+    if (frameIdleTimer){ clearTimeout(frameIdleTimer); frameIdleTimer = 0; }
     state.active = true; state.image = false; state.ready = false;
     state.cat = cat; state.song = song; state.score = score; state.version = versionCode || 'o';
     state.playing = false;
@@ -132,11 +146,12 @@
     catch(e){ data = errorScore(song); }
     if (token !== state.loadToken || !state.active) return;
     try{ localStorage.setItem('v2.current.score', JSON.stringify(data)); }catch(e){}
-    if (frame) frame.src = basePath() + 'player-frame.html';
+    loadFrame(basePath() + 'player-frame.html');
     setTimeout(()=>{ if (!state.ready && token === state.loadToken) setLoading(false); }, 6000);
   }
   function leave(){
     state.loadToken++;
+    const wasActive = state.active;
     state.active = false; state.image = false; state.ready = false;
     setPlayUI(false);
     setAnnot(false);
@@ -146,7 +161,14 @@
     if (menu) menu.classList.remove('open');
     const vc = document.getElementById('viewerContent');
     if (vc) vc.classList.remove('v2-mode');
-    if (frame) frame.src = 'about:blank';
+    /* 先停播；稍后确认没有重新进入再卸载 iframe。
+       用 location.replace 卸载不会新增浏览器历史条目。 */
+    if (wasActive) post('stop');
+    if (frameIdleTimer){ clearTimeout(frameIdleTimer); frameIdleTimer = 0; }
+    frameIdleTimer = setTimeout(function(){
+      frameIdleTimer = 0;
+      if (!state.active) loadFrame('about:blank');
+    }, 250);
     setLoading(false);
     document.title = '复活计划乐队';
     state.cat = null; state.song = null; state.score = null;
@@ -194,6 +216,16 @@
     if (!href) return;
     href = withVersion(href, version);
     try{ history.pushState({v2song:true}, '', href); }catch(e){}
+  }
+  function replaceRoute(cat, id, version){
+    let href = routeFor(cat, id);
+    if (!href) return;
+    href = withVersion(href, version);
+    let depth = 1;
+    try{
+      if (history.state && typeof history.state.depth === 'number') depth = history.state.depth;
+    }catch(e){}
+    try{ history.replaceState({v2:true, view:'song', depth:depth}, '', href); }catch(e){}
   }
   function setVersionQuery(version){
     try{
@@ -645,7 +677,7 @@
 
   window.VP2UI = {
     has, scoreFor, versionScore, enter, leave, setImageMode, setExternalImageMode, isActive:()=>state.active, isImage:()=>state.image,
-    pushRoute, setVersionQuery, routeFor, routeForCategory, pushPath, handleRoute, basePath, post, setUILang: applyUILang,
+    pushRoute, replaceRoute, setVersionQuery, routeFor, routeForCategory, pushPath, handleRoute, basePath, post, setUILang: applyUILang,
     get state(){ return state; }
   };
 

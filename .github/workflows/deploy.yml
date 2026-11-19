@@ -4,16 +4,25 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   validate:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: '.github/workflows/deploy.yml'
       - name: Validate score data / manifest / assets
         run: python3 scripts/check_scores.py
       - name: Validate AGENTS.md indicator-only
@@ -23,10 +32,24 @@ jobs:
           for f in assets/js/v2-ui.js assets/js/v2-cache.js assets/js/script.js assets/player/*.js sw-v2.js admin/admin.js; do
             node --check "$f"
           done
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-1.62.0
       - name: Install Playwright
         run: |
-          python3 -m pip install --quiet playwright
-          python3 -m playwright install --with-deps chromium
+          python3 -m pip install --quiet playwright==1.62.0
+          if [ "${{ steps.playwright-cache.outputs.cache-hit }}" = "true" ]; then
+            python3 -m playwright install chromium
+            # Runner image may lack a system lib; fall back to installing deps only then.
+            if ! python3 -c "from playwright.sync_api import sync_playwright; s=sync_playwright().start(); s.chromium.launch(args=['--no-sandbox']).close(); s.stop()"; then
+              python3 -m playwright install --with-deps chromium
+            fi
+          else
+            python3 -m playwright install --with-deps chromium
+          fi
       - name: Browser UI checks
         run: |
           python3 tests/serve.py 8080 &
@@ -40,6 +63,7 @@ jobs:
     needs: validate
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.0.1
