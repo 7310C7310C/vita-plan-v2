@@ -439,6 +439,19 @@ def main() -> int:
         if f"'{ref}'" not in sw:
             err(f"sw-v2.js: SHELL does not reference current {ref}")
 
+    # player-frame shell assets must exist, be listed in SW SHELL, and stay external
+    pf = ROOT / "player-frame.html"
+    if pf.exists():
+        pf_text = pf.read_text(encoding="utf-8")
+        for ref in re.findall(r'(?:href|src)="(assets/[^"]+|data/[^"]+)"', pf_text):
+            p = ref.split("?", 1)[0]
+            if not (ROOT / p).exists():
+                err(f"player-frame.html: referenced file missing: {ref}")
+            if f"'{ref}'" not in sw:
+                err(f"sw-v2.js: SHELL does not reference current {ref}")
+        if "<style>" in pf_text or "<script>" in pf_text:
+            err("player-frame.html: inline <style>/<script> found (use assets/player/)")
+
     if errors:
         print("FAIL: score/asset validation")
         for e in errors:

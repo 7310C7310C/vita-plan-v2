@@ -1,10 +1,14 @@
 /* Vita Plan v2 service worker: pre-cache shell + all JSON scores after first paint. */
-const SHELL_CACHE = 'v2-shell-144';
+const SHELL_CACHE = 'v2-shell-145';
 const JSON_CACHE = 'v2-json-v2';
 const SHELL = [
   'index.html',
   'favicon.ico',
   'player-frame.html',
+  'assets/player/player.css?v=1',
+  'assets/player/player-boot.js?v=1',
+  'assets/player/player-main.js?v=1',
+  'assets/player/player-chords.js?v=1',
   'data/songs.json?v=20261115185326',
   'assets/css/style.css?v=20261115185326',
   'assets/css/v2-ui.css?v=22',
