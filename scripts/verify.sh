@@ -6,7 +6,7 @@ cd "$(dirname "$0")/.."
 python3 scripts/check_scores.py
 python3 scripts/check_agents.py
 
-for f in assets/js/v2-ui.js assets/js/v2-cache.js assets/js/script.js assets/player/*.js sw-v2.js sw.js admin/admin.js; do
+for f in assets/js/v2-ui.js assets/js/v2-cache.js assets/js/script.js assets/player/*.js sw-v2.js admin/admin.js; do
   node --check "$f"
 done
 

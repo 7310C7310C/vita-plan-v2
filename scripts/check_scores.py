@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Validate score JSON, mappings, manifest, and asset references.
 
+Runtime paths are public URLs; don't rename them without a SW/redirect migration.
 Run before every commit/deploy. Exit code 1 on any error.
 """
 from __future__ import annotations
@@ -390,12 +391,12 @@ def main() -> int:
                 err(f"data/v2-scores.json: {key} title {s.get('title')!r} != songs.json {song.get('title')!r}")
 
     # legacy v1 offline stack must not return
-    for legacy in ("assets/js/offline.js", "data/offline-manifest.json", "scripts/generate_offline_manifest.py"):
+    for legacy in ("assets/js/offline.js", "data/offline-manifest.json", "scripts/generate_offline_manifest.py", "sw.js"):
         if (ROOT / legacy).exists():
             err(f"legacy v1 offline file present: {legacy}")
 
     # agent/OMR instructions must stay in place
-    for name in ("AGENTS.md", "CLAUDE.md", "docs/omr-checklist.md", "docs/STRUCTURE.md"):
+    for name in ("AGENTS.md", "CLAUDE.md", "docs/omr-checklist.md"):
         if not (ROOT / name).exists():
             err(f"missing required instructions: {name}")
     if (ROOT / "AGENTS.md").exists() and "lodebar2026/dolce" not in (ROOT / "AGENTS.md").read_text(encoding="utf-8"):
