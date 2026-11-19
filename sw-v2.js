@@ -1,10 +1,14 @@
 /* Vita Plan v2 service worker: pre-cache shell + all JSON scores after first paint. */
-const SHELL_CACHE = 'v2-shell-144';
+const SHELL_CACHE = 'v2-shell-145';
 const JSON_CACHE = 'v2-json-v2';
 const SHELL = [
   'index.html',
   'favicon.ico',
   'player-frame.html',
+  'assets/player/player.css?v=1',
+  'assets/player/player-boot.js?v=1',
+  'assets/player/player-main.js?v=1',
+  'assets/player/player-chords.js?v=1',
   'data/songs.json?v=20261115185326',
   'assets/css/style.css?v=20261115185326',
   'assets/css/v2-ui.css?v=22',
@@ -51,6 +55,16 @@ self.addEventListener('fetch', event => {
   const url = new URL(req.url);
   if (url.origin !== location.origin) return;
   const path = url.pathname;
+
+  /* Standalone tool pages are outside the app shell. Let the network handle
+     them so nginx 301s / Pages stubs / tool HTML are not replaced by index.html. */
+  const scopePath = new URL(self.registration.scope).pathname;
+  const relPath = (path.indexOf(scopePath) === 0 ? path.slice(scopePath.length) : path).replace(/^\/+/, '');
+  if (relPath === 'key' || relPath.indexOf('key/') === 0 ||
+      relPath === 'random' || relPath.indexOf('random/') === 0 ||
+      relPath.indexOf('tools/') === 0) {
+    return;
+  }
 
   if (path.endsWith('/data/songs.json')) {
     event.respondWith(staleWhileRevalidate(req, event));

@@ -20,7 +20,7 @@ jobs:
         run: python3 scripts/check_agents.py
       - name: JS syntax
         run: |
-          for f in assets/js/v2-ui.js assets/js/v2-cache.js assets/js/script.js assets/js/offline.js sw-v2.js sw.js admin/admin.js; do
+          for f in assets/js/v2-ui.js assets/js/v2-cache.js assets/js/script.js assets/player/*.js sw-v2.js sw.js admin/admin.js; do
             node --check "$f"
           done
       - name: Install Playwright
@@ -30,11 +30,15 @@ jobs:
       - name: Browser UI checks
         run: |
           python3 tests/serve.py 8080 &
-          sleep 1
+          for _ in $(seq 1 50); do
+            if curl -sf http://127.0.0.1:8080/ >/dev/null; then break; fi
+            sleep 0.2
+          done
           python3 tests/ui_check.py http://127.0.0.1:8080/
 
   deploy:
     needs: validate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to VPS

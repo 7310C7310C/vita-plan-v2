@@ -43,7 +43,8 @@ def main() -> None:
     if scores_path.exists():
         data = json.loads(scores_path.read_text(encoding="utf-8"))
         (ROOT / "data" / "v2-scores.js").write_text(
-            "window.VP2_DATA = " + json.dumps(data, ensure_ascii=False, indent=2) + ";\n",
+            "/* AUTO-GENERATED from data/v2-scores.json by scripts/generate_v2_manifest.py. Do not edit. */\n"
+            + "window.VP2_DATA = " + json.dumps(data, ensure_ascii=False, indent=2) + ";\n",
             encoding="utf-8",
         )
     print(f"wrote {OUT.relative_to(ROOT)} version={version} files={len(files)}")

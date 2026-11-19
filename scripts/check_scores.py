@@ -353,8 +353,49 @@ def main() -> int:
         if manifest.get("version") != expect_version:
             err(f"data/v2-manifest.json: version {manifest.get('version')} != {expect_version}")
 
+    # runtime JS wrapper must match the JSON source
+    scores_js = DATA / "v2-scores.js"
+    if not scores_js.exists():
+        err("data/v2-scores.js: missing (run scripts/generate_v2_manifest.py)")
+    else:
+        m = re.search(r"window\.VP2_DATA\s*=\s*(\{.*\})\s*;", scores_js.read_text(encoding="utf-8"), re.S)
+        if not m:
+            err("data/v2-scores.js: window.VP2_DATA object not found")
+        else:
+            try:
+                runtime = json.loads(m.group(1))
+            except Exception as e:
+                err(f"data/v2-scores.js: invalid JSON: {e}")
+            else:
+                if runtime != mapping:
+                    err("data/v2-scores.js: stale vs data/v2-scores.json (run scripts/generate_v2_manifest.py)")
+
+    # every playable mapping must exist in the image-score catalog with the same title
+    catalog = load(DATA / "songs.json")
+    catalog_cats = catalog.get("categories", {}) if isinstance(catalog, dict) else {}
+    code_to_cat = {v: k for k, v in codes.items()} if isinstance(codes, dict) else {}
+    for key, ent in entries.items():
+        if not isinstance(ent, dict):
+            continue
+        code, _, num = key.partition("/")
+        cat = code_to_cat.get(code)
+        song = catalog_cats.get(cat, {}).get("songs", {}).get(num) if cat else None
+        if not song:
+            err(f"data/v2-scores.json: {key} not found in data/songs.json")
+            continue
+        f = ROOT / ent["file"] if isinstance(ent.get("file"), str) else None
+        if f is not None and f.exists():
+            s = load(f)
+            if isinstance(s, dict) and s.get("title") != song.get("title"):
+                err(f"data/v2-scores.json: {key} title {s.get('title')!r} != songs.json {song.get('title')!r}")
+
+    # legacy v1 offline stack must not return
+    for legacy in ("assets/js/offline.js", "data/offline-manifest.json", "scripts/generate_offline_manifest.py"):
+        if (ROOT / legacy).exists():
+            err(f"legacy v1 offline file present: {legacy}")
+
     # agent/OMR instructions must stay in place
-    for name in ("AGENTS.md", "CLAUDE.md", "docs/omr-checklist.md"):
+    for name in ("AGENTS.md", "CLAUDE.md", "docs/omr-checklist.md", "docs/STRUCTURE.md"):
         if not (ROOT / name).exists():
             err(f"missing required instructions: {name}")
     if (ROOT / "AGENTS.md").exists() and "lodebar2026/dolce" not in (ROOT / "AGENTS.md").read_text(encoding="utf-8"):
@@ -374,6 +415,15 @@ def main() -> int:
         if not (ROOT / p).exists():
             err(f"index.html: referenced file missing: {ref}")
     sw = (ROOT / "sw-v2.js").read_text(encoding="utf-8")
+    script_js = ROOT / "assets/js/script.js"
+    if script_js.exists():
+        sm = re.search(r"const jsonVersion = '([^']*)'", script_js.read_text(encoding="utf-8"))
+        if not sm:
+            err("assets/js/script.js: jsonVersion not found")
+        else:
+            want = f"data/songs.json?v={sm.group(1)}"
+            if f"'{want}'" not in sw:
+                err(f"sw-v2.js: SHELL does not reference current {want}")
     if "staleWhileRevalidateJson(req, event)" not in sw or "/data/scores/" not in sw:
         err("sw-v2.js: score JSON must use staleWhileRevalidateJson (instant cached open + background update)")
     if "staleWhileRevalidate(req, event)" not in sw:
@@ -397,6 +447,19 @@ def main() -> int:
             continue
         if f"'{ref}'" not in sw:
             err(f"sw-v2.js: SHELL does not reference current {ref}")
+
+    # player-frame shell assets must exist, be listed in SW SHELL, and stay external
+    pf = ROOT / "player-frame.html"
+    if pf.exists():
+        pf_text = pf.read_text(encoding="utf-8")
+        for ref in re.findall(r'''(?:href|src)=["'](assets/[^"']+|data/[^"']+)["']''', pf_text):
+            p = ref.split("?", 1)[0]
+            if not (ROOT / p).exists():
+                err(f"player-frame.html: referenced file missing: {ref}")
+            if f"'{ref}'" not in sw:
+                err(f"sw-v2.js: SHELL does not reference current {ref}")
+        if "<style" in pf_text or re.search(r"<script(?![^>]*\bsrc=)", pf_text, re.I):
+            err("player-frame.html: inline <style>/<script> found (use assets/player/)")
 
     if errors:
         print("FAIL: score/asset validation")
