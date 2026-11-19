@@ -7,10 +7,11 @@ set -euo pipefail
 EDGE_HOST="${EDGE_HOST:-45.125.16.205}"
 EDGE_USER="${EDGE_USER:-root}"
 EDGE_KEY="${EDGE_KEY:-/root/.ssh/kcan-edge}"
+SHA="$(git -C /var/www/vita-plan-v2 rev-parse HEAD)"
 
 ssh -i "$EDGE_KEY" -o BatchMode=yes -o StrictHostKeyChecking=accept-new \
   "$EDGE_USER@$EDGE_HOST" \
-  "set -e; cd /var/www/vita-plan-v2; git pull --ff-only origin main; chown -R www-data:www-data /var/www/vita-plan-v2; echo EDGE_DEPLOY_OK"
+  "set -e; cd /var/www/vita-plan-v2; git fetch --depth 1 origin '$SHA'; git reset --hard '$SHA'; chown -R www-data:www-data /var/www/vita-plan-v2; echo EDGE_DEPLOY_OK $SHA"
 
 # /piano is a standalone static app outside the main repo; keep it in sync too.
 rsync -az --delete --chown=www-data:www-data \
