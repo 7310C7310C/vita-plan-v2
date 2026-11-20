@@ -42,10 +42,14 @@
       if (src[k] !== undefined) out[k] = src[k];
     });
 
-    var lyricVoices = String(src.lyricVoices || "S").split("").filter(function(v){
-      return VOICES.indexOf(v) >= 0;
-    });
-    if (!lyricVoices.length) lyricVoices = ["S"];
+    var lyricVoices;
+    if (src.lyricVoices === undefined){
+      lyricVoices = ["S"];              /* 默认只有女高音带歌词 */
+    } else {
+      lyricVoices = String(src.lyricVoices).split("").filter(function(v){
+        return VOICES.indexOf(v) >= 0;
+      });                               /* "" = 明确没有歌词声部 */
+    }
 
     if (Array.isArray(src.lines)){
       var n = 0;

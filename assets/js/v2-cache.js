@@ -79,9 +79,8 @@
       if (!res.ok) return;
       const manifest = await res.json();
       const files = Array.isArray(manifest.files) ? manifest.files : [];
-      if (!files.length) return;
-      const entry = files[0];
-      if (!entry || !entry.path) return;
+      const entry = files.find(function(f){ return f && f.path === BUNDLE_PATH; });
+      if (!entry) return;   /* 旧 manifest（逐谱列表）不清理，等下一次同步 */
 
       /* 先读缓存（有则顺带算 hash）；hash 不符才强制拉新。 */
       try{
@@ -98,13 +97,13 @@
       }
 
       const next = {};
-      next[entry.path] = bundleHash || entry.hash;
+      next[BUNDLE_PATH] = bundleHash || entry.hash;
 
       /* 删除旧的逐谱缓存，只保留 bundle。 */
       try{
         const cache = await caches.open(JSON_CACHE);
         const keep = {};
-        const abs = new URL(base + entry.path, location.href);
+        const abs = new URL(base + BUNDLE_PATH, location.href);
         keep[abs.pathname] = true;
         const keys = await cache.keys();
         await Promise.all(keys.map(function(req){

@@ -68,11 +68,11 @@ def encode(score: dict) -> dict:
         v for v in VOICES
         if any(ev[3] is not None for bar in score["bars"] for ev in bar.get("V", {}).get(v, []))
     ]
-    if lyric_voices and lyric_voices != ["S"]:
-        out["lyricVoices"] = "".join(lyric_voices)
+    if lyric_voices != ["S"]:
+        out["lyricVoices"] = "".join(lyric_voices)  # "" = 明确无歌词声部
 
     phrases = score.get("phrases") or []
-    if phrases and all(g == list(range(g[0], g[0] + len(g))) for g in phrases):
+    if phrases and [b for g in phrases for b in g] == list(range(len(score["bars"]))):
         out["lines"] = [len(g) for g in phrases]
     elif phrases:
         out["phrases"] = phrases

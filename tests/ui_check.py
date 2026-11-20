@@ -530,16 +530,23 @@ def main() -> int:
         # first visit prefetches every score JSON listed in the manifest
         ctx = browser.new_context(viewport={"width": 1280, "height": 900}, service_workers="block")
         page = ctx.new_page()
+        prefetch_reqs: list[str] = []
+        page.on("request", lambda r: prefetch_reqs.append(r.url) if "/data/scores/" in r.url else None)
         page.goto(BASE, wait_until="load", timeout=60000)
         paths = manifest_paths(page)
         wait_hashes(page, paths)
-        n_scores = page.evaluate("""async () => {
+        cached = page.evaluate("""async () => {
           const c = await caches.open('v2-json-v3');
-          const keys = await c.keys();
-          return keys.filter(k => k.url.includes('/data/scores/')).length;
+          return (await c.keys()).map(k => new URL(k.url).pathname).filter(p => p.includes('/data/scores/'));
         }""")
-        if n_scores < len(paths):
-            fail(f"first-visit score prefetch incomplete: {n_scores}/{len(paths)} cached")
+        if len(cached) != 1 or not cached[0].endswith('/data/scores/bundle.json'):
+            fail(f"first-visit score cache {cached!r}, expected only /data/scores/bundle.json")
+        bundle_reqs = [u for u in prefetch_reqs if u.split('?')[0].endswith('/bundle.json')]
+        file_reqs = [u for u in prefetch_reqs if not u.split('?')[0].endswith('/bundle.json')]
+        if len(bundle_reqs) != 1:
+            fail(f"first-visit bundle requests {len(bundle_reqs)}, expected 1: {bundle_reqs[:3]}")
+        if file_reqs:
+            fail(f"first-visit per-score requests: {file_reqs[:3]}")
         ctx.close()
 
         # 已缓存后重进：打开 JSON 谱不得再请求该谱（含整页重进）
