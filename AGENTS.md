@@ -11,6 +11,7 @@
 - 曲号沿用既有编号，永不重排；删歌留空号。
 - 提交中文说明；线上为 `https://kcan.cc/`，部署前先在本地验收；不新增指向 v1/GitHub Pages 的链接。
 - frozen diff 部署前由 Reviewer 独立审；Reviewer 不改产品码，review 前后工作树 clean。
+- 生产部署：Reviewer PASS + CI 全绿后可直接上线 kcan.cc，无需再等 PM 批准；部署后记录 commit/CI/edge smoke。
 
 ## 维护
 - 新经验只追加到 `docs/omr-checklist.md` 的「已知教训」；不要写进本文件。
