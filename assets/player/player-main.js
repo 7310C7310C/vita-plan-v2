@@ -289,6 +289,37 @@ const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
 /* 起播前等待取样音源的上限；超时则本次播放全程用合成音，避免中途换音色 */
 const SAMPLE_WAIT_MS = 3000;
 
+/* 本站裁剪音色是 `var MIDI = {...}` 旧格式，smplr 需要 `MIDI.Soundfont.<id> = {...}`。
+   在缓存层把本地文件补成 smplr 认得的格式，避免每次载入都回退到 CDN 大文件。 */
+function soundfontStorage(mod){
+  const st = mod.CacheStorage();
+  if (!st || typeof st.fetch !== "function") return st;
+  const orig = st.fetch.bind(st);
+  st.fetch = async (url)=>{
+    const res = await orig(url);
+    try{
+      const m = String(url).match(/\/soundfonts\/MusyngKite\/([^/?]+)-mp3\.js(?:\?|$)/);
+      if (m && res && res.ok){
+        const text = await res.clone().text();
+        if (text.indexOf("MIDI.Soundfont.") < 0){
+          const body = text.replace(/^[\s\S]*?var\s+MIDI\s*=\s*/, "").trim()
+            .replace(/\s*}\s*$/, ",\n}");   /* smplr 的解析器要求最后一个属性后也有逗号 */
+          const fixed =
+            'if (typeof(MIDI) === "undefined") var MIDI = {};\n' +
+            'if (typeof(MIDI.Soundfont) === "undefined") MIDI.Soundfont = {};\n' +
+            'MIDI.Soundfont.' + m[1] + " = " + body + ";\n";
+          const headers = new Headers(res.headers);
+          headers.delete("content-length");
+          headers.delete("content-encoding");
+          return new Response(fixed, {status:200, headers});
+        }
+      }
+    }catch(e){}
+    return res;
+  };
+  return st;
+}
+
 class Engine{
   constructor(score){
     this.score = score;
@@ -313,7 +344,7 @@ class Engine{
     this.audioSupported = !!(window.AudioContext || window.webkitAudioContext);
     this.unavailableNotified = false;
     this.loading = null; this.sampleFailed = false; this.progress = null;
-    this.sampleWaitStartedAt = 0;
+    this.sampleWaitDeadline = 0;
     this.activeSynth = new Set();
     this.activeClicks = new Set();
     this.activeSampleStops = new Set();
@@ -420,8 +451,8 @@ class Engine{
     /* 等待期间可能有另一个 caller 已启动新载入；再等一次，避免同一音色重复下载 */
     if (this.loading){ try{ await this.loading; }catch(e){} }
     if (this.instName === id && this.inst) return this.inst;
-    /* 新的载入从此刻重新计算 3 秒起播等待预算 */
-    this.sampleWaitStartedAt = performance.now();
+    /* 新的载入重置起播等待预算；第一次 play 时再开始计 3 秒 */
+    this.sampleWaitDeadline = 0;
     this.loading = (async ()=>{
       try{
         const mod = await import(new URL("assets/vendor/smplr/index.js", location.href).href)
@@ -437,7 +468,7 @@ class Engine{
           }
         };
         if (window.isSecureContext && mod.CacheStorage){
-          try{ baseOpts.storage = mod.CacheStorage(); }catch(e){}
+          try{ baseOpts.storage = soundfontStorage(mod); }catch(e){}
         }
         let inst = null;
         try{
@@ -495,8 +526,9 @@ class Engine{
       if (this.onAudioBlocked) this.onAudioBlocked(blocked);
     }
     /* 取样音源未就绪时先等它载入再起播，避免开头几个音先出合成音、
-       随后才变成取样音。同一次载入总共只给 SAMPLE_WAIT_MS 预算；
-       预算用完后（即使中间暂停/被取代/切后台）后续起播直接先用合成音。 */
+       随后才变成取样音。同一次载入总共只给 SAMPLE_WAIT_MS 预算，
+       从第一次 play 起算；预算用完后（即使中间暂停/被取代/切后台）
+       后续起播直接先用合成音。 */
     let useSample = this.isTimbreReady();
     if (!useSample && ctx && !blocked && !this.sampleFailed){
       const id = this.timbre;
@@ -505,8 +537,8 @@ class Engine{
         /* 等不到而先用合成音时，载入完成后再提示已就绪（下次播放生效） */
         if (inst && this.playing && !this.playUsesSample && this.onReady) this.onReady(id);
       }).catch(()=>{});
-      const elapsed = this.sampleWaitStartedAt ? performance.now() - this.sampleWaitStartedAt : 0;
-      const remain = Math.max(0, SAMPLE_WAIT_MS - elapsed);
+      if (!this.sampleWaitDeadline) this.sampleWaitDeadline = performance.now() + SAMPLE_WAIT_MS;
+      const remain = Math.max(0, this.sampleWaitDeadline - performance.now());
       if (remain > 0){
         if (this.onSampleWait) this.onSampleWait(id);
         const inst = await Promise.race([loaded, sleep(remain)]).catch(()=>null);
