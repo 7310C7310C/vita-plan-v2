@@ -47,6 +47,7 @@
     version: 'o'
   };
   let frameIdleTimer = 0;
+  let fallbackBundle = null;
 
   /* Runtime mapping is a tiny JS file loaded before this script (no sync XHR). */
   state.data = window.VP2_DATA || null;
@@ -95,6 +96,32 @@
   function validScorePath(path){
     return /^data\/scores\/[a-z0-9_-]+\/[0-9]+(?:-[a-z])?\.json$/i.test(String(path || ''));
   }
+  function scoreBundleURL(){
+    try{ return new URL(basePath() + 'data/scores/bundle.json', location.href).href; }
+    catch(e){ return basePath() + 'data/scores/bundle.json'; }
+  }
+  /* 全部曲谱打包成一个 gzip 流，首访只下载这一份；打不开时回退逐份源 JSON。 */
+  async function loadScoreBundle(){
+    if (window.VP2Cache && typeof window.VP2Cache.loadBundle === 'function'){
+      return window.VP2Cache.loadBundle(false);
+    }
+    if (fallbackBundle) return fallbackBundle;
+    const url = scoreBundleURL();
+    let cache = null;
+    try{ cache = await caches.open(JSON_CACHE); }catch(e){}
+    if (cache){
+      try{
+        const hit = await cache.match(url, {ignoreSearch:true});
+        if (hit){ fallbackBundle = await hit.json(); return fallbackBundle; }
+      }catch(e){}
+    }
+    const res = await fetch(url, {cache:'no-store'});
+    if (!res || !res.ok) throw new Error('score bundle unavailable');
+    const copy = res.clone();
+    fallbackBundle = await res.json();
+    if (cache){ try{ await cache.put(url, copy); }catch(e){} }
+    return fallbackBundle;
+  }
   function errorScore(song){
     return {id:'__error__', title:(song && song.title) || '乐谱加载失败', credit:'',
       key:'C', keyBase:60, meter:'4/4', beatUnit:1, tempo:80, compound:false, clickStep:1,
@@ -104,6 +131,13 @@
   async function loadScore(score){
     const path = String(score && score.file || '');
     if (!validScorePath(path)) throw new Error('invalid score path');
+    try{
+      const bundle = await loadScoreBundle();
+      const packed = bundle && bundle.format === 'vp2-pack/1' && bundle.scores ? bundle.scores[path] : null;
+      if (packed && window.VP2ScoreFormat && typeof window.VP2ScoreFormat.decode === 'function'){
+        return window.VP2ScoreFormat.decode(packed);
+      }
+    }catch(e){}
     const url = basePath() + path;
     let cache = null;
     try{ cache = await caches.open(JSON_CACHE); }catch(e){}

@@ -1,55 +1,10 @@
 {
-  "version": "4e0ee44d8affefd4",
+  "version": "fdf5e0b4757c3017",
   "files": [
     {
-      "path": "data/scores/cl/001-b.json",
-      "hash": "57a3964b80dce258a0cd5ba9060c60cc2f48dbf1b41e3f7e15d59eb1d80aca76",
-      "size": 3801
-    },
-    {
-      "path": "data/scores/cl/001.json",
-      "hash": "34768a3f525e79c81b8f63c730909311419d850263ba2be43c789b80207c040d",
-      "size": 3621
-    },
-    {
-      "path": "data/scores/cl/002-b.json",
-      "hash": "8530d61d6aacde3577a1a61cda34d4880a2f04f810a5869f0f7314bc7246692d",
-      "size": 9550
-    },
-    {
-      "path": "data/scores/cl/002-g.json",
-      "hash": "5c7ebf7a8cde8c3a7b323b60790c0c5a527220b4489da61810212e19881b4a05",
-      "size": 9186
-    },
-    {
-      "path": "data/scores/cl/002.json",
-      "hash": "e94bd03ea99424df8244f0fa945a998171da004716c0daeec65d0b70d1deba16",
-      "size": 7773
-    },
-    {
-      "path": "data/scores/jt/017.json",
-      "hash": "1ebc1917127e71fe82b00be25c96900310f4fe27237e7d13d710e011a25c670d",
-      "size": 24583
-    },
-    {
-      "path": "data/scores/lz/008-g.json",
-      "hash": "aea3edb055a21f54214a76f358bbba0ca589c03c51f13943a2654257d7c39e7e",
-      "size": 7432
-    },
-    {
-      "path": "data/scores/lz/008.json",
-      "hash": "e2889307404e72834a2dc5906c7db532cef9bcb423a25b4e4b6861e790ab938a",
-      "size": 7277
-    },
-    {
-      "path": "data/scores/lz/019.json",
-      "hash": "e4a3c43516dae43f95e457136f73ba511deb996d35817755c7d0ce64fdba398d",
-      "size": 11217
-    },
-    {
-      "path": "data/scores/lz/020.json",
-      "hash": "f3d8a81ce353bf6cb373a4bfb7a47b005a4fd95d844ef2b59f3a7e61c3a37553",
-      "size": 9351
+      "path": "data/scores/bundle.json",
+      "hash": "fdf5e0b4757c3017b55307d48dadb8bee924e1154a5b13fd434147fa263ad455",
+      "size": 17119
     }
   ]
 }

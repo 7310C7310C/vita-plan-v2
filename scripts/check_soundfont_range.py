@@ -16,6 +16,8 @@ lo, hi = 999, -1
 bad = []
 
 for path in sorted(glob.glob("data/scores/**/*.json", recursive=True)):
+    if path.endswith("/bundle.json"):
+        continue
     with open(path, encoding="utf-8") as fh:
         data = json.load(fh)
     for bar in data.get("bars", []):

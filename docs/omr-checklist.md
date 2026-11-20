@@ -18,6 +18,11 @@
 - 谱面细节：小节序号、小节线、延音 dash、空拍/nodot、系统括号、夜间模式。
 - 写完后跑 `scripts/check_scores.py`；格式、版本、资产引用由脚本校验。
 
+## 构建
+- `data/scores/**/*.json` 仍是源谱（当前运行时格式）；`data/scores/bundle.json` 由 `scripts/generate_v2_manifest.py` 生成，浏览器只预缓存这一份。
+- 改谱后先跑 `python3 scripts/generate_v2_manifest.py`，再跑 `scripts/verify.sh`；CI 会用 `--check` 阻止忘记生成。
+- bundle 是机器格式（MIDI、事件下标），不要手改；人类可编辑格式另行设计。
+
 ## 已知教训
 - cl001 第 7 小节“垂”应在第 4 拍（2 音），“怜”在第 8 小节；初版把两者放在 3/2，已修正。
 - cl001 bar7 的 A、bar8 的 D 落在延音拍；和弦中心必须对齐 dash 中心，初版未对齐。

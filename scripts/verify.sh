@@ -3,12 +3,15 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+python3 scripts/generate_v2_manifest.py --check
 python3 scripts/check_scores.py
 python3 scripts/check_agents.py
 
-for f in assets/js/v2-ui.js assets/js/v2-cache.js assets/js/script.js assets/player/*.js sw-v2.js admin/admin.js; do
+for f in assets/js/v2-ui.js assets/js/v2-cache.js assets/js/score-format.js assets/js/script.js assets/player/*.js sw-v2.js admin/admin.js; do
   node --check "$f"
 done
+
+node tests/score_bundle_test.js
 
 if [ "${1:-}" = "--ui" ]; then
   PORT="${PORT:-8080}"

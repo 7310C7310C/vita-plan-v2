@@ -1,6 +1,6 @@
 /* Vita Plan v2 service worker: pre-cache the shell; score JSON is synced by
    assets/js/v2-cache.js into the same JSON_CACHE bucket. */
-const SHELL_CACHE = 'v2-shell-152';
+const SHELL_CACHE = 'v2-shell-153';
 const JSON_CACHE = 'v2-json-v3';
 const IMG_CACHE = 'v2-img-v1';
 const SHELL = [
@@ -14,9 +14,10 @@ const SHELL = [
   'data/songs.json?v=20261115185326',
   'assets/css/style.css?v=20261115185326',
   'assets/css/v2-ui.css?v=22',
-  'assets/js/v2-ui.js?v=28',
+  'assets/js/score-format.js?v=1',
+  'assets/js/v2-ui.js?v=29',
   'assets/js/script.js?v=2026111921',
-  'assets/js/v2-cache.js?v=10',
+  'assets/js/v2-cache.js?v=11',
   'data/v2-scores.js?v=6'
 ];
 

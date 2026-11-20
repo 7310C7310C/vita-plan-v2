@@ -15,11 +15,17 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "data"
 SCORES = DATA / "scores"
+BUNDLE = SCORES / "bundle.json"
 errors: list[str] = []
 
 
 def err(msg: str) -> None:
     errors.append(msg)
+
+
+def score_files() -> list[Path]:
+    """Source score JSON files; bundle.json is a generated artifact."""
+    return [p for p in sorted(SCORES.rglob("*.json")) if p != BUNDLE]
 
 
 def load(path: Path):
@@ -282,7 +288,7 @@ def main() -> int:
     if len(set(codes.values())) != len(codes):
         err("data/v2-scores.json: duplicate category code")
     ids: set[str] = set()
-    for path in sorted(SCORES.rglob("*.json")):
+    for path in score_files():
         score = load(path)
         if score is not None:
             check_score(path, score, ids)
@@ -331,28 +337,42 @@ def main() -> int:
                     bf = ROOT / ent["file"] if ent.get("file") else None
                     if bf is not None and bf.exists() and bf != vf:
                         check_version_parity(bf, vf, code)
-    for path in sorted(SCORES.rglob("*.json")):
+    for path in score_files():
         rel = path.relative_to(ROOT).as_posix()
         if rel not in referenced:
             err(f"{rel}: score file not referenced by data/v2-scores.json")
 
-    # manifest hashes/version must match the generator
+    # bundle + manifest must match the generator
     manifest = load(DATA / "v2-manifest.json")
-    files = []
-    for path in sorted(SCORES.rglob("*.json")):
-        rel = path.relative_to(ROOT).as_posix()
-        h = hashlib.sha256(path.read_bytes()).hexdigest()
-        files.append({"path": rel, "hash": h, "size": path.stat().st_size})
-    expect_version = hashlib.sha256(
-        "".join(f"{f['path']}\t{f['hash']}\t{f['size']}\n" for f in files).encode()
-    ).hexdigest()[:16]
+    bundle = load(BUNDLE) if BUNDLE.exists() else None
+    if not BUNDLE.exists():
+        err("data/scores/bundle.json: missing (run scripts/generate_v2_manifest.py)")
+        bundle_bytes = b""
+    else:
+        bundle_bytes = BUNDLE.read_bytes()
+    bundle_hash = hashlib.sha256(bundle_bytes).hexdigest()
+    files = [{"path": "data/scores/bundle.json", "hash": bundle_hash, "size": len(bundle_bytes)}]
+    expect_version = bundle_hash[:16]
     if not isinstance(manifest, dict):
         err("data/v2-manifest.json: invalid")
     else:
         if manifest.get("files") != files:
-            err("data/v2-manifest.json: hashes/sizes stale (run scripts/generate_v2_manifest.py)")
+            err("data/v2-manifest.json: bundle hash/size stale (run scripts/generate_v2_manifest.py)")
         if manifest.get("version") != expect_version:
             err(f"data/v2-manifest.json: version {manifest.get('version')} != {expect_version}")
+    if isinstance(bundle, dict):
+        if bundle.get("format") != "vp2-pack/1":
+            err(f"data/scores/bundle.json: unexpected format {bundle.get('format')!r}")
+        packed = bundle.get("scores")
+        if not isinstance(packed, dict):
+            err("data/scores/bundle.json: scores must be an object")
+            packed = {}
+        missing = referenced - set(packed)
+        extra = set(packed) - referenced
+        if missing:
+            err(f"data/scores/bundle.json: missing {len(missing)} score(s): {sorted(missing)[:3]}")
+        if extra:
+            err(f"data/scores/bundle.json: stale {len(extra)} score(s): {sorted(extra)[:3]}")
 
     # runtime JS wrapper must match the JSON source
     scores_js = DATA / "v2-scores.js"
@@ -504,7 +524,7 @@ def main() -> int:
         for e in errors:
             print(" -", e)
         return 1
-    print(f"OK: {len(list(SCORES.rglob('*.json')))} scores, {len(entries)} mappings, manifest {expect_version}")
+    print(f"OK: {len(score_files())} scores, {len(entries)} mappings, manifest {expect_version}")
     return 0
 
 
