@@ -32,7 +32,7 @@
     timbre: 'church_organ',
     timbres: null,
     scale: 100,
-    autowrap: true,
+    autowrap: false,
     follow: true,
     theme: 'light',
     capo: 0,
@@ -384,6 +384,7 @@
       if (l) l.textContent = state.scale + '%';
     }
     if (typeof m.autowrap === 'boolean') setAutowrap(m.autowrap);
+    else updateScaleUI();
     if (typeof m.follow === 'boolean'){
       state.follow = m.follow;
       const b = document.getElementById('v2FollowBtn'); if (b) b.classList.toggle('on', m.follow);
@@ -397,9 +398,20 @@
       const el = document.getElementById('v2Capo'); if (el) el.value = String(state.capo);
     }
   }
+  function updateScaleUI(){
+    const el = document.getElementById('v2Scale');
+    const val = document.getElementById('v2ScaleVal');
+    if (!el) return;
+    const auto = !state.autowrap;
+    const en = state.uiLang === 'en';
+    el.disabled = auto;
+    el.title = auto ? (en ? 'Auto-fit; enable Wrap to adjust' : '不换行时自动适配；开启自动换行后可调') : '';
+    if (val) val.textContent = auto ? (en ? 'Auto' : '自动') : ((state.scale || 100) + '%');
+  }
   function setAutowrap(on){
     state.autowrap = !!on;
     document.querySelectorAll('#v2WrapBarBtn').forEach(function(b){ b.classList.toggle('on', state.autowrap); });
+    updateScaleUI();
   }
   function updateAnnotTools(m){
     if (m.count != null){
@@ -460,6 +472,7 @@
     });
     if (menuBtn) menuBtn.textContent = en ? 'Menu' : '菜单';
     if (state.timbres) buildTimbres(state.timbres);
+    updateScaleUI();
     setPlayUI(state.playing);
   }
 

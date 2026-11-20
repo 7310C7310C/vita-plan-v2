@@ -244,7 +244,7 @@ document.addEventListener('keydown', function(e){ if (e.key==='Escape') closeCho
           const v = Math.max(80, Math.min(150, +m.value || 100));
           scale = v;
           if (scaleEl){ scaleEl.value = v; scaleVal.textContent = v + '%'; }
-          document.documentElement.style.setProperty('--scale', (v/100) * 1.2);
+          applyDisplayScale();
           saveSettings(); lastSig = ''; scheduleRender();
           break;
         }

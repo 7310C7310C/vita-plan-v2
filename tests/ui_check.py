@@ -127,8 +127,8 @@ def wait_hashes(page, paths: list[str], timeout: int = 30000) -> None:
     )
 
 
-def open_score(browser, path: str, width: int = 1280):
-    ctx = browser.new_context(viewport={"width": width, "height": 900}, service_workers="block")
+def open_score(browser, path: str, width: int = 1280, height: int = 900, autowrap=True):
+    ctx = browser.new_context(viewport={"width": width, "height": height}, service_workers="block")
     page = ctx.new_page()
     errs: list[str] = []
     page.on("pageerror", lambda e: errs.append("pageerror: " + str(e)))
@@ -143,6 +143,15 @@ def open_score(browser, path: str, width: int = 1280):
     )
     if page.evaluate("() => window.VP2UI && VP2UI.isActive()"):
         wait_score_ready(page)
+        if autowrap is not None:
+            # 新版默认不换行；既有版面测试明确设定所需状态
+            frame_body = page.frame_locator("#v2Frame").locator("body")
+            frame_body.evaluate(
+                "(on)=>{const b=document.getElementById('wrapBtn');"
+                "if(b && window.__hymn && window.__hymn.autowrap!==on) b.click();}",
+                bool(autowrap),
+            )
+            page.wait_for_timeout(250)
     else:
         page.wait_for_function(
             "() => { const i = document.getElementById('sheet-image'); return !!(i && i.complete && i.naturalWidth > 0); }",
@@ -286,6 +295,78 @@ def main() -> int:
             v = page.evaluate("() => getComputedStyle(document.getElementById('main-view')).display")
             if v != "block":
                 fail(f"deep link {path}: browser back did not show home view ({v})")
+        ctx.close()
+
+        # 默认不换行 + 整页适配（平板/宽屏）+ 顶栏断点
+        for w, h, path in ((1920, 1200, "cl/001"), (1920, 1200, "jt/017"),
+                           (600, 960, "cl/001"), (600, 960, "jt/017"),
+                           (600, 960, "lz/020"), (430, 900, "lz/020"),
+                           (768, 900, "lz/020"), (1024, 900, "lz/020"),
+                           (421, 900, "cl/001"), (420, 900, "cl/001")):
+            ctx, page, frame, errs = open_score(browser, path, width=w, height=h, autowrap=None)
+            info = page.evaluate("""() => {
+              const w = document.getElementById('v2Frame').contentWindow, d = w.document;
+              const sc = d.getElementById('score'), sr = sc.getBoundingClientRect();
+              const bar = document.querySelector('.viewer-topbar');
+              const crumb = document.getElementById('viewer-breadcrumb');
+              const acts = document.getElementById('v2HeadActions');
+              const chords = [...d.querySelectorAll('#score .chordrow span')]
+                .filter(s => s.textContent.trim()).map(s => s.getBoundingClientRect().right);
+              const scaleEl = document.getElementById('v2Scale');
+              const scaleVal = document.getElementById('v2ScaleVal');
+              return {autowrap: w.__hymn.autowrap, fit: w.__hymn.fitScale,
+                      nowrap: sc.classList.contains('nowrap'),
+                      cw: sc.clientWidth, sw: sc.scrollWidth,
+                      docH: d.documentElement.scrollHeight, innerH: w.innerHeight,
+                      parent: window.VP2UI.state.autowrap,
+                      tbH: Math.round(bar.getBoundingClientRect().height),
+                      wrap: getComputedStyle(bar).flexWrap,
+                      crumbY: Math.round(crumb.getBoundingClientRect().y),
+                      actY: Math.round(acts.getBoundingClientRect().y),
+                      maxChordRight: chords.length ? Math.max(...chords) : 0,
+                      scoreRight: sr.right,
+                      scaleDisabled: scaleEl.disabled,
+                      scaleLabel: (scaleVal.textContent || '').trim()};
+            }""")
+            if info["autowrap"] is not False or info["parent"] is not False:
+                fail(f"{path}@{w}: default autowrap {info}")
+            if not info["nowrap"] or not (0.2 <= info["fit"] <= 1):
+                fail(f"{path}@{w}: no-wrap/fit missing {info}")
+            if not info["scaleDisabled"] or info["scaleLabel"] != "自动":
+                fail(f"{path}@{w}: no-wrap scale control should show auto {info}")
+            if info["sw"] > info["cw"] + 2:
+                fail(f"{path}@{w}: horizontal overflow {info}")
+            if info["maxChordRight"] > info["scoreRight"] + 1:
+                fail(f"{path}@{w}: chord clipped at right {info}")
+            if path == "cl/001" and info["docH"] > info["innerH"] + 2:
+                fail(f"{path}@{w}: short score should fit page {info}")
+            if w >= 421:
+                if info["wrap"] != "nowrap" or info["crumbY"] != info["actY"] or info["tbH"] > 40:
+                    fail(f"{path}@{w}: topbar should be one row {info}")
+            elif info["wrap"] != "wrap" or info["actY"] <= info["crumbY"]:
+                fail(f"{path}@{w}: narrow topbar should wrap {info}")
+            if errs:
+                fail(f"{path}@{w} errors: {' | '.join(errs[:3])}")
+            ctx.close()
+
+        # 旧的高字号设定不能破坏不换行整页适配
+        ctx = browser.new_context(viewport={"width": 1920, "height": 1200}, service_workers="block")
+        page = ctx.new_page()
+        page.goto(BASE, wait_until="load", timeout=60000)
+        page.evaluate("""() => localStorage.setItem('ys.settings.jintang017.v2', JSON.stringify({scale: 150}))""")
+        page.goto(BASE + "jt/017", wait_until="load", timeout=60000)
+        page.wait_for_function("() => window.VP2UI && VP2UI.state && VP2UI.state.ready", timeout=30000)
+        page.wait_for_timeout(900)
+        high = page.evaluate("""() => {
+          const w = document.getElementById('v2Frame').contentWindow, d = w.document;
+          return {autowrap: w.__hymn.autowrap, fit: w.__hymn.fitScale, scale: w.__hymn.scale,
+                  docH: d.documentElement.scrollHeight, innerH: w.innerHeight,
+                  label: (document.getElementById('v2ScaleVal').textContent || '').trim()};
+        }""")
+        if high["scale"] != 150:
+            fail(f"jt017@1920 high-scale setting not applied: {high}")
+        if high["autowrap"] is not False or high["docH"] > high["innerH"] + 2 or high["label"] != "自动":
+            fail(f"jt017@1920 high-scale no-wrap: {high}")
         ctx.close()
 
         # single-voice cl001

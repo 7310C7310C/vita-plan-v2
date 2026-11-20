@@ -292,6 +292,7 @@
      用 padding-top 留出绘制空间并以负 margin 抵消，视觉位置不变 */
   .score.nowrap{overflow-x:auto;scrollbar-width:thin;padding-top:1.5em;margin-top:-1.5em;padding-bottom:.4em}
   .score.nowrap .line{min-width:min-content}
+  .score.nowrap .bars{padding-right:1.4em}   /* 给末拍和弦右移留尾间，避免窄屏裁字 */
   .score.nowrap .bar{min-width:5.2em}
   body.scroll-locked{position:fixed;left:0;right:0;width:100%;overflow:hidden}
   .tb-more{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
