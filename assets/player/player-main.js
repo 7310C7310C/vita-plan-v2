@@ -1616,6 +1616,7 @@ function confirmPlayInQuietHour(){
 
 /* ---------- 播放 ---------- */
 function setPlayUI(playing){
+  document.body.classList.toggle("playing", !!playing);
   const btn = $("#playBtn");
   btn.innerHTML = playing ? ICONS.pause : ICONS.play;
   btn.setAttribute("aria-label", playing ? "暂停" : "播放");

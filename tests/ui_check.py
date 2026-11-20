@@ -498,6 +498,31 @@ def main() -> int:
                 fail(f"jt017 bar3: tail pseudo not absolutely centered: {tail}")
             elif abs(float(tail["left"].replace("px", "")) - tail["bw"] / 2) > 1.2:
                 fail(f"jt017 bar3: tail pseudo left not half box: {tail}")
+        # Hover must stay an affordance, not mimic the yellow playback fill.
+        hover_note = frame.locator('.bar[data-bar="1"] .vrow[data-vrow="T"] .cell:last-child .note')
+        hover_note.hover()
+        hover_bg = hover_note.evaluate("el => getComputedStyle(el).backgroundColor")
+        if hover_bg not in ("rgba(0, 0, 0, 0)", "transparent"):
+            fail(f"jt017 hover note background {hover_bg!r}, expected transparent")
+        frame.locator("body").evaluate("""() => {
+          engine.playing = true; engine.tempo = 0; engine.anchorBeat = 4.5;
+          engine.anchorTime = engine.clockNow(); highlight(4.5); setPlayUI(true);
+        }""")
+        page.wait_for_timeout(50)
+        playing_hover = hover_note.evaluate("el => ({bg:getComputedStyle(el).backgroundColor, shadow:getComputedStyle(el).boxShadow, hover:el.matches(':hover')})")
+        if not playing_hover["hover"]:
+            fail(f"jt017 hover test lost pointer before assertion: {playing_hover}")
+        elif playing_hover["bg"] not in ("rgba(0, 0, 0, 0)", "transparent") or playing_hover["shadow"] != "none":
+            fail(f"jt017 playing hover must be invisible: {playing_hover}")
+        frame.locator("body").evaluate("""() => {
+          engine.anchorBeat = 7.5; engine.anchorTime = engine.clockNow(); highlight(7.5);
+        }""")
+        page.wait_for_timeout(50)
+        active_hover = hover_note.evaluate("el => ({bg:getComputedStyle(el).backgroundColor, shadow:getComputedStyle(el).boxShadow, hover:el.matches(':hover'), cls:el.className})")
+        if not active_hover["hover"]:
+            fail(f"jt017 active-hover test lost pointer: {active_hover}")
+        elif active_hover["bg"] in ("rgba(0, 0, 0, 0)", "transparent") or active_hover["shadow"] == "none":
+            fail(f"jt017 playback highlight lost while hovered: {active_hover}")
         if errs:
             fail("jt017 page errors: " + " | ".join(errs[:4]))
         ctx.close()

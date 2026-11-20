@@ -260,7 +260,11 @@
     font-family:"Times New Roman",Georgia,serif;font-weight:600;font-size:1.16em;line-height:1;
     transition:background .08s;white-space:nowrap;
   }
-  .note:hover{background:var(--btn-hover)}
+  @media (hover:hover) and (pointer:fine){
+    /* Hover is only an affordance; the fill is reserved for playback (.note.on). */
+    .note:hover{background:transparent;box-shadow:inset 0 0 0 1px var(--line)}
+    body.playing .note:not(.on):hover{background:transparent;box-shadow:none}
+  }
   .note.on{background:var(--hl);color:var(--hl-ink);box-shadow:0 0 0 1.5px var(--hl),0 1px 4px rgba(0,0,0,.12)}
 
   .num{position:relative;display:inline-block;min-width:.58em;text-align:center}

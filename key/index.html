@@ -1,13 +1,297 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8">
-<title>转调对照工具已迁移</title>
-<link rel="canonical" href="../tools/transpose/">
-<meta http-equiv="refresh" content="0; url=../tools/transpose/">
-<meta name="robots" content="noindex">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>乐手转调对照工具</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+            --text-dim: #94a3b8;
+            --border: #334155;
+            --input-bg: #020617;
+            
+            /* 七级音颜色定义 */
+            --color-1: #ef4444; 
+            --color-2: #f97316; 
+            --color-3: #facc15; 
+            --color-4: #22c55e; 
+            --color-5: #06b6d4; 
+            --color-6: #3b82f6; 
+            --color-7: #a855f7; 
+            --color-default: #64748b;
+            
+            /* 按钮颜色改进 */
+            --btn-add: #2563eb;
+            --btn-add-hover: #3b82f6;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--card);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+        header { text-align: center; margin-bottom: 24px; }
+        h2 { margin: 0; color: #fff; font-size: 1.6rem; letter-spacing: 2px; }
+        
+        .config-card {
+            background: var(--input-bg);
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .config-group { display: flex; flex-direction: column; }
+        label { font-size: 0.8rem; font-weight: 600; color: var(--text-dim); margin-bottom: 6px; }
+        select {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-size: 1.1rem;
+            background: var(--card);
+            color: var(--text);
+            cursor: pointer;
+            outline: none;
+        }
+
+        .list-header {
+            display: grid;
+            grid-template-columns: 1fr 40px 1fr 40px;
+            gap: 10px;
+            padding: 0 10px 10px 10px;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            text-align: center;
+        }
+        .row-list { margin-bottom: 20px; }
+        .note-row {
+            display: grid;
+            grid-template-columns: 1fr 40px 1fr 40px;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        
+        .arrow { text-align: center; font-weight: bold; color: var(--border); font-size: 1.2rem; }
+        
+        .result-box {
+            background: rgba(0,0,0,0.3);
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 900;
+            border: 3px solid var(--color-default);
+            font-size: 1.4rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+        }
+        
+        .scale-1 { border-color: var(--color-1); box-shadow: 0 0 10px rgba(239, 68, 68, 0.3); }
+        .scale-2 { border-color: var(--color-2); box-shadow: 0 0 10px rgba(249, 115, 22, 0.3); }
+        .scale-3 { border-color: var(--color-3); box-shadow: 0 0 10px rgba(250, 204, 21, 0.3); }
+        .scale-4 { border-color: var(--color-4); box-shadow: 0 0 10px rgba(34, 197, 94, 0.3); }
+        .scale-5 { border-color: var(--color-5); box-shadow: 0 0 10px rgba(6, 182, 212, 0.3); }
+        .scale-6 { border-color: var(--color-6); box-shadow: 0 0 10px rgba(59, 130, 246, 0.3); }
+        .scale-7 { border-color: var(--color-7); box-shadow: 0 0 10px rgba(168, 85, 247, 0.3); }
+
+        .btn-del {
+            background: none;
+            color: var(--text-dim);
+            border: none;
+            font-size: 1.4rem;
+            cursor: pointer;
+        }
+
+        .controls { display: flex; gap: 10px; }
+        .btn-add {
+            flex: 2;
+            padding: 15px;
+            background: var(--btn-add);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-add:hover { background: var(--btn-add-hover); }
+        .btn-reset {
+            flex: 1;
+            padding: 15px;
+            background: transparent;
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-<p>工具已迁移到 <a href="../tools/transpose/">转调对照工具</a>。</p>
+
+<div class="container">
+    <header>
+        <h2>转调对照表</h2>
+    </header>
+    
+    <div class="config-card">
+        <div class="config-group">
+            <label>源调</label>
+            <select id="sourceKey" onchange="handleMainKeyChange()"></select>
+        </div>
+        <div class="arrow">⇄</div>
+        <div class="config-group">
+            <label>目标调</label>
+            <select id="targetKey" onchange="updateAllRows()"></select>
+        </div>
+    </div>
+
+    <div class="list-header">
+        <div>源音符</div>
+        <div></div>
+        <div>目标音</div>
+        <div></div>
+    </div>
+
+    <div id="rowList" class="row-list"></div>
+
+    <div class="controls">
+        <button class="btn-add" onclick="addRow()">+ 添加对照音</button>
+        <button class="btn-reset" onclick="loadDefaultScale()">重置</button>
+    </div>
+</div>
+
+<script>
+    const notesSharp = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    const notesFlat  = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+    const flatKeys = [5, 10, 3, 8, 1, 6]; 
+
+    function init() {
+        const sSelect = document.getElementById('sourceKey');
+        const tSelect = document.getElementById('targetKey');
+        notesSharp.forEach((note, index) => {
+            let displayName = (notesFlat[index] === note) ? note : `${note} / ${notesFlat[index]}`;
+            sSelect.options.add(new Option(displayName, index));
+            tSelect.options.add(new Option(displayName, index));
+        });
+        sSelect.value = 0;
+        tSelect.value = 3;
+        loadDefaultScale();
+    }
+
+    function getBestNoteList(keyIndex) {
+        return flatKeys.includes(parseInt(keyIndex)) ? notesFlat : notesSharp;
+    }
+
+    function loadDefaultScale() {
+        document.getElementById('rowList').innerHTML = '';
+        const sKey = parseInt(document.getElementById('sourceKey').value);
+        const majorScaleIntervals = [0, 2, 4, 5, 7, 9, 11]; 
+        
+        majorScaleIntervals.forEach((interval, index) => {
+            const noteValue = (sKey + interval) % 12;
+            addRow(noteValue, index + 1); 
+        });
+    }
+
+    function addRow(initialValue = 0, scaleDegree = null) {
+        const container = document.getElementById('rowList');
+        const rowId = Math.random().toString(36).substr(2, 9);
+        const row = document.createElement('div');
+        row.className = 'note-row';
+        row.id = `row-${rowId}`;
+        
+        const sKey = parseInt(document.getElementById('sourceKey').value);
+        const sourceNames = getBestNoteList(sKey);
+
+        let optionsHtml = '';
+        for(let i=0; i<12; i++) {
+            const isSelected = i === initialValue ? 'selected' : '';
+            optionsHtml += `<option value="${i}" ${isSelected}>${sourceNames[i]}</option>`;
+        }
+        
+        if (scaleDegree === null) {
+            const majorScaleIntervals = [0, 2, 4, 5, 7, 9, 11];
+            const currentInterval = (initialValue - sKey + 12) % 12;
+            const degreeIndex = majorScaleIntervals.indexOf(currentInterval);
+            if (degreeIndex !== -1) scaleDegree = degreeIndex + 1;
+        }
+
+        const colorClass = scaleDegree ? `scale-${scaleDegree}` : '';
+
+        row.innerHTML = `
+            <select class="source-note" onchange="updateRow('${rowId}')">
+                ${optionsHtml}
+            </select>
+            <div class="arrow">→</div>
+            <div class="result-box ${colorClass}" id="result-${rowId}">-</div>
+            <button class="btn-del" onclick="removeRow('${rowId}')">✕</button>
+        `;
+        
+        container.appendChild(row);
+        updateRow(rowId);
+    }
+
+    function removeRow(id) {
+        const row = document.getElementById(`row-${id}`);
+        if(row) row.remove();
+    }
+
+    function updateRow(rowId) {
+        const sKey = parseInt(document.getElementById('sourceKey').value);
+        const tKey = parseInt(document.getElementById('targetKey').value);
+        const rowElement = document.getElementById(`row-${rowId}`);
+        const sourceNoteSelect = rowElement.querySelector('.source-note');
+        const resultBox = document.getElementById(`result-${rowId}`);
+
+        const sourceNoteVal = parseInt(sourceNoteSelect.value);
+        const interval = (tKey - sKey + 12) % 12;
+        const targetNoteIdx = (sourceNoteVal + interval) % 12;
+        
+        const majorScaleIntervals = [0, 2, 4, 5, 7, 9, 11];
+        const currentRelInterval = (sourceNoteVal - sKey + 12) % 12;
+        const degreeIndex = majorScaleIntervals.indexOf(currentRelInterval);
+        
+        for(let i=1; i<=7; i++) resultBox.classList.remove(`scale-${i}`);
+        if (degreeIndex !== -1) resultBox.classList.add(`scale-${degreeIndex + 1}`);
+
+        const displayList = getBestNoteList(tKey);
+        resultBox.innerText = displayList[targetNoteIdx];
+    }
+
+    function updateAllRows() {
+        const rows = document.querySelectorAll('.note-row');
+        rows.forEach(row => {
+            const id = row.id.replace('row-', '');
+            updateRow(id);
+        });
+    }
+
+    function handleMainKeyChange() {
+        loadDefaultScale();
+    }
+
+    init();
+</script>
+
 </body>
 </html>

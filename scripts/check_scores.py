@@ -395,6 +395,33 @@ def main() -> int:
         if (ROOT / legacy).exists():
             err(f"legacy v1 offline file present: {legacy}")
 
+    # standalone tools stay at /key and /random; no tools/ copies may return
+    for legacy in ("tools/key", "tools/random", "tools/transpose", "tools/random-notes"):
+        if (ROOT / legacy).exists():
+            err(f"legacy tool copy present: {legacy}")
+    for tool, title_re in (
+        ("key/index.html", re.compile(r"乐手转调对照工具")),
+        ("random/index.html", re.compile(r"随机音符播放器(?: v[\d.]+)?")),
+    ):
+        p = ROOT / tool
+        if not p.exists():
+            err(f"missing standalone tool: {tool}")
+            continue
+        text = p.read_text(encoding="utf-8")
+        m = re.search(r"<title>\s*(.*?)\s*</title>", text, re.I | re.S)
+        title = m.group(1) if m else ""
+        if not title_re.fullmatch(title):
+            err(f"{tool}: unexpected title {title!r}")
+        if re.search(r"""http-equiv\s*=\s*["']?refresh["']?""", text, re.I):
+            err(f"{tool}: meta refresh redirect stub present")
+        if "tools/transpose" in text or "tools/random-notes" in text:
+            err(f"{tool}: old tools/ redirect path present")
+        if p.stat().st_size < 5000:
+            err(f"{tool}: too small for the full tool ({p.stat().st_size} bytes)")
+    for asset in ("key/favicon.ico", "random/favicon.ico"):
+        if not (ROOT / asset).exists():
+            err(f"missing standalone tool asset: {asset}")
+
     # agent/OMR instructions must stay in place
     for name in ("AGENTS.md", "CLAUDE.md", "docs/omr-checklist.md"):
         if not (ROOT / name).exists():
