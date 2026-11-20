@@ -261,10 +261,10 @@ const SCORE_PITCHES = (()=>{
 const DEFAULTS = {
   theme:"light", follow:true, tempo:SCORE.tempo, volume:100,
   timbre:"church_organ", parts:{S:true,A:true,T:true,B:true},
-  lyricFont:"hei", bold:true, scale:100, metronome:true, lang:"s", autowrap:false, capo:0
+  lyricFont:"hei", bold:true, scale:100, metronome:true, lang:"s", autowrap:true, capo:0
 };
-/* 版面默认改为不自动换行；旧设定没有 wrapV 的，一次性切到新默认 */
-const SETTINGS_VERSION = 2;
+/* 回退不换行默认：曾套用 wrapV:2 的设定一次性恢复自动换行；之后仍可手动关闭 */
+const SETTINGS_VERSION = 3;
 const STORE_KEY = "ys.settings." + SONG_ID + ".v2";
 function loadSettings(){
   try{
@@ -272,7 +272,7 @@ function loadSettings(){
     if (!raw) return Object.assign({}, DEFAULTS);
     const s = JSON.parse(raw);
     const merged = Object.assign({}, DEFAULTS, s, {parts:Object.assign({}, DEFAULTS.parts, s.parts||{})});
-    if (s.wrapV !== SETTINGS_VERSION) merged.autowrap = false;
+    if (s.wrapV !== SETTINGS_VERSION) merged.autowrap = true;
     return merged;
   }catch(e){ return Object.assign({}, DEFAULTS); }
 }
@@ -283,7 +283,6 @@ let lyricFont = LYRIC_FONTS[settings.lyricFont] ? settings.lyricFont : "hei";
 let bold = true;   /* 字体自定义已移除：歌词固定加粗 */
 let autowrap = settings.autowrap !== false;
 let scale = Math.max(80, Math.min(150, +settings.scale || 100));
-let fitScale = 1;
 let capo = Math.max(0, Math.min(12, +settings.capo || 0));
 let lang = settings.lang === "s" ? "s" : "t";
 
@@ -793,7 +792,7 @@ let press = null, pressTimer = 0;
 document.documentElement.dataset.theme = theme;
 document.documentElement.style.setProperty("--lyric-font", LYRIC_FONTS[lyricFont]);
 document.documentElement.style.setProperty("--lyric-weight", bold ? 600 : 400);
-applyDisplayScale();
+document.documentElement.style.setProperty("--scale", (scale/100) * 1.2);
 
 const evId = (bi,v,i)=>`${bi}:${v}:${i}`;
 const ICONS = {
@@ -1205,51 +1204,6 @@ function render(){
   fixGroupBeams();
   drawSystemBrackets();
   if (lang === "t") convertTree(scoreEl);
-  scheduleFit();
-}
-
-/* ---------- 不换行时整页适配 ---------- */
-let fitRaf = 0;
-function applyDisplayScale(){
-  /* 不换行＝整页/宽度自动适配，固定以 100% 为基准，旧的高字号不会把版面撑出屏幕 */
-  const base = autowrap ? (scale / 100) : 1;
-  document.documentElement.style.setProperty("--scale", base * 1.2 * (autowrap ? 1 : fitScale));
-}
-function scheduleFit(){
-  if (fitRaf) cancelAnimationFrame(fitRaf);
-  fitRaf = requestAnimationFrame(()=>{ fitRaf = 0; fitToViewport(); });
-}
-function fitToViewport(){
-  if (!document.body.classList.contains("ready")){ setTimeout(fitToViewport, 200); return; }
-  if (autowrap){
-    if (fitScale !== 1){ fitScale = 1; applyDisplayScale(); lastSig = ""; render(); }
-    return;
-  }
-  const prev = fitScale;
-  fitScale = 1;
-  applyDisplayScale();
-  void scoreEl.offsetHeight;
-  const top = scoreEl.getBoundingClientRect().top + (window.scrollY || window.pageYOffset || 0);
-  const availW = scoreEl.clientWidth;
-  const bottom = document.body.classList.contains("embed") ? 96 : 24;
-  const availH = window.innerHeight - top - bottom;
-  const nw = Math.max(1, scoreEl.scrollWidth);
-  const nh = Math.max(1, scoreEl.scrollHeight);
-  const fw = availW / nw;
-  const fh = availH / nh;
-  let f = Math.min(1, fw, fh);
-  /* 特别长的谱：整页适配会太小，改为按宽度适配，纵向滚动 */
-  if (f < 0.55) f = Math.min(1, fw);
-  f = Math.max(0.2, Math.min(1, f));
-  if (Math.abs(f - prev) > 0.01){
-    fitScale = f;
-    applyDisplayScale();
-    lastSig = "";
-    render();
-  } else {
-    fitScale = prev;
-    applyDisplayScale();
-  }
 }
 
 /* 同一拍组内的连续短音符：画一条连续符槓，取代逐音符下划线（6/8 每 3 个八分音为一组） */
@@ -1827,10 +1781,6 @@ const wrapBtn = $("#wrapBtn");
 function applyWrapUI(){
   wrapBtn.classList.toggle("on", autowrap);
   wrapBtn.setAttribute("aria-pressed", String(autowrap));
-  if (scaleEl){
-    scaleEl.disabled = !autowrap;
-    scaleEl.title = autowrap ? "" : "不换行时自动适配字号";
-  }
 }
 wrapBtn.addEventListener("click", ()=>{
   autowrap = !autowrap;
@@ -1858,7 +1808,7 @@ scaleEl.value = scale; scaleVal.textContent = scale+"%";
 scaleEl.addEventListener("input", ()=>{
   scale = +scaleEl.value;
   scaleVal.textContent = scale+"%";
-  applyDisplayScale();
+  document.documentElement.style.setProperty("--scale", (scale/100) * 1.2);
   saveSettings();
   lastSig = "";
   scheduleRender();
@@ -1973,8 +1923,7 @@ function resetAllSettings(){
   $("#lyricFont").value = lyricFont;
   scaleEl.value = scale; scaleVal.textContent = scale+"%";
   document.documentElement.style.setProperty("--lyric-font", LYRIC_FONTS[lyricFont]);
-  fitScale = 1;
-  applyDisplayScale();
+  document.documentElement.style.setProperty("--scale", (scale/100) * 1.2);
   lang = DEFAULTS.lang;
   capo = DEFAULTS.capo;
   applyTheme(); applyFollowUI(); applyMetroUI(); applyPartUI(); applyBoldUI(); applyWrapUI();
@@ -2298,7 +2247,6 @@ window.__hymn = {
   get sel(){ return sel; }, get follow(){ return follow; },
   get theme(){ return theme; }, get lyricFont(){ return lyricFont; }, get scale(){ return scale; },
   get lang(){ return lang; }, get bold(){ return bold; }, get autowrap(){ return autowrap; }, get lineOfBar(){ return LINE_OF_BAR; },
-  get fitScale(){ return fitScale; }, fitToViewport,
   selectAndLoop, clearSelection, playFrom, togglePlay, saveSettings, isMassQuietHour,
   version:"4.0.0"
 };
