@@ -25,6 +25,8 @@ jobs:
           cache-dependency-path: '.github/workflows/deploy.yml'
       - name: Validate score data / manifest / assets
         run: python3 scripts/check_scores.py
+      - name: Validate trimmed soundfont range
+        run: python3 scripts/check_soundfont_range.py
       - name: Validate AGENTS.md indicator-only
         run: python3 scripts/check_agents.py
       - name: JS syntax
