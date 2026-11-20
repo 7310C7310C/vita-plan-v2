@@ -313,6 +313,7 @@ class Engine{
     this.audioSupported = !!(window.AudioContext || window.webkitAudioContext);
     this.unavailableNotified = false;
     this.loading = null; this.sampleFailed = false; this.progress = null;
+    this.sampleWaitStartedAt = 0;
     this.activeSynth = new Set();
     this.activeClicks = new Set();
     this.activeSampleStops = new Set();
@@ -416,6 +417,11 @@ class Engine{
     if (this.sampleFailed) this.sampleFailed = false;
     if (this.loading){ try{ await this.loading; }catch(e){} }
     if (this.instName === id && this.inst) return this.inst;
+    /* 等待期间可能有另一个 caller 已启动新载入；再等一次，避免同一音色重复下载 */
+    if (this.loading){ try{ await this.loading; }catch(e){} }
+    if (this.instName === id && this.inst) return this.inst;
+    /* 新的载入从此刻重新计算 3 秒起播等待预算 */
+    this.sampleWaitStartedAt = performance.now();
     this.loading = (async ()=>{
       try{
         const mod = await import(new URL("assets/vendor/smplr/index.js", location.href).href)
@@ -489,21 +495,26 @@ class Engine{
       if (this.onAudioBlocked) this.onAudioBlocked(blocked);
     }
     /* 取样音源未就绪时先等它载入再起播，避免开头几个音先出合成音、
-       随后才变成取样音。最多等 SAMPLE_WAIT_MS；超时则本次播放全程用合成音。 */
+       随后才变成取样音。同一次载入总共只给 SAMPLE_WAIT_MS 预算；
+       预算用完后（即使中间暂停/被取代/切后台）后续起播直接先用合成音。 */
     let useSample = this.isTimbreReady();
     if (!useSample && ctx && !blocked && !this.sampleFailed){
       const id = this.timbre;
-      if (this.onSampleWait) this.onSampleWait(id);
       const loaded = this.loadTimbre(id);
       loaded.then(inst=>{
         /* 等不到而先用合成音时，载入完成后再提示已就绪（下次播放生效） */
         if (inst && this.playing && !this.playUsesSample && this.onReady) this.onReady(id);
       }).catch(()=>{});
-      const inst = await Promise.race([loaded, sleep(SAMPLE_WAIT_MS)]).catch(()=>null);
-      if (token !== this.playToken) return;
-      /* 等待期间切到后台就不再起播，避免在背景突然出声 */
-      if (document.visibilityState === "hidden"){ this.playPending = false; return; }
-      useSample = !!(inst || this.isTimbreReady());
+      const elapsed = this.sampleWaitStartedAt ? performance.now() - this.sampleWaitStartedAt : 0;
+      const remain = Math.max(0, SAMPLE_WAIT_MS - elapsed);
+      if (remain > 0){
+        if (this.onSampleWait) this.onSampleWait(id);
+        const inst = await Promise.race([loaded, sleep(remain)]).catch(()=>null);
+        if (token !== this.playToken) return;
+        /* 等待期间切到后台就不再起播，避免在背景突然出声 */
+        if (document.visibilityState === "hidden"){ this.playPending = false; return; }
+        useSample = !!(inst || this.isTimbreReady());
+      }
     }
     this.playUsesSample = useSample;
     this.playPending = false;
@@ -2184,6 +2195,13 @@ function preload(){
 }
 window.addEventListener("pointerdown", preload, {once:true});
 window.addEventListener("keydown", preload, {once:true});
+/* 网络恢复：若音源曾载入失败/超时，清掉标记并背景重试一次，不阻塞当前播放 */
+window.addEventListener("online", ()=>{
+  if (!engine.audioSupported || engine.isTimbreReady() || engine.loading) return;
+  const id = engine.timbre;
+  engine.sampleFailed = false;
+  engine.loadTimbre(id).then(inst=>{ if (inst && engine.onReady) engine.onReady(id); });
+});
 
 /* 测试 API */
 window.__hymn = {
