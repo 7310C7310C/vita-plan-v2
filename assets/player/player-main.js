@@ -13,11 +13,17 @@ window.addEventListener("pagehide", stopForLeave);
 /* 切到背景暂停、回到前景续播 */
 document.addEventListener("visibilitychange", ()=>{
   if (document.visibilityState === "hidden"){
-    if (engine && engine.playing){ resumeOnVisible = true; engine.pause(); setPlayUI(false); }
+    /* 等待音源/ctx 恢复也算“正在起播”，切到后台要连同待播一起取消；
+       若已在播放，维持原来的回前景续播。 */
+    if (engine && (engine.playing || engine.playPending)){
+      resumeOnVisible = engine.playing;
+      engine.pause();
+      setPlayUI(false);
+    }
   } else if (resumeOnVisible){
     resumeOnVisible = false;
     /* 切回页面时的自动续播不是用户操作，弥撒时段直接不续播，避免误出声 */
-    if (!annotMode && !isMassQuietHour()) engine.play(engine.anchorBeat, true).then(()=>setPlayUI(engine.playing));
+    if (!annotMode && !isMassQuietHour()) engine.play(engine.anchorBeat, true).then(()=>setPlayUI(engine.playing || engine.playPending));
     else setPlayUI(false);
   }
 });
@@ -280,6 +286,8 @@ let lang = settings.lang === "s" ? "s" : "t";
    4. 引擎
    ============================================================ */
 const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
+/* 起播前等待取样音源的上限；超时则本次播放全程用合成音，避免中途换音色 */
+const SAMPLE_WAIT_MS = 3000;
 
 class Engine{
   constructor(score){
@@ -290,6 +298,8 @@ class Engine{
     this.volume = Math.max(0,Math.min(1,(+settings.volume)/100));
     this.metronome = !!settings.metronome;
     this.playing = false;
+    this.playPending = false;
+    this.playUsesSample = false;
     this.ctx = null; this.master = null; this.instGain = null;
     this.usePerf = false; this.audioBlocked = false;
     this.anchorBeat = 0; this.anchorTime = 0;
@@ -308,7 +318,7 @@ class Engine{
     this.activeSampleStops = new Set();
     this.playToken = 0;
     this.onEnd = null; this.onAudioBlocked = null; this.onProgress = null;
-    this.onReady = null; this.onUnavailable = null;
+    this.onReady = null; this.onUnavailable = null; this.onSampleWait = null;
     this.buildTimeline();
   }
   buildTimeline(){
@@ -452,10 +462,13 @@ class Engine{
 
   async play(fromBeat, keepRepeat){
     const token = ++this.playToken;
+    this.playPending = true;
     /* 立即停掉目前播放與已排程音符/節拍，避免重複點擊時疊音 */
     this.playing = false;
     if (this.timer){ clearInterval(this.timer); this.timer = null; }
     this.stopAll();
+    /* 先把起播位置落到 anchor，等待音源期间暂停/取消也保留用户点的位置 */
+    if (typeof fromBeat === "number") this.seek(fromBeat, keepRepeat);
     const ctx = this.ensureCtx();
     if (!ctx){
       this.usePerf = true; this.audioBlocked = true;
@@ -467,13 +480,33 @@ class Engine{
       try{ await Promise.race([ctx.resume(), sleep(420)]); }catch(e){}
     }
     if (token !== this.playToken) return;
+    /* ctx.resume() 等待期间切到后台：不要接着起播，避免在背景出声 */
+    if (document.visibilityState === "hidden"){ this.playPending = false; return; }
     const blocked = !ctx || ctx.state!=="running";
     this.usePerf = blocked;
     if (this.audioBlocked !== blocked){
       this.audioBlocked = blocked;
       if (this.onAudioBlocked) this.onAudioBlocked(blocked);
     }
-    if (typeof fromBeat === "number") this.seek(fromBeat, keepRepeat);
+    /* 取样音源未就绪时先等它载入再起播，避免开头几个音先出合成音、
+       随后才变成取样音。最多等 SAMPLE_WAIT_MS；超时则本次播放全程用合成音。 */
+    let useSample = this.isTimbreReady();
+    if (!useSample && ctx && !blocked && !this.sampleFailed){
+      const id = this.timbre;
+      if (this.onSampleWait) this.onSampleWait(id);
+      const loaded = this.loadTimbre(id);
+      loaded.then(inst=>{
+        /* 等不到而先用合成音时，载入完成后再提示已就绪（下次播放生效） */
+        if (inst && this.playing && !this.playUsesSample && this.onReady) this.onReady(id);
+      }).catch(()=>{});
+      const inst = await Promise.race([loaded, sleep(SAMPLE_WAIT_MS)]).catch(()=>null);
+      if (token !== this.playToken) return;
+      /* 等待期间切到后台就不再起播，避免在背景突然出声 */
+      if (document.visibilityState === "hidden"){ this.playPending = false; return; }
+      useSample = !!(inst || this.isTimbreReady());
+    }
+    this.playUsesSample = useSample;
+    this.playPending = false;
     this.playing = true;
     this.anchorTime = this.clockNow()+0.04;
     this.scheduledUpTo = this.anchorBeat;
@@ -481,15 +514,14 @@ class Engine{
     this.scheduleUntil(this.timeAt(this.anchorBeat)+this.lookahead+0.06);
     if (this.timer) clearInterval(this.timer);
     this.timer = setInterval(()=>this.tick(),this.tickMs);
-    /* 取样音源在背景载入：未就緒先以合成发声，完成后自动接上 */
-    if (ctx && !blocked && !this.sampleFailed && !this.isTimbreReady()){
-      const id = this.timbre;
-      if (this.onSynthWhileLoading) this.onSynthWhileLoading(id);
-      this.loadTimbre(id).then(inst=>{ if (inst && this.onReady) this.onReady(id); });
+    /* 取样音源载入超时：本次先用合成音，载入完成后不再中途切换音色 */
+    if (!useSample && ctx && !blocked && !this.sampleFailed && !this.isTimbreReady()){
+      if (this.onSynthWhileLoading) this.onSynthWhileLoading(this.timbre);
     }
   }
   pause(){
     this.playToken++;
+    this.playPending = false;
     if (!this.playing) return;
     this.anchorBeat = this.position;
     this.playing = false;
@@ -498,6 +530,7 @@ class Engine{
   }
   stop(){
     this.playToken++;
+    this.playPending = false;
     this.playing = false;
     clearInterval(this.timer); this.timer = null;
     this.stopAll();
@@ -632,7 +665,7 @@ class Engine{
     o.onended = ()=>{ this.activeClicks.delete(o); };
   }
   note(midi,time,durSec,part){
-    if (this.inst && this.audioReady()){
+    if (this.playUsesSample && this.inst && this.audioReady()){
       try{
         const stopFn = this.inst.start({note:midi,velocity:86,time,duration:Math.max(0.1,durSec*0.96)});
         if (typeof stopFn === "function") this.activeSampleStops.add(stopFn);
@@ -1581,11 +1614,13 @@ function setPlayUI(playing){
 async function playFrom(beat, keepRepeat){
   if (annotMode) return;
   if (!confirmPlayInQuietHour()){ setPlayUI(false); return; }
-  await engine.play(beat, keepRepeat);
-  setPlayUI(engine.playing);
+  const p = engine.play(beat, keepRepeat);
+  setPlayUI(engine.playing || engine.playPending);   /* 等待音源时父页也能显示“暂停” */
+  await p;
+  setPlayUI(engine.playing || engine.playPending);
 }
 async function togglePlay(){
-  if (engine.playing){ engine.pause(); setPlayUI(false); return; }
+  if (engine.playing || engine.playPending){ engine.pause(); setPlayUI(false); return; }
   if (annotMode) return;
   let from;
   if (sel){
@@ -1686,7 +1721,12 @@ timbreEl.value = engine.timbre;
 timbreEl.addEventListener("change", ()=>{
   engine.timbre = timbreEl.value;
   saveSettings();
-  engine.loadTimbre(engine.timbre).then(inst=>{ if (inst && engine.playing) engine.onReady && engine.onReady(engine.timbre); });
+  engine.loadTimbre(engine.timbre).then(inst=>{
+    if (inst && engine.playing){
+      engine.playUsesSample = true;   /* 用户主动换音色：允许立即改用取样音 */
+      engine.onReady && engine.onReady(engine.timbre);
+    }
+  });
 });
 
 const wrapBtn = $("#wrapBtn");
@@ -1984,6 +2024,11 @@ function setLoadInfo(text, warn){
 }
 engine.onSynthWhileLoading = ()=>{
   setLoadInfo("合成音源 · 取样载入中…", false);
+};
+engine.onSampleWait = (id)=>{
+  const label = TIMBRES[id] ? TIMBRES[id].label : "";
+  setLoadInfo(`取样音源载入中${label ? " · " + label : ""}…`, false);
+  toast(`取样音源载入中${label ? " · " + label : ""}…`);
 };
 engine.onProgress = (p)=>{
   if (!p){ setLoadInfo("合成音源 · 取样不可用", false); return; }

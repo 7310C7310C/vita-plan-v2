@@ -438,6 +438,8 @@
     if (m.tempo) syncTempo(m.tempo);
     if (m.parts) syncParts(m.parts);
     if (m.lang) syncLang(m.lang);
+    /* 进谱即预载取样音源；否则要等第一次播放才载入，前几个音会先用合成音。 */
+    post('warmup');
     if (typeof m.metronome === 'boolean'){
       state.metro = m.metronome;
       const el = document.getElementById('v2Metro');

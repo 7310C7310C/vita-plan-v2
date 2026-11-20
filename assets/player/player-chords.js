@@ -138,7 +138,7 @@ document.addEventListener('keydown', function(e){ if (e.key==='Escape') closeCho
   let playSeq = 0;
   window.vp2CancelPlay = function(){ playSeq++; };
   function vp2State(){
-    return {type:'vp2:state', playing:engine.playing, tempo:engine.tempo, parts:engine.parts,
+    return {type:'vp2:state', playing: !!(engine.playing || engine.playPending), tempo:engine.tempo, parts:engine.parts,
       lang:lang, metronome:engine.metronome, volume:Math.round(engine.volume*100),
       timbre:engine.timbre, lyricFont:lyricFont, bold:bold, scale:scale,
       autowrap:autowrap, follow:follow, theme:theme, capo:capo, voices:SHOW_VOICES};
@@ -179,14 +179,12 @@ document.addEventListener('keydown', function(e){ if (e.key==='Escape') closeCho
             const startBeat = engine.anchorBeat >= engine.totalBeats-1e-6 ? 0 : engine.anchorBeat;
             const p = engine.play(startBeat, startBeat > 0);
             const done = function(){
-              if (seq !== playSeq){
-                try{ engine.stop(); }catch(e){}
-                setPlayUI(false);
-              }
+              /* 已被 pause/stop 或更晚的 play 取代时，对应命令已处理引擎状态；
+                 这里只补 UI，不能 stop，否则会误杀之后的新播放。 */
+              if (seq !== playSeq && !engine.playing && !engine.playPending) setPlayUI(false);
               vp2Send();
             };
             if (p && p.then) p.then(done).catch(done);
-            setTimeout(function(){ if (seq === playSeq) vp2Send(); }, 520);
             return;
           }
           break;
@@ -216,12 +214,16 @@ document.addEventListener('keydown', function(e){ if (e.key==='Escape') closeCho
             if (timbreEl) timbreEl.value = id;
             saveSettings();
             if (already){
+              if (engine.playing) engine.playUsesSample = true;
               try{ parent.postMessage({type:'vp2:timbre', state:'ready', label:label}, location.origin); }catch(e){}
             } else {
               try{ parent.postMessage({type:'vp2:timbre', state:'loading', label:label}, location.origin); }catch(e){}
               engine.loadTimbre(id).then(function(inst){
                 try{ parent.postMessage({type:'vp2:timbre', state: inst ? 'ready' : 'failed', label:label}, location.origin); }catch(e){}
-                if (inst && engine.playing && engine.onReady) engine.onReady(id);
+                if (inst && engine.playing){
+                  engine.playUsesSample = true;   /* 用户主动换音色：允许立即改用取样音 */
+                  if (engine.onReady) engine.onReady(id);
+                }
               });
             }
           }
