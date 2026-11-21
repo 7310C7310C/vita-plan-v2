@@ -147,8 +147,12 @@ def encode(score: dict) -> dict:
 
     if score.get("repeat"):
         out["repeat"] = [score["repeat"]["from"], score["repeat"]["to"]]
+    if score.get("ds"):
+        out["ds"] = score["ds"]
     if score.get("dc"):
-        out["dc"] = [score["dc"]["from"], score["dc"]["to"]]
+        dc = [score["dc"]["from"], score["dc"]["to"]]
+        if "segno" in score["dc"]: dc.append(score["dc"]["segno"])
+        out["dc"] = dc
     return out
 
 

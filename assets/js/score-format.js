@@ -146,7 +146,8 @@
     if (src.slurs) out.slurs = src.slurs.slice();
     if (src.ties) out.ties = src.ties.slice();
     if (src.repeat) out.repeat = {from: src.repeat[0], to: src.repeat[1]};
-    if (src.dc) out.dc = {from: src.dc[0], to: src.dc[1]};
+    if (src.ds) out.ds = src.ds.slice();
+    if (src.dc){ out.dc = {from: src.dc[0], to: src.dc[1]}; if (src.dc.length > 2) out.dc.segno = src.dc[2]; }
     return out;
   }
 
