@@ -19,7 +19,7 @@
 - 写完后跑 `scripts/check_scores.py`；格式、版本、资产引用由脚本校验。
 
 ## 构建
-- `data/scores/**/*.json` 仍是源谱（当前运行时格式）；`data/scores/bundle.json` 由 `scripts/generate_v2_manifest.py` 生成，浏览器只预缓存这一份。
+- `data/scores/**/*.json` 仍是源谱（当前运行时格式）；`data/scores/bundle.json` 由 `scripts/generate_v2_manifest.py` 生成，浏览器只下载这一份。
 - 改谱后先跑 `python3 scripts/generate_v2_manifest.py`，再跑 `scripts/verify.sh`；CI 会用 `--check` 阻止忘记生成。
 - bundle 是机器格式（MIDI、事件下标），不要手改；人类可编辑格式另行设计。
 

@@ -1,5 +1,5 @@
 // 在文件开头定义版本号和变量
-const jsonVersion = '20261122181153';
+const jsonVersion = '20261122190717';
 let songsData = {};
 
 // 離線更新後讓瀏覽器 HTTP/memory cache 失效；SW 的 cache key 會忽略 query。
@@ -10,7 +10,11 @@ function versionedImageUrl(path) {
 }
 
 // 加载数据的函数
-function loadSongsData() {
+async function loadSongsData() {
+    /* 先等首页内联脚本清掉旧 SW/CacheStorage，确保本次拿到最新曲目数据 */
+    try{
+        if (window.__vpCachePurge) await window.__vpCachePurge;
+    }catch(e){}
     fetch(`data/songs.json?v=${jsonVersion}`, {cache:'no-cache'})
         .then(response => {
             if (!response.ok) {

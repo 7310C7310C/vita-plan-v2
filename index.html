@@ -3,48 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <script>(function(){var b=location.pathname.indexOf('/vita-plan-v2/')===0?'/vita-plan-v2/':'/';document.write('<base href="'+b+'">');})();</script>
-    <script>/* v1 -> v2 cutover: purge the old origin SW's caches/DB exactly once.
-       Awaiting the IndexedDB deletion matters: a fire-and-forget delete loses the
-       race with unregister()+reload() and leaves the v1 offline DB behind. */
-    (function(){try{
-      if(!('serviceWorker' in navigator))return;
-      var FLAG='vp-sw-v1-purged';
-      if(sessionStorage.getItem(FLAG))return;
-      sessionStorage.setItem(FLAG,'1');
-
-      function dropV1DB(){
-        if(!('indexedDB' in window))return Promise.resolve();
-        return new Promise(function(resolve){
-          var settled=false;
-          function fin(){ if(!settled){settled=true;resolve();} }
-          try{
-            var req=indexedDB.deleteDatabase('vita_plan_offline');
-            req.onsuccess=fin; req.onerror=fin;
-            /* onblocked: give other tabs a grace period, then stop waiting */
-            setTimeout(fin,3000);
-          }catch(e){ fin(); }
-        });
-      }
+    <script>/* 关闭自动缓存：清掉旧 Service Worker 与本站 CacheStorage，曲目数据每次走网络。
+       只处理本应用前缀，避免影响 /piano 等其它应用的缓存。 */
+    (function(){
       function purgeCaches(){
         if(!('caches' in window))return Promise.resolve();
-        /* 只清 v1 自己的快取，避免误删 /piano 等其它应用的 CacheStorage */
+        var prefixes=['vita-plan-assets-','v2-shell-','v2-json-','v2-img-'];
         return caches.keys().then(function(ks){
-          return Promise.all(ks.filter(function(k){return k.indexOf('vita-plan-assets-')===0;})
-            .map(function(k){return caches.delete(k);}));
+          return Promise.all(ks.filter(function(k){
+            return prefixes.some(function(p){return k.indexOf(p)===0;});
+          }).map(function(k){return caches.delete(k);}));
         }).catch(function(){});
       }
-
-      navigator.serviceWorker.getRegistration().then(function(r){
-        var a=r&&r.active;
-        var old = !!(a && /\/sw\.js$/.test(a.scriptURL));
-        var unreg = old ? r.unregister().catch(function(){}) : Promise.resolve();
-        return unreg.then(function(){
-          return Promise.all([purgeCaches(), dropV1DB()]);
-        }).then(function(){
-          if(old) location.reload();
-        });
-      }).catch(function(){});
-    }catch(e){}})();</script>
+      function unregisterWorkers(){
+        if(!('serviceWorker' in navigator))return Promise.resolve();
+        return navigator.serviceWorker.getRegistrations().then(function(rs){
+          return Promise.all(rs.filter(function(r){
+            var u=(r.active||r.installing||r.waiting||{}).scriptURL||'';
+            return /\/sw(?:-v2)?\.js$/.test(u);
+          }).map(function(r){return r.unregister().catch(function(){});}));
+        }).catch(function(){});
+      }
+      function dropV1DB(){
+        try{
+          if(!('indexedDB' in window))return;
+          var FLAG='vp-sw-v1-purged';
+          if(sessionStorage.getItem(FLAG))return;
+          sessionStorage.setItem(FLAG,'1');
+          var req=indexedDB.deleteDatabase('vita_plan_offline');
+          req.onblocked=function(){};
+        }catch(e){}
+      }
+      dropV1DB();
+      window.__vpCachePurge=Promise.all([purgeCaches(),unregisterWorkers()]);
+    })();</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>复活计划乐队</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
@@ -314,7 +306,7 @@
             </button>
             
             <!-- 自动换行 -->
-            <button class="doodle-btn v2-bar-btn on" id="v2WrapBarBtn" style="margin:0 6px;">自动换行</button>
+            <button class="doodle-btn v2-bar-btn" id="v2WrapBarBtn" style="margin:0 6px;">自动换行</button>
 
             <!-- 下一首按钮 -->
             <div class="song-nav" id="next-song">
@@ -346,8 +338,8 @@
     </div>
     <script src="data/v2-scores.js?v=6"></script>
     <script src="assets/js/score-format.js?v=2"></script>
-    <script src="assets/js/v2-ui.js?v=31"></script>
-    <script src="assets/js/script.js?v=20261122181153"></script>
-    <script src="assets/js/v2-cache.js?v=12"></script>
+    <script src="assets/js/v2-ui.js?v=32"></script>
+    <script src="assets/js/script.js?v=20261122190717"></script>
+    <script src="assets/js/v2-cache.js?v=13"></script>
 </body>
 </html>

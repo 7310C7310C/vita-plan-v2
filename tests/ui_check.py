@@ -105,28 +105,6 @@ def css_value(page, locator, expr: str, tries: int = 20) -> str:
     return value
 
 
-def manifest_paths(page) -> list[str]:
-    data = page.evaluate("""async () => {
-      const r = await fetch('data/v2-manifest.json', {cache: 'no-store'});
-      return await r.json();
-    }""")
-    return [f["path"] for f in data.get("files", [])]
-
-
-def wait_hashes(page, paths: list[str], timeout: int = 30000) -> None:
-    """Synchronous predicate: Playwright returns immediately for async ones."""
-    page.wait_for_function(
-        """(paths) => {
-          try {
-            const h = JSON.parse(localStorage.getItem('v2.score.hashes') || '{}');
-            return paths.every(p => !!h[p]);
-          } catch (e) { return false; }
-        }""",
-        arg=paths,
-        timeout=timeout,
-    )
-
-
 def open_score(browser, path: str, width: int = 1280):
     ctx = browser.new_context(viewport={"width": width, "height": 900}, service_workers="block")
     page = ctx.new_page()
@@ -322,26 +300,26 @@ def main() -> int:
                 fail(f"cl001@{w} errors: {' | '.join(errs[:3])}")
             ctx.close()
 
-        # 曾套用不换行默认 (wrapV:2) 的旧设定要恢复自动换行；wrapV:3 的手动选择保留
+        # 默认不自动换行；旧版本的手动选择一次性迁移，wrapV:4 之后的手动开回保留
         ctx = browser.new_context(viewport={"width": 1280, "height": 900}, service_workers="block")
         page = ctx.new_page()
         page.goto(BASE, wait_until="load", timeout=60000)
         page.evaluate("""() => localStorage.setItem('ys.settings.cl001.v2',
-          JSON.stringify({autowrap: false, wrapV: 2}))""")
+          JSON.stringify({autowrap: true, wrapV: 3}))""")
         page.goto(BASE + "cl/001", wait_until="load", timeout=60000)
         page.wait_for_function("() => window.VP2UI && VP2UI.state && VP2UI.state.ready", timeout=30000)
         page.wait_for_timeout(400)
         migrated = page.evaluate("() => document.getElementById('v2Frame').contentWindow.__hymn.autowrap")
-        if migrated is not True:
-            fail(f"cl001: wrapV2 old settings should migrate to autowrap, got {migrated!r}")
+        if migrated is not False:
+            fail(f"cl001: wrapV3 old settings should migrate to no-autowrap, got {migrated!r}")
         page.evaluate("""() => localStorage.setItem('ys.settings.cl001.v2',
-          JSON.stringify({autowrap: false, wrapV: 3}))""")
+          JSON.stringify({autowrap: true, wrapV: 4}))""")
         page.reload(wait_until="load")
         page.wait_for_function("() => window.VP2UI && VP2UI.state && VP2UI.state.ready", timeout=30000)
         page.wait_for_timeout(400)
         manual = page.evaluate("() => document.getElementById('v2Frame').contentWindow.__hymn.autowrap")
-        if manual is not False:
-            fail(f"cl001: wrapV3 manual autowrap off should persist, got {manual!r}")
+        if manual is not True:
+            fail(f"cl001: wrapV4 manual autowrap on should persist, got {manual!r}")
         ctx.close()
 
         # single-voice cl001
@@ -386,18 +364,7 @@ def main() -> int:
         if display != "none":
             fail(f"cl001: single-voice menu 声部 row display={display!r}, expected none")
         page.click("#v2MenuClose")
-        meters_on = frame.locator("body").evaluate(r"""() => {
-          const sc=document.querySelector('#score'), sr=sc.getBoundingClientRect();
-          return {nowrap:sc.classList.contains('nowrap'),
-                  lines:[...document.querySelectorAll('.line')].map(l=>l.querySelectorAll('.bar').length),
-                  meters:[...document.querySelectorAll('.bar-meter')].map(m=>{
-                    const r=m.getBoundingClientRect();
-                    return {txt:m.textContent.replace(/\s+/g,''), top:r.top-sr.top, bottom:r.bottom-sr.top, h:sr.height};
-                  })};
-        }""")
-        frame.locator("body").evaluate("()=>document.getElementById('wrapBtn').click()")
-        page.wait_for_timeout(500)
-        meters_off = frame.locator("body").evaluate(r"""() => {
+        meters_nowrap = frame.locator("body").evaluate(r"""() => {
           const sc=document.querySelector('#score'), sr=sc.getBoundingClientRect();
           return {wrap:window.__hymn.autowrap, nowrap:sc.classList.contains('nowrap'),
                   lines:[...document.querySelectorAll('.line')].map(l=>l.querySelectorAll('.bar').length),
@@ -407,23 +374,35 @@ def main() -> int:
                   })};
         }""")
         expected_meters = ["24","34","24","34","24","34","44"]
-        if meters_on["nowrap"] or sum(meters_on["lines"]) != 8 or [m["txt"] for m in meters_on["meters"]] != expected_meters:
-            fail(f"cl001: autowrap on layout/meters changed: {meters_on}")
-        if meters_off["wrap"] or not meters_off["nowrap"] or meters_off["lines"] != [4,4]:
-            fail(f"cl001: autowrap off must keep phrase rows: {meters_off}")
-        if [m["txt"] for m in meters_off["meters"]] != expected_meters:
-            fail(f"cl001: nowrap lost meter elements: {meters_off['meters']}")
-        bad = [m for m in meters_off["meters"] if m["top"] < -0.5 or m["bottom"] > m["h"] + 0.5]
+        if meters_nowrap["wrap"] or not meters_nowrap["nowrap"] or meters_nowrap["lines"] != [4,4]:
+            fail(f"cl001: default must be no-autowrap phrase rows: {meters_nowrap}")
+        if [m["txt"] for m in meters_nowrap["meters"]] != expected_meters:
+            fail(f"cl001: default no-autowrap lost meter elements: {meters_nowrap['meters']}")
+        bad = [m for m in meters_nowrap["meters"] if m["top"] < -0.5 or m["bottom"] > m["h"] + 0.5]
         if bad:
-            fail(f"cl001: nowrap clips meter elements: {bad}")
+            fail(f"cl001: no-autowrap clips meter elements: {bad}")
+        frame.locator("body").evaluate("()=>document.getElementById('wrapBtn').click()")
+        page.wait_for_timeout(500)
+        meters_on = frame.locator("body").evaluate(r"""() => {
+          const sc=document.querySelector('#score'), sr=sc.getBoundingClientRect();
+          return {wrap:window.__hymn.autowrap, nowrap:sc.classList.contains('nowrap'),
+                  lines:[...document.querySelectorAll('.line')].map(l=>l.querySelectorAll('.bar').length),
+                  meters:[...document.querySelectorAll('.bar-meter')].map(m=>{
+                    const r=m.getBoundingClientRect();
+                    return {txt:m.textContent.replace(/\s+/g,''), top:r.top-sr.top, bottom:r.bottom-sr.top, h:sr.height};
+                  })};
+        }""")
+        if not meters_on["wrap"] or meters_on["nowrap"] or sum(meters_on["lines"]) != 8 or [m["txt"] for m in meters_on["meters"]] != expected_meters:
+            fail(f"cl001: autowrap on layout/meters changed: {meters_on}")
         frame.locator("body").evaluate("()=>document.getElementById('wrapBtn').click()")
         page.wait_for_timeout(400)
         meters_back = frame.locator("body").evaluate("""() => ({
+          wrap: window.__hymn.autowrap,
           nowrap: document.querySelector('#score').classList.contains('nowrap'),
           lines: [...document.querySelectorAll('.line')].map(l=>l.querySelectorAll('.bar').length)
         })""")
-        if meters_back["nowrap"] or meters_back["lines"] != meters_on["lines"]:
-            fail(f"cl001: autowrap toggle back did not restore wrapped layout: {meters_back}")
+        if meters_back["wrap"] or not meters_back["nowrap"] or meters_back["lines"] != [4,4]:
+            fail(f"cl001: autowrap toggle back did not restore no-autowrap layout: {meters_back}")
         if errs:
             fail("cl001 page errors: " + " | ".join(errs[:4]))
         ctx.close()
@@ -444,6 +423,8 @@ def main() -> int:
 
         # narrow autowrap: one-bar lines must still end with a visible barline
         ctx, page, frame, errs = open_score(browser, "cl/002", width=360)
+        frame.locator("body").evaluate("()=>document.getElementById('wrapBtn').click()")
+        page.wait_for_timeout(500)
         narrow_lines = frame.locator("body").evaluate("""() => {
           return [...document.querySelectorAll('.line')].map(l=>{
             const bars=[...l.querySelectorAll('.bar')];
@@ -587,67 +568,41 @@ def main() -> int:
             fail("jt017 page errors: " + " | ".join(errs[:4]))
         ctx.close()
 
-        # first visit prefetches every score JSON listed in the manifest
-        ctx = browser.new_context(viewport={"width": 1280, "height": 900}, service_workers="block")
-        page = ctx.new_page()
-        prefetch_reqs: list[str] = []
-        page.on("request", lambda r: prefetch_reqs.append(r.url) if "/data/scores/" in r.url else None)
-        page.goto(BASE, wait_until="load", timeout=60000)
-        paths = manifest_paths(page)
-        wait_hashes(page, paths)
-        cached = page.evaluate("""async () => {
-          const c = await caches.open('v2-json-v3');
-          return (await c.keys()).map(k => new URL(k.url).pathname).filter(p => p.includes('/data/scores/'));
-        }""")
-        if len(cached) != 1 or not cached[0].endswith('/data/scores/bundle.json'):
-            fail(f"first-visit score cache {cached!r}, expected only /data/scores/bundle.json")
-        bundle_reqs = [u for u in prefetch_reqs if u.split('?')[0].endswith('/bundle.json')]
-        file_reqs = [u for u in prefetch_reqs if not u.split('?')[0].endswith('/bundle.json')]
-        if len(bundle_reqs) != 1:
-            fail(f"first-visit bundle requests {len(bundle_reqs)}, expected 1: {bundle_reqs[:3]}")
-        if file_reqs:
-            fail(f"first-visit per-score requests: {file_reqs[:3]}")
-        ctx.close()
-
-        # 已缓存后重进：打开 JSON 谱不得再请求该谱（含整页重进）
+        # 自动缓存已移除：首页不注册 SW、不写 CacheStorage、不预取曲谱
         ctx = browser.new_context(viewport={"width": 1280, "height": 900})
         page = ctx.new_page()
         score_reqs: list[str] = []
         page.on("request", lambda r: score_reqs.append(r.url) if "/data/scores/" in r.url else None)
         page.goto(BASE, wait_until="load", timeout=60000)
         wait_app(page)
-        path_list = manifest_paths(page)
-        wait_hashes(page, path_list)
+        page.wait_for_timeout(600)
+        auto = page.evaluate("""async () => ({
+          workers: 'serviceWorker' in navigator ? (await navigator.serviceWorker.getRegistrations()).length : 0,
+          caches: 'caches' in window ? await caches.keys() : []
+        })""")
+        if auto["workers"] or auto["caches"]:
+            fail(f"auto cache must stay disabled: {auto}")
+        if score_reqs:
+            fail(f"homepage must not prefetch score data: {score_reqs[:3]}")
         if page.locator('#version-modal').is_visible():
             page.locator('#modalVersionBtnList .primary-version-btn').click()
             page.wait_for_timeout(250)
         page.locator('#categoriesContainer .category-card').first.click()
         page.wait_for_timeout(500)
-        score_reqs.clear()
         page.locator('#songsContainer .song-item', has_text="017").first.click()
         wait_score_ready(page)
         sid = page.evaluate("() => document.getElementById('v2Frame').contentWindow.__SCORE.id")
         if sid != "jintang017":
-            fail(f"cached score opened wrong JSON: {sid!r}")
-        if score_reqs:
-            fail(f"cached score still requested JSON: {score_reqs[:3]}")
-        # 重新进入首页：从 goto 起就记录，整页重进也不能重下任何谱
-        score_reqs.clear()
-        page.goto(BASE, wait_until="load", timeout=60000)
-        wait_app(page)
-        if page.locator('#version-modal').is_visible():
-            page.locator('#modalVersionBtnList .primary-version-btn').click()
-            page.wait_for_timeout(250)
-        page.locator('#categoriesContainer .category-card').first.click()
-        page.wait_for_timeout(500)
-        page.locator('#songsContainer .song-item', has_text="017").first.click()
-        wait_score_ready(page)
-        if score_reqs:
-            fail(f"reloaded page still requested cached JSON: {score_reqs[:3]}")
+            fail(f"score opened wrong JSON: {sid!r}")
+        bundle_reqs = [u for u in score_reqs if u.split('?')[0].endswith('/data/scores/bundle.json')]
+        if not bundle_reqs:
+            fail(f"opening a score must fetch bundle on demand: {score_reqs[:3]}")
         ctx.close()
 
         # mid-line repeat-start (narrow viewport wraps bar 9 inside a line)
         ctx, page, frame, errs = open_score(browser, "lz/019", width=900)
+        frame.locator("body").evaluate("()=>document.getElementById('wrapBtn').click()")
+        page.wait_for_timeout(500)
         mb = frame.locator('.bar[data-bar="8"]')
         cls = mb.get_attribute("class") or ""
         if "repeat-start" not in cls or "line-first" in cls:

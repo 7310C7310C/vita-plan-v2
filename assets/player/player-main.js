@@ -261,10 +261,10 @@ const SCORE_PITCHES = (()=>{
 const DEFAULTS = {
   theme:"light", follow:true, tempo:SCORE.tempo, volume:100,
   timbre:"church_organ", parts:{S:true,A:true,T:true,B:true},
-  lyricFont:"hei", bold:true, scale:100, metronome:true, lang:"s", autowrap:true, capo:0
+  lyricFont:"hei", bold:true, scale:100, metronome:true, lang:"s", autowrap:false, capo:0
 };
-/* 回退不换行默认：曾套用 wrapV:2 的设定一次性恢复自动换行；之后仍可手动关闭 */
-const SETTINGS_VERSION = 3;
+/* 默认不自动换行：旧设定一次性切到不换行；之后仍可手动开回自动换行 */
+const SETTINGS_VERSION = 4;
 const STORE_KEY = "ys.settings." + SONG_ID + ".v2";
 function loadSettings(){
   try{
@@ -272,7 +272,7 @@ function loadSettings(){
     if (!raw) return Object.assign({}, DEFAULTS);
     const s = JSON.parse(raw);
     const merged = Object.assign({}, DEFAULTS, s, {parts:Object.assign({}, DEFAULTS.parts, s.parts||{})});
-    if (s.wrapV !== SETTINGS_VERSION) merged.autowrap = true;
+    if (s.wrapV !== SETTINGS_VERSION) merged.autowrap = false;
     return merged;
   }catch(e){ return Object.assign({}, DEFAULTS); }
 }

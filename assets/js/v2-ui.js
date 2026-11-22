@@ -3,8 +3,7 @@
   'use strict';
 
   const $ = (s)=>document.querySelector(s);
-  /* Must match JSON_CACHE in sw-v2.js and v2-cache.js. */
-  const JSON_CACHE = 'v2-json-v3';
+  /* 曲谱数据每次从网络读取，不做自动缓存。 */
   const frame = document.getElementById('v2Frame');
   const headActions = document.getElementById('v2HeadActions');
   const imageBtn = document.getElementById('v2ImageBtn');
@@ -32,7 +31,7 @@
     timbre: 'church_organ',
     timbres: null,
     scale: 100,
-    autowrap: true,
+    autowrap: false,
     follow: true,
     theme: 'light',
     capo: 0,
@@ -106,20 +105,9 @@
       return window.VP2Cache.loadBundle(false);
     }
     if (fallbackBundle) return fallbackBundle;
-    const url = scoreBundleURL();
-    let cache = null;
-    try{ cache = await caches.open(JSON_CACHE); }catch(e){}
-    if (cache){
-      try{
-        const hit = await cache.match(url, {ignoreSearch:true});
-        if (hit){ fallbackBundle = await hit.json(); return fallbackBundle; }
-      }catch(e){}
-    }
-    const res = await fetch(url, {cache:'no-store'});
+    const res = await fetch(scoreBundleURL(), {cache:'no-store'});
     if (!res || !res.ok) throw new Error('score bundle unavailable');
-    const copy = res.clone();
     fallbackBundle = await res.json();
-    if (cache){ try{ await cache.put(url, copy); }catch(e){} }
     return fallbackBundle;
   }
   function errorScore(song){
@@ -139,22 +127,9 @@
       }
     }catch(e){}
     const url = basePath() + path;
-    let cache = null;
-    try{ cache = await caches.open(JSON_CACHE); }catch(e){}
-    if (cache){
-      try{
-        const hit = await cache.match(url, {ignoreSearch:true});
-        if (hit) return await hit.json();   /* 全量预缓存的谱直接秒开，不再逐谱请求 */
-      }catch(e){}
-    }
     const res = await fetch(url, {cache:'no-store'});
     if (!res || !res.ok) throw new Error('score unavailable');
-    const copy = res.clone();
-    const data = await res.json();
-    if (cache){
-      try{ await cache.put(url, copy); }catch(e){}
-    }
-    return data;
+    return await res.json();
   }
 
   async function enter(cat, song, score, versionCode){

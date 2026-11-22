@@ -2688,7 +2688,6 @@ async function doPublish() {
         `  [修改] assets/js/script.js`,
         `  [修改] index.html`,
         `  [修改] 404.html`,
-        `  [修改] sw-v2.js`,
         ...imgFiles
     ].filter(Boolean).join('\n');
 
@@ -2796,24 +2795,7 @@ async function doActualPublish(commitMsg, newVersion, latestSha) {
         indexContent = indexContent.replace(/assets\/js\/script\.js\?v=[^"]*/, `assets/js/script.js?v=${newVersion}`);
         indexContent = indexContent.replace(/assets\/css\/style\.css\?v=[^"]*/, `assets/css/style.css?v=${newVersion}`);
 
-        // 4. 同步 sw-v2.js 的 SHELL 版本号，保证 CI 的 index/SHELL 一致性检查通过
-        const swFile = await github.getFile('sw-v2.js');
-        if (!swFile || !swFile.content) throw new Error('无法加载 sw-v2.js');
-        let swContent = swFile.content;
-        for (const asset of ['assets/js/script.js', 'assets/css/style.css', 'data/songs.json']) {
-            const escaped = asset.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            const re = new RegExp(`^(\\s*'${escaped}\\?v=)[^'\\r\\n]*(')`, 'm');
-            if (!re.test(swContent)) throw new Error(`sw-v2.js SHELL 缺少 ${asset} 版本号`);
-            swContent = swContent.replace(re, (m, head, tail) => head + newVersion + tail);
-        }
-
-        // 4.1 递增 shell 缓存名：新 SW 使用全新缓存桶，旧 shell 缓存随激活删除
-        const shellCacheMatch = swContent.match(/const SHELL_CACHE = 'v2-shell-(\d+)'/);
-        if (!shellCacheMatch) throw new Error('sw-v2.js 缺少 SHELL_CACHE 版本号');
-        const nextShellCache = 'v2-shell-' + (parseInt(shellCacheMatch[1], 10) + 1);
-        swContent = swContent.replace(/const SHELL_CACHE = 'v2-shell-\d+'/, `const SHELL_CACHE = '${nextShellCache}'`);
-
-        // 5. 更新 index.html 圣诞主题
+        // 4. 更新 index.html 圣诞主题
         if (appState.christmasTheme) {
             if (!indexContent.includes('christmas-theme')) {
                 indexContent = indexContent.replace('<body', '<body class="christmas-theme"');
@@ -2835,8 +2817,7 @@ async function doActualPublish(commitMsg, newVersion, latestSha) {
             { path: 'data/songs.json', content: songsContent, encoding: 'utf-8' },
             { path: 'assets/js/script.js', content: scriptContent, encoding: 'utf-8' },
             { path: 'index.html', content: indexContent, encoding: 'utf-8' },
-            { path: '404.html', content: indexContent, encoding: 'utf-8' },
-            { path: 'sw-v2.js', content: swContent, encoding: 'utf-8' }
+            { path: '404.html', content: indexContent, encoding: 'utf-8' }
         ];
 
         // 9. 创建文本 blobs，并把图片 delete/rename/add/update 转成 tree items

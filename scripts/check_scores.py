@@ -462,51 +462,20 @@ def main() -> int:
         p = ref.split("?", 1)[0]
         if not (ROOT / p).exists():
             err(f"index.html: referenced file missing: {ref}")
-    sw = (ROOT / "sw-v2.js").read_text(encoding="utf-8")
     script_js = ROOT / "assets/js/script.js"
-    if script_js.exists():
-        sm = re.search(r"const jsonVersion = '([^']*)'", script_js.read_text(encoding="utf-8"))
-        if not sm:
-            err("assets/js/script.js: jsonVersion not found")
-        else:
-            want = f"data/songs.json?v={sm.group(1)}"
-            if f"'{want}'" not in sw:
-                err(f"sw-v2.js: SHELL does not reference current {want}")
-    if "cacheFirstJson(req)" not in sw or "revalidateJson(req)" not in sw or "/data/scores/" not in sw:
-        err("sw-v2.js: score JSON must use cacheFirstJson (instant open) + revalidateJson (manifest sync)")
-    # The SW, page loader and background sync must share one JSON cache bucket.
-    cache_names = set()
-    for rel in ("sw-v2.js", "assets/js/v2-ui.js", "assets/js/v2-cache.js"):
+    if script_js.exists() and "const jsonVersion = '" not in script_js.read_text(encoding="utf-8"):
+        err("assets/js/script.js: jsonVersion not found")
+    # 自动缓存暂时关闭：Service Worker 与 CacheStorage 读写都不得回来
+    if (ROOT / "sw-v2.js").exists():
+        err("sw-v2.js present but automatic caching is disabled")
+    for rel in ("assets/js/v2-cache.js", "assets/js/v2-ui.js"):
         p = ROOT / rel
         if p.exists():
-            m = re.search(r"""JSON_CACHE\s*=\s*['"](v2-json-v[0-9]+)['"]""", p.read_text(encoding="utf-8"))
-            if m:
-                cache_names.add(m.group(1))
-    if len(cache_names) != 1:
-        err(f"JSON cache name mismatch across sw-v2.js/v2-ui.js/v2-cache.js: {sorted(cache_names)}")
-    if "staleWhileRevalidate(req, event)" not in sw:
-        err("sw-v2.js: shell/list assets must use staleWhileRevalidate")
-    shell_block = re.search(r"const SHELL = \[(.*?)\];", sw, re.S)
-    if not shell_block:
-        err("sw-v2.js: SHELL array not found")
-    else:
-        for ref in re.findall(r"'([^']+)'", shell_block.group(1)):
-            p = ref.split("?", 1)[0]
-            if not (ROOT / p).exists():
-                err(f"sw-v2.js: SHELL file missing: {ref}")
-    # versioned assets referenced by index should match SW shell
-    for ref in refs:
-        if "?" not in ref:
-            continue
-        name, q = ref.split("?", 1)
-        if not name.startswith("assets/") and not name.startswith("data/"):
-            continue
-        if name == "data/songs.json":
-            continue
-        if f"'{ref}'" not in sw:
-            err(f"sw-v2.js: SHELL does not reference current {ref}")
+            text = p.read_text(encoding="utf-8")
+            if "serviceWorker.register" in text or "caches.open" in text:
+                err(f"{rel}: automatic ServiceWorker/CacheStorage must stay disabled")
 
-    # player-frame shell assets must exist, be listed in SW SHELL, and stay external
+    # player-frame shell assets must exist and stay external
     pf = ROOT / "player-frame.html"
     if pf.exists():
         pf_text = pf.read_text(encoding="utf-8")
@@ -514,8 +483,6 @@ def main() -> int:
             p = ref.split("?", 1)[0]
             if not (ROOT / p).exists():
                 err(f"player-frame.html: referenced file missing: {ref}")
-            if f"'{ref}'" not in sw:
-                err(f"sw-v2.js: SHELL does not reference current {ref}")
         if "<style" in pf_text or re.search(r"<script(?![^>]*\bsrc=)", pf_text, re.I):
             err("player-frame.html: inline <style>/<script> found (use assets/player/)")
 
