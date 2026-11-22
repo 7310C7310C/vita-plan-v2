@@ -1,6 +1,6 @@
 /* Vita Plan v2 service worker: pre-cache the shell; score JSON is synced by
    assets/js/v2-cache.js into the same JSON_CACHE bucket. */
-const SHELL_CACHE = 'v2-shell-157';
+const SHELL_CACHE = 'v2-shell-158';
 const JSON_CACHE = 'v2-json-v3';
 const IMG_CACHE = 'v2-img-v1';
 const SHELL = [
@@ -158,14 +158,21 @@ async function imageStaleWhileRevalidate(req, event){
   return (await network) || Response.error();
 }
 
+/* 导航优先走网络，确保发布后第一次打开就拿到新 index/脚本版本；
+   慢网或离线才回退缓存（2.5s 超时，首访无缓存时继续等网络）。 */
 async function navigationFirst(req, event){
   const cache = await caches.open(SHELL_CACHE);
   const indexUrl = new URL('index.html', self.registration.scope).href;
-  const hit = (await cache.match(req, {ignoreSearch:true})) || (await cache.match(indexUrl));
   const network = fetch(req, {cache:'no-store'}).then(res => {
     if (res && res.ok) cache.put(req, res.clone());
     return res;
   }).catch(() => null);
+  const res = await Promise.race([
+    network,
+    new Promise(resolve => setTimeout(() => resolve(null), 2500))
+  ]);
+  if (res && res.ok) return res;
+  const hit = (await cache.match(req, {ignoreSearch:true})) || (await cache.match(indexUrl));
   if (hit){
     if (event && event.waitUntil) event.waitUntil(network);
     return hit;

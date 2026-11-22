@@ -2807,6 +2807,12 @@ async function doActualPublish(commitMsg, newVersion, latestSha) {
             swContent = swContent.replace(re, (m, head, tail) => head + newVersion + tail);
         }
 
+        // 4.1 递增 shell 缓存名：新 SW 使用全新缓存桶，旧 shell 缓存随激活删除
+        const shellCacheMatch = swContent.match(/const SHELL_CACHE = 'v2-shell-(\d+)'/);
+        if (!shellCacheMatch) throw new Error('sw-v2.js 缺少 SHELL_CACHE 版本号');
+        const nextShellCache = 'v2-shell-' + (parseInt(shellCacheMatch[1], 10) + 1);
+        swContent = swContent.replace(/const SHELL_CACHE = 'v2-shell-\d+'/, `const SHELL_CACHE = '${nextShellCache}'`);
+
         // 5. 更新 index.html 圣诞主题
         if (appState.christmasTheme) {
             if (!indexContent.includes('christmas-theme')) {
