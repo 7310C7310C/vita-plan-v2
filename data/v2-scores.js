@@ -13,8 +13,7 @@ window.VP2_DATA = {
     "圣诞": "sd",
     "圣神": "ss",
     "备用": "by",
-    "其他": "qt",
-    "光荣颂": "gr"
+    "其他": "qt"
   },
   "scores": {
     "jt/017": {
@@ -62,18 +61,6 @@ window.VP2_DATA = {
           "label": "贝司"
         }
       }
-    },
-    "gr/003": {
-      "file": "data/scores/gr/003.json",
-      "label": "旋律"
-    },
-    "gr/001": {
-      "file": "data/scores/gr/001.json",
-      "label": "旋律"
-    },
-    "gr/002": {
-      "file": "data/scores/gr/002.json",
-      "label": "旋律"
     }
   }
 };

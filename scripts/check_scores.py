@@ -210,11 +210,6 @@ def check_score(path: Path, score: dict, ids: set[str]) -> None:
         if len(notes) == 2 and notes[0] != notes[1]:
             err(f"{rel}: tie pitches differ {pair!r} ({notes})")
 
-    ds = score.get("ds") or []
-    if not isinstance(ds, list) or any(not isinstance(x, int) or isinstance(x, bool) or not (0 <= x < len(bars)) for x in ds):
-        err(f"{rel}: ds must be a list of bar indices (got {ds!r})")
-    elif len(set(ds)) != len(ds):
-        err(f"{rel}: ds has duplicate bar indices: {ds!r}")
     repeat = score.get("repeat")
     if repeat is not None:
         if not isinstance(repeat, dict) or not isinstance(repeat.get("from"), int) or not isinstance(repeat.get("to"), int):
@@ -230,11 +225,6 @@ def check_score(path: Path, score: dict, ids: set[str]) -> None:
             err(f"{rel}: dc from/to invalid: {dc!r} (bars={len(bars)})")
         elif dc["from"] != len(bars) - 1:
             err(f"{rel}: D.C. al Fine must start from the last bar (dc.from={dc['from']}, last={len(bars)-1})")
-        if "segno" in dc:
-            if not isinstance(dc["segno"], int) or isinstance(dc["segno"], bool) or not (0 <= dc["segno"] < len(bars)):
-                err(f"{rel}: dc.segno invalid: {dc['segno']!r}")
-            elif dc["segno"] >= dc["from"]:
-                err(f"{rel}: dc.segno must be before dc.from: {dc['segno']} >= {dc['from']}")
 
     phrases = score.get("phrases", [])
     if not isinstance(phrases, list) or not phrases:

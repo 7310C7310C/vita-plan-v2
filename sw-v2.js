@@ -1,6 +1,6 @@
 /* Vita Plan v2 service worker: pre-cache the shell; score JSON is synced by
    assets/js/v2-cache.js into the same JSON_CACHE bucket. */
-const SHELL_CACHE = 'v2-shell-159';
+const SHELL_CACHE = 'v2-shell-157';
 const JSON_CACHE = 'v2-json-v3';
 const IMG_CACHE = 'v2-img-v1';
 const SHELL = [
@@ -9,16 +9,16 @@ const SHELL = [
   'player-frame.html',
   'assets/player/player.css?v=4',
   'assets/player/player-boot.js?v=1',
-  'assets/player/player-main.js?v=10',
+  'assets/player/player-main.js?v=8',
   'assets/player/player-chords.js?v=4',
   'data/songs.json?v=20261115185326',
   'assets/css/style.css?v=20261115185326',
   'assets/css/v2-ui.css?v=24',
-  'assets/js/score-format.js?v=4',
+  'assets/js/score-format.js?v=2',
   'assets/js/v2-ui.js?v=31',
   'assets/js/script.js?v=2026111921',
   'assets/js/v2-cache.js?v=12',
-  'data/v2-scores.js?v=7'
+  'data/v2-scores.js?v=6'
 ];
 
 self.addEventListener('install', event => {

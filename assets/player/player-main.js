@@ -614,12 +614,12 @@ class Engine{
     if (this.dc && !this.dcDone && !this.loopSelect && pos >= this.totalBeats-1e-6){
       this.dcDone = true;
       this.stopAll();
-      this.anchorBeat = this.dc.start;
+      this.anchorBeat = 0;
       this.anchorTime = this.clockNow();
-      this.scheduledUpTo = this.dc.start;
-      this.clickUpTo = Math.ceil(this.dc.start-1e-6);
+      this.scheduledUpTo = 0;
+      this.clickUpTo = 0;
       this.rangeEnd = this.dc.stopAt;
-      this.scheduleUntil(this.timeAt(this.dc.start)+this.lookahead+0.06);
+      this.scheduleUntil(this.timeAt(0)+this.lookahead+0.06);
       return;
     }
     if (this.repeat && !this.loopSelect && !this.repeatDone && pos >= this.repeat.end-1e-6){
@@ -783,7 +783,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
 });
 engine.clickStep = SCORE.clickStep || 1;
 if (SCORE.repeat) engine.repeat = { start: BAR_START[SCORE.repeat.from], end: BAR_END[SCORE.repeat.to] };
-if (SCORE.dc) engine.dc = { stopAt: BAR_END[SCORE.dc.to], start: SCORE.dc.segno!=null ? BAR_START[SCORE.dc.segno] : 0 };   /* D.C./D.S. al Fine */
+if (SCORE.dc) engine.dc = { stopAt: BAR_END[SCORE.dc.to] };   /* D.C. al Fine：奏完直回开头，到 Fine 收 */
 const scoreEl = $("#score");
 let barEls = [], tokens = [];
 let sel = null;
@@ -1008,9 +1008,8 @@ function renderBar(bi, verseIdxs, hasHum){
   h += meterHTML;
   /* 小节序号与和弦同一行并居中于小节线；拍号在其上方，序号始终保留 */
   h += `<span class="bnum">${bi+1}${bar.tag?`<span class="btag">${escHtml(bar.tag)}</span>`:""}</span>`;
-  if (SCORE.dc && SCORE.dc.from === bi) h += `<span class="dc-mark">${SCORE.dc.segno!=null?"D.S. al Fine":"D.C. al Fine"}</span>`;
+  if (SCORE.dc && SCORE.dc.from === bi) h += `<span class="dc-mark">D.C. al Fine</span>`;
   if (SCORE.dc && SCORE.dc.to === bi) h += `<span class="dc-mark">Fine</span>`;
-  if (SCORE.ds && SCORE.ds.indexOf(bi) >= 0) h += `<span class="dc-mark">D.S.</span>`;
   h += `<div class="chordrow" style="grid-template-columns:repeat(${n},minmax(0,1fr))">`;
   chordCells.forEach((c,ci)=>{
     if (markMode){
