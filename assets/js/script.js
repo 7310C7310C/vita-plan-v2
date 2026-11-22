@@ -1,5 +1,5 @@
 // 在文件开头定义版本号和变量
-const jsonVersion = '20261115185326';
+const jsonVersion = '20261122181153';
 let songsData = {};
 
 // 離線更新後讓瀏覽器 HTTP/memory cache 失效；SW 的 cache key 會忽略 query。

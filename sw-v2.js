@@ -11,12 +11,12 @@ const SHELL = [
   'assets/player/player-boot.js?v=1',
   'assets/player/player-main.js?v=8',
   'assets/player/player-chords.js?v=4',
-  'data/songs.json?v=20261115185326',
-  'assets/css/style.css?v=20261115185326',
+  'data/songs.json?v=20261122181153',
+  'assets/css/style.css?v=20261122181153',
   'assets/css/v2-ui.css?v=24',
   'assets/js/score-format.js?v=2',
   'assets/js/v2-ui.js?v=31',
-  'assets/js/script.js?v=2026111921',
+  'assets/js/script.js?v=20261122181153',
   'assets/js/v2-cache.js?v=12',
   'data/v2-scores.js?v=6'
 ];
