@@ -599,33 +599,6 @@ def main() -> int:
             fail(f"opening a score must fetch bundle on demand: {score_reqs[:3]}")
         ctx.close()
 
-        # mid-line repeat-start (narrow viewport wraps bar 9 inside a line)
-        ctx, page, frame, errs = open_score(browser, "lz/019", width=900)
-        frame.locator("body").evaluate("()=>document.getElementById('wrapBtn').click()")
-        page.wait_for_timeout(500)
-        mb = frame.locator('.bar[data-bar="8"]')
-        cls = mb.get_attribute("class") or ""
-        if "repeat-start" not in cls or "line-first" in cls:
-            fail(f"lz019@900: bar9 classes {cls!r}, expected mid-line repeat-start")
-        try:
-            page.wait_for_function("""() => {
-              const d = document.getElementById('v2Frame').contentWindow.document;
-              const b = d.querySelector('.bar[data-bar="8"]');
-              if (!b || !b.classList.contains('repeat-start') || b.classList.contains('line-first')) return false;
-              const bg = getComputedStyle(b, '::before').backgroundImage;
-              return bg.split('linear-gradient').length - 1 >= 2 && bg.includes('rgb(36, 31, 26)');
-            }""", timeout=5000)
-        except Exception:
-            pass
-        mbg = css_value(page, mb, "el=>getComputedStyle(el,'::before').backgroundImage")
-        if mbg.count("linear-gradient") != 2:
-            fail("lz019@900: mid-line repeat sign missing thick/thin lines")
-        if "rgb(36, 31, 26)" not in mbg:
-            fail("lz019@900: mid-line repeat dots are not ink black")
-        if errs:
-            fail("lz019@900 page errors: " + " | ".join(errs[:3]))
-        ctx.close()
-
         # every score: last bar = final double barline; repeat dots only when a repeat ends there;
         # single-voice (one staff) must not draw the system bracket line in the gutter
         import json as _json
@@ -1021,61 +994,6 @@ def main() -> int:
                   if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
                 }""")
 
-            if key == "lz/019":
-                try:
-                    page.wait_for_function("""() => {
-                      const d = document.getElementById('v2Frame').contentWindow.document;
-                      const row = d.querySelector('.bar[data-bar="0"] .vrow[data-vrow="S"]');
-                      if (!row) return false;
-                      if (row.querySelectorAll('.group-beam').length !== 1) return false;
-                      return [...row.querySelectorAll('.note .u1')]
-                        .every(u => getComputedStyle(u).display === 'none');
-                    }""", timeout=5000)
-                except Exception:
-                    pass
-                row = frame.locator('.bar[data-bar="0"] .vrow[data-vrow="S"]')
-                nb = row.locator('.group-beam').count()
-                if nb != 1:
-                    fail(f"lz019 bar1: S group beams {nb}, expected 1 continuous beam")
-                vis = row.evaluate("r=>[...r.querySelectorAll('.note .u1')].filter(u=>getComputedStyle(u).display!=='none').length")
-                if vis != 0:
-                    fail(f"lz019 bar1: {vis} per-note underlines still visible under beamed notes")
-                span = row.evaluate("""r => {
-                  const bs = [...r.querySelectorAll('.group-beam')][0];
-                  const notes = [...r.querySelectorAll('.note')].filter(n=>parseFloat(n.dataset.bs)>=3);
-                  if (!bs || notes.length < 3) return null;
-                  const br = bs.getBoundingClientRect();
-                  const a = notes[0].getBoundingClientRect(), z = notes[notes.length-1].getBoundingClientRect();
-                  return {left: br.left - a.left, right: z.right - br.right};
-                }""")
-                if not span or span["left"] > 2 or span["right"] > 2:
-                    fail(f"lz019 bar1: beam does not span the 4 3 1 group: {span}")
-            if key == "lz/019":
-                rs = frame.locator('.bar[data-bar="8"].repeat-start.line-first')
-                if not rs.count():
-                    fail("lz019 bar9: repeat-start line-first marker missing")
-                rgeo = frame.locator("body").evaluate("""() => {
-                  const line = [...document.querySelectorAll('.line')].find(l=>l.querySelector('.bar[data-bar="8"]'));
-                  const bar = line && line.querySelector('.bar[data-bar="8"]');
-                  if (!bar) return null;
-                  const ps = getComputedStyle(bar,'::before');
-                  return {brackets: line.querySelectorAll('.sys-bracket').length,
-                          bg: ps.backgroundImage, pw: parseFloat(ps.width),
-                          fs: parseFloat(getComputedStyle(document.querySelector('#score')).fontSize)};
-                }""")
-                if not rgeo:
-                    fail("lz019 bar9: repeat-start bar missing")
-                else:
-                    if rs.evaluate("el=>el.classList.contains('line-first')"):
-                        if not rgeo["brackets"]:
-                            fail("lz019 bar9: line-start repeat lost the system bracket (thick line)")
-                        if rgeo["bg"].count("linear-gradient") != 0:
-                            fail("lz019 bar9: line-start repeat should only add dots, not extra lines")
-                    else:
-                        if rgeo["bg"].count("linear-gradient") != 2:
-                            fail("lz019 bar9: mid-line repeat needs thick + thin lines")
-                    if rgeo["pw"] < rgeo["fs"]*0.75:
-                        fail(f"lz019 bar9: repeat dot area too narrow ({rgeo['pw']:.1f}px), dots clipped")
             if errs:
                 fail(f"{key} page errors: " + " | ".join(errs[:3]))
             ctx.close()
