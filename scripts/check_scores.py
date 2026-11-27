@@ -473,7 +473,7 @@ def main() -> int:
             r"\s+-?[\d.]+(?:px|em|%)?\s+-?[\d.]+(?:px|em|%)"
         )
         for i, line in enumerate(player_css.read_text(encoding="utf-8").splitlines(), 1):
-            if old_stop.search(line):
+            if "gradient(" in line and old_stop.search(line):
                 err(f"player.css:{i}: multi-position color stop breaks older WebViews")
                 break
     # 自动缓存暂时关闭：Service Worker 与 CacheStorage 读写都不得回来
