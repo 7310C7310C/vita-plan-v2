@@ -123,7 +123,7 @@
   /* 窄屏自动换行可能一行只有一个小节：此时 line-first 与 last-child 重合，
      不能连右侧小节线一起隐藏，否则整行没有任何小节线 */
   .score.single-voice .bar.line-first:last-child:not(.final){
-    background-image:linear-gradient(to left,var(--barline) 0 1.3px,transparent 1.3px);
+    background-image:linear-gradient(to left,var(--barline) 0,var(--barline) 1.3px,transparent 1.3px);
     background-position:100% var(--staff-top);
     background-size:1.3px calc(100% - var(--staff-top));
   }
@@ -143,15 +143,15 @@
   .bar{
     display:flex;flex-direction:column;min-width:0;position:relative;padding:0 .1em;
     /* 小节线从音符行顶开始，不穿过和弦/小节序号 */
-    background-image:linear-gradient(to right,var(--barline) 0 1.3px,transparent 1.3px);
+    background-image:linear-gradient(to right,var(--barline) 0,var(--barline) 1.3px,transparent 1.3px);
     background-repeat:no-repeat;
     background-position:0 var(--staff-top);
     background-size:1.3px calc(100% - var(--staff-top));
   }
   .bar:last-child{
     background-image:
-      linear-gradient(to right,var(--barline) 0 1.3px,transparent 1.3px),
-      linear-gradient(to left,var(--barline) 0 1.3px,transparent 1.3px);
+      linear-gradient(to right,var(--barline) 0,var(--barline) 1.3px,transparent 1.3px),
+      linear-gradient(to left,var(--barline) 0,var(--barline) 1.3px,transparent 1.3px);
     background-position:0 var(--staff-top),100% var(--staff-top);
     background-size:1.3px calc(100% - var(--staff-top)),1.3px calc(100% - var(--staff-top));
   }
@@ -159,10 +159,10 @@
   .bar.repeat-start::before{
     content:"";position:absolute;left:0;top:0;bottom:0;width:1.2em;z-index:3;pointer-events:none;
     background:
-      radial-gradient(circle at .613em calc(50% + var(--staff-mid) - .35em), var(--ink) 0 1.5px, transparent 1.7px),
-      radial-gradient(circle at .613em calc(50% + var(--staff-mid) + .35em), var(--ink) 0 1.5px, transparent 1.7px),
-      linear-gradient(to right, var(--barline) 0 1.3px, transparent 1.3px),
-      linear-gradient(to right, var(--barline) 0 .2em, transparent .2em);
+      radial-gradient(circle at .613em calc(50% + var(--staff-mid) - .35em), var(--ink) 0,var(--ink) 1.5px, transparent 1.7px),
+      radial-gradient(circle at .613em calc(50% + var(--staff-mid) + .35em), var(--ink) 0,var(--ink) 1.5px, transparent 1.7px),
+      linear-gradient(to right, var(--barline) 0,var(--barline) 1.3px, transparent 1.3px),
+      linear-gradient(to right, var(--barline) 0,var(--barline) .2em, transparent .2em);
     background-repeat:no-repeat;
     background-size:100% 100%,100% 100%,1.3px calc(100% - var(--staff-top)),.2em calc(100% - var(--staff-top));
     background-position:0 0,0 0,.34em var(--staff-top),0 var(--staff-top);
@@ -171,8 +171,8 @@
   .bar.repeat-start.line-first::before{
     width:1.2em;
     background:
-      radial-gradient(circle at .273em calc(50% + var(--staff-mid) - .35em), var(--ink) 0 1.5px, transparent 1.7px),
-      radial-gradient(circle at .273em calc(50% + var(--staff-mid) + .35em), var(--ink) 0 1.5px, transparent 1.7px);
+      radial-gradient(circle at .273em calc(50% + var(--staff-mid) - .35em), var(--ink) 0,var(--ink) 1.5px, transparent 1.7px),
+      radial-gradient(circle at .273em calc(50% + var(--staff-mid) + .35em), var(--ink) 0,var(--ink) 1.5px, transparent 1.7px);
     background-repeat:no-repeat;
     background-size:100% 100%;
     background-position:0 0;
@@ -180,32 +180,32 @@
   .bar.repeat-end::before{
     content:"";position:absolute;right:.5em;top:0;bottom:0;width:4px;z-index:3;pointer-events:none;
     background:
-      radial-gradient(circle at 1.6px calc(50% + var(--staff-mid) - .35em), var(--ink) 0 1.5px, transparent 1.7px),
-      radial-gradient(circle at 1.6px calc(50% + var(--staff-mid) + .35em), var(--ink) 0 1.5px, transparent 1.7px);
+      radial-gradient(circle at 1.6px calc(50% + var(--staff-mid) - .35em), var(--ink) 0,var(--ink) 1.5px, transparent 1.7px),
+      radial-gradient(circle at 1.6px calc(50% + var(--staff-mid) + .35em), var(--ink) 0,var(--ink) 1.5px, transparent 1.7px);
   }
   .bar.repeat-end:not(.final)::after{
     content:"";position:absolute;top:var(--staff-top);bottom:0;right:0;width:.42em;
     background:linear-gradient(90deg,
-      var(--barline) 0 1.3px,
-      transparent 1.3px .22em,
-      var(--barline) .22em .42em);
+      var(--barline) 0,var(--barline) 1.3px,
+      transparent 1.3px,transparent .22em,
+      var(--barline) .22em,var(--barline) .42em);
     opacity:1;
   }
-  .bar.final{background-image:linear-gradient(to right,var(--barline) 0 1.3px,transparent 1.3px)}
+  .bar.final{background-image:linear-gradient(to right,var(--barline) 0,var(--barline) 1.3px,transparent 1.3px)}
   .bar.final::after{
     content:"";position:absolute;top:var(--staff-top);bottom:0;right:0;width:.42em;
     background:linear-gradient(90deg,
-      var(--barline) 0 1.3px,
-      transparent 1.3px .22em,
-      var(--barline) .22em .42em);
+      var(--barline) 0,var(--barline) 1.3px,
+      transparent 1.3px,transparent .22em,
+      var(--barline) .22em,var(--barline) .42em);
     opacity:1;
   }
   .bar.endbar-thin-thick::after{
     content:"";position:absolute;top:var(--staff-top);bottom:0;right:0;width:.42em;
     background:linear-gradient(90deg,
-      var(--barline) 0 1.3px,
-      transparent 1.3px .22em,
-      var(--barline) .22em .42em);
+      var(--barline) 0,var(--barline) 1.3px,
+      transparent 1.3px,transparent .22em,
+      var(--barline) .22em,var(--barline) .42em);
     opacity:1;
   }
   .bar.endbar-double-thin::after{

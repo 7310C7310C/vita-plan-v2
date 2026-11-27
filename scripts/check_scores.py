@@ -465,6 +465,17 @@ def main() -> int:
     script_js = ROOT / "assets/js/script.js"
     if script_js.exists() and "const jsonVersion = '" not in script_js.read_text(encoding="utf-8"):
         err("assets/js/script.js: jsonVersion not found")
+    # 旧 WebView（如华为 C5）不支持双位置色标，整条 background-image 会失效（小节线消失）
+    player_css = ROOT / "assets/player/player.css"
+    if player_css.exists():
+        old_stop = re.compile(
+            r"(?:var\(--[a-z0-9-]+\)|transparent|rgba?\([^)]*\)|#[0-9a-fA-F]{3,8})"
+            r"\s+-?[\d.]+(?:px|em|%)?\s+-?[\d.]+(?:px|em|%)"
+        )
+        for i, line in enumerate(player_css.read_text(encoding="utf-8").splitlines(), 1):
+            if old_stop.search(line):
+                err(f"player.css:{i}: multi-position color stop breaks older WebViews")
+                break
     # 自动缓存暂时关闭：Service Worker 与 CacheStorage 读写都不得回来
     if (ROOT / "sw-v2.js").exists():
         err("sw-v2.js present but automatic caching is disabled")
