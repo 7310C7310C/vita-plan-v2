@@ -1,5 +1,8 @@
 // 在文件开头定义版本号和变量
-const jsonVersion = '20261127232020';
+const jsonVersion = '20261127232544';
+/* 图片与曲目数据共用发布版本：admin 每次发布都会更新 jsonVersion，
+   替换同名图片后 URL 变化，避免浏览器按 max-age 继续显示旧图 */
+window.VP_IMAGE_VERSION = jsonVersion;
 let songsData = {};
 
 // 離線更新後讓瀏覽器 HTTP/memory cache 失效；SW 的 cache key 會忽略 query。

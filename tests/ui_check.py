@@ -1087,6 +1087,9 @@ def main() -> int:
           wrap: getComputedStyle(document.getElementById('v2WrapBarBtn')).display })""")
         if not bar["imgMode"] or not bar["imgLoaded"]:
             fail(f"lz/009: should be a plain image score, got {bar}")
+        img_src = page.evaluate("() => (document.getElementById('sheet-image') || {}).getAttribute ? document.getElementById('sheet-image').getAttribute('src') : ''")
+        if "?v=" not in img_src:
+            fail(f"lz/009: image URL must carry the publish version, got {img_src!r}")
         if not page.evaluate("VP2UI.isImage()"):
             fail("lz/009: VP2UI.isImage() should be true for an image-only score")
         if not bar["cls"] or bar["annot"] != "none" or bar["wrap"] != "none":
